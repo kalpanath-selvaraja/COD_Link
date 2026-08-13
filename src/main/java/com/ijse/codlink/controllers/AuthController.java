@@ -7,6 +7,7 @@ import com.ijse.codlink.responce.CommonResponse;
 import com.ijse.codlink.responce.UserResponseDTO;
 import com.ijse.codlink.security.JwtUtil;
 import com.ijse.codlink.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping(value = "/login" ,produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse login(@RequestBody AuthDTO authDTO){
+    public CommonResponse login(@Valid @RequestBody AuthDTO authDTO){
         UserDTO userDetails = userService.getUserDetails(authDTO);
         String token = jwtUtil.generateToken(userDetails);
 
@@ -42,7 +43,7 @@ public class AuthController {
 
 
     @PostMapping("/register")
-    public CommonResponse register(@RequestBody RegisterRequestDTO request) {
+    public CommonResponse register(@Valid @RequestBody RegisterRequestDTO request) {
         userService.saveUser(request);
         return new CommonResponse(0,"User saved successfully");
     }

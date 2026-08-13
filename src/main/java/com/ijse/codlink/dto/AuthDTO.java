@@ -1,6 +1,7 @@
 package com.ijse.codlink.dto;
 
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthDTO {
-    private String userName;
+    @NotBlank(message = "Username is required")
+    private String username;
+    @NotBlank(message = "Password is required")
     private String password;
 }

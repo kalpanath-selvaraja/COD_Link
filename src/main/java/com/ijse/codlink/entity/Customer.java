@@ -17,7 +17,7 @@ public class Customer {
     private String Name;
     private String phoneNumber;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id", unique = true)
     @ToString.Exclude
     private User user;
