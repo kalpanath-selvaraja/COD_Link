@@ -1,0 +1,63 @@
+package com.ijse.codlink.service.impl;
+
+import com.ijse.codlink.dto.NotificationDTO;
+import com.ijse.codlink.entity.Notification;
+import com.ijse.codlink.entity.User;
+import com.ijse.codlink.exception.CustomException;
+import com.ijse.codlink.repository.NotificationRepository;
+import com.ijse.codlink.repository.UserRepository;
+import com.ijse.codlink.service.NotificationService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@Slf4j
+public class NotificationServiceImpl implements NotificationService {
+
+    private final NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
+
+    public NotificationServiceImpl(NotificationRepository notificationRepository, UserRepository userRepository) {
+        this.notificationRepository = notificationRepository;
+        this.userRepository = userRepository;
+    }
+
+
+    @Override
+    public NotificationDTO createNotification(NotificationDTO dto) {
+        Optional<User> optionalUser = userRepository.findById(dto.getUserId());
+
+        if (optionalUser.isEmpty()) {
+            throw new CustomException(404, "User not found");
+        }
+
+        Notification notification = new Notification();
+        notification.setMessage(dto.getMessage());
+        notification.setUser(optionalUser.get());
+
+        Notification save = notificationRepository.save(notification);
+
+        return new NotificationDTO(save.getNotificationId(),save.getMessage(), save.getUser().getUserId());
+    }
+
+    @Override
+    public List<NotificationDTO> getByUserId(Long userId) {
+        List<Notification> optionalUser = notificationRepository.findByUser_UserId(userId);
+        if (optionalUser.isEmpty()) {
+            throw new CustomException(404, "User not found");
+        }
+
+        List<NotificationDTO> notificationDTOS = new ArrayList<>();
+
+        for (Notification notification : optionalUser) {
+            NotificationDTO notificationDTO = new NotificationDTO(notification.getNotificationId(), notification.getMessage(), notification.getUser().getUserId());
+            notificationDTOS.add(notificationDTO);
+        }
+
+        return notificationDTOS;
+    }
+}
