@@ -31,7 +31,7 @@ public class AuditLogServiceImpl implements AuditLogService {
         Optional<User> optionalUser = userRepository.findByUserId(auditLogDTO.getUserId());
 
         if(optionalUser.isEmpty()){
-            throw  new CustomException(0, "User not Found");
+            throw  new CustomException(404, "User not Found");
         }
 
 
@@ -49,6 +49,13 @@ public class AuditLogServiceImpl implements AuditLogService {
     @Override
     public List<AuditLogDTO> getByUserId(Long userId) {
 
+        Optional<User> optionalUser = userRepository.findByUserId(userId);
+
+        if(optionalUser.isEmpty()){
+            throw  new CustomException(404, "User not Found");
+        }
+
+
         List<AuditLog> logList = auditLogRepository.findByUser_UserId(userId);
 
 
@@ -61,7 +68,7 @@ public class AuditLogServiceImpl implements AuditLogService {
             auditLogDTO.setLogId(auditLog.getLogId());
             auditLogDTO.setUserId(auditLog.getUser().getUserId());
             auditLogDTO.setAction(auditLog.getAction());
-            auditLogDTO.setLogTime(LocalDateTime.now());
+            auditLogDTO.setLogTime(auditLog.getLogTime());
             auditLogDTOList.add(auditLogDTO);
         }
 

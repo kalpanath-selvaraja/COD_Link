@@ -15,7 +15,6 @@ public class ServiceZone {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long zoneId;
-
     private String Name;
 
 }

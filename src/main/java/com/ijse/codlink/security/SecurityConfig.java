@@ -35,8 +35,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register" , "/api/notification" ,"/api/audit-logs").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/parcels/track/**" ,"/api/auth/testing","/api/audit-logs/**").permitAll() // GUEST tracking, no login
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register" , "/api/notification" ,"/api/audit-logs", "/api/pricing-rules/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/parcels/track/**" ,"/api/auth/testing","/api/audit-logs/**", "/api/pricing-rules/**").permitAll() // GUEST tracking, no login
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -62,11 +62,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+        // TEMP — testing only, lock down before submission (see known issues).
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:8080", "http://127.0.0.1:8080"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
+
+
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

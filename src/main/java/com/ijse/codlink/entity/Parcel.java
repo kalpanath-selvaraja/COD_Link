@@ -11,8 +11,10 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
+@Table(name = "parcels")
 public class Parcel {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long parcelId;
 
     private String tracking_number;

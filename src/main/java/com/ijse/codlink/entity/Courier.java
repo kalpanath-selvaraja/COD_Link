@@ -21,7 +21,7 @@ public class Courier{
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "branch-id", nullable = false)
+    @JoinColumn(name = "branch_id", nullable = false)
     @ToString.Exclude
     private Branch branch;
 

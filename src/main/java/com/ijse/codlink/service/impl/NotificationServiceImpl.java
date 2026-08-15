@@ -46,14 +46,22 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public List<NotificationDTO> getByUserId(Long userId) {
-        List<Notification> optionalUser = notificationRepository.findByUser_UserId(userId);
+
+
+        Optional<User> optionalUser = userRepository.findByUserId(userId);
+
         if (optionalUser.isEmpty()) {
             throw new CustomException(404, "User not found");
         }
 
+        List<Notification> notifications = notificationRepository.findByUser_UserId(optionalUser.get().getUserId());
+
+
+
+
         List<NotificationDTO> notificationDTOS = new ArrayList<>();
 
-        for (Notification notification : optionalUser) {
+        for (Notification notification : notifications) {
             NotificationDTO notificationDTO = new NotificationDTO(notification.getNotificationId(), notification.getMessage(), notification.getUser().getUserId());
             notificationDTOS.add(notificationDTO);
         }
