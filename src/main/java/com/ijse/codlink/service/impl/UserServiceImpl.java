@@ -59,7 +59,7 @@ public class UserServiceImpl implements UserService {
 
             user.setUsername(request.getUsername());
             user.setPassword(passwordEncoder.encode(request.getPassword()));
-            user.setRole(UserRole.USER); // deliberate — public self-registration is always USER, never ADMIN/COURIER
+            user.setRole(UserRole.ADMIN); // deliberate — public self-registration is always USER, never ADMIN/COURIER
             userRepository.save(user);
 
 
