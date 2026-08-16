@@ -44,14 +44,10 @@ public class Parcel {
     @ToString.Exclude
     private Branch originBranch;
 
-
-
-
-//
-//    @ManyToOne
-//    @JoinColumn(name = "shipment_id")
-//    @ToString.Exclude
-//    private Shipment shipment;
+    @ManyToOne
+    @JoinColumn(name = "shipment_id")
+    @ToString.Exclude
+    private Shipment shipment;
 
 
 
