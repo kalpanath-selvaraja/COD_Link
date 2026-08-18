@@ -35,9 +35,23 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register" , "/api/notification" ,"/api/audit-logs", "/api/pricing-rules/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/parcels/track/**" ,"/api/auth/testing","/api/audit-logs/**", "/api/pricing-rules/**").permitAll() // GUEST tracking, no login
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login",
+                                "/api/auth/register" ,
+                                "/api/notification" ,
+                                "/api/audit-logs",
+                                "/api/pricing-rules/**" ,
+                                "/api/shipments/**").permitAll()// TEMP — testing only, lock down before submission (see known issues).
+
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/parcels/track/**" ,
+                                "/api/auth/testing",
+                                "/api/audit-logs/**",
+                                "/api/pricing-rules/**",
+                                "/api/shipments/**").permitAll() // GUEST tracking, no login  // TEMP — testing only, lock down before submission (see known issues).
+
+
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/customers/walk-in").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

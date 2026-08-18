@@ -26,7 +26,7 @@ public class PricingRuleServiceImpl implements PricingRuleService {
     public PricingRuleDTO create(PricingRuleDTO dto) {
         Optional<ServiceZone> optionalZone = serviceZoneRepository.findById(dto.getZoneId());
         if (optionalZone.isEmpty()) {
-            throw new CustomException(501,"Service zone not found");
+            throw new CustomException(404,"Service zone not found");
         }
 
         PricingRule rule = new PricingRule();

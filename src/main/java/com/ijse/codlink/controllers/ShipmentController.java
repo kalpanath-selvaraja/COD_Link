@@ -26,6 +26,6 @@ public class ShipmentController {
     public CommonResponse getShipmentByCustomer(@PathVariable Long customerId) {
         List<ShipmentDTO> shipmentDTOList = shipmentService.getByCustomerId(customerId);
 
-        return new CommonResponse(0, shipmentDTOList,"Shipment by customerId successfully");
+        return new CommonResponse(0, shipmentDTOList,"Shipment fetched successfully");
     }
 }

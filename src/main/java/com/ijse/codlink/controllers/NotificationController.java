@@ -3,6 +3,7 @@ package com.ijse.codlink.controllers;
 import com.ijse.codlink.dto.NotificationDTO;
 import com.ijse.codlink.responce.CommonResponse;
 import com.ijse.codlink.service.NotificationService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,14 +11,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "api/notification")
+@RequiredArgsConstructor
 public class NotificationController {
 
     private final NotificationService notificationService;
 
-
-    public NotificationController(NotificationService notificationService) {
-        this.notificationService = notificationService;
-    }
 
     @PostMapping
     public CommonResponse createNotification(@RequestBody NotificationDTO notificationDTO) {

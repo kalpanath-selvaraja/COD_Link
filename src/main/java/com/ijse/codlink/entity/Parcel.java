@@ -17,9 +17,9 @@ public class Parcel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long parcelId;
 
-    private String tracking_number;
+    private String trackingNumber;
     private Double weight;
-    private Double cod_amount;
+    private Double codAmount;
 
     @Enumerated(EnumType.STRING)
     private ParcelStatus status;
