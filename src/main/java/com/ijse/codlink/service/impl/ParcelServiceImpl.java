@@ -122,7 +122,27 @@ public class ParcelServiceImpl implements ParcelService {
 
     @Override
     public ParcelDTO getByTrackingNumber(String trackingNumber) {
-        return null;
+        Optional<Parcel> optionalParcel = parcelRepository.findByTrackingNumber(trackingNumber);
+
+        if (optionalParcel.isEmpty()) {
+            throw new CustomException(404, "No Parcel with that tracking number was found");
+        }
+
+        Parcel parcel = optionalParcel.get();
+
+        ParcelDTO dto = new ParcelDTO();
+
+        dto.setParcelId(parcel.getParcelId());
+        dto.setTrackingNumber(parcel.getTrackingNumber());
+        dto.setWeight(parcel.getWeight());
+        dto.setCodAmount(parcel.getCodAmount());
+        dto.setStatus(parcel.getStatus());
+        dto.setCustomerId(parcel.getCustomer().getCustomerId());
+        dto.setOriginBranchId(parcel.getOriginBranch().getBranchId());
+        dto.setShipmentId(parcel.getShipment() != null ? parcel.getShipment().getShipmentId() : null);
+
+        return dto;
+
     }
 
     @Override
