@@ -159,7 +159,7 @@ public class CourierServiceImpl implements CourierService {
         if (optionalCourier.isEmpty()) {
             throw new CustomException(404, "Courier not found");
         }
-        
+
         courierRepository.delete(optionalCourier.get());
     }
 }
