@@ -85,4 +85,36 @@ public class CustomerServiceImpl implements CustomerService {
 
     }
 
+    @Override
+    public CustomerDTO updateMyProfile(String username, CustomerDTO dto) {
+
+        Optional<User> optionalUser = userRepository.findByUsername(username);
+
+        if (optionalUser.isEmpty()) {
+            throw new CustomException(404, "User not found");
+        }
+
+        Optional<Customer> optionalCustomer = customerRepository.findByUser_UserId(optionalUser.get().getUserId());
+
+        if (optionalCustomer.isEmpty()) {
+            throw new CustomException(404, "Customer profile not found");
+        }
+        Customer customer = optionalCustomer.get();
+
+        if (dto.getName() != null)
+            customer.setName(dto.getName());
+
+        if (dto.getPhoneNumber() != null)
+            customer.setPhoneNumber(dto.getPhoneNumber());
+
+        Customer saved = customerRepository.save(customer);
+
+        return new CustomerDTO(
+                saved.getCustomerId(),
+                saved.getName(),
+                saved.getPhoneNumber(),
+                saved.getUser().getUserId());
+
+    }
+
 }

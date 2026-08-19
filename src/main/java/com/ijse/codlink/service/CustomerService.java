@@ -7,4 +7,5 @@ public interface CustomerService {
 
     CustomerDTO getMyProfile(String username);
     CustomerDTO createWalkIn(CustomerDTO dto);
+    CustomerDTO updateMyProfile(String username, CustomerDTO dto);
 }
