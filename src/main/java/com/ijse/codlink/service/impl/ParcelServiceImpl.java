@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -59,10 +60,10 @@ public class ParcelServiceImpl implements ParcelService {
         }
 
         Parcel parcel = new Parcel();
-        parcel.setTrackingNumber("CDL-" +  UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        parcel.setTrackingNumber("CDL-" +  UUID.randomUUID().toString().substring(0, 8).toUpperCase());  // tracking
         parcel.setWeight(parcelDTO.getWeight());
         parcel.setCodAmount(parcelDTO.getCodAmount());
-        parcel.setStatus(ParcelStatus.BOOKED); // server-controlled, never client-supplied
+        parcel.setStatus(ParcelStatus.BOOKED);
         parcel.setCustomer(optionalCustomer.get());
         parcel.setOriginBranch(optionalBranch.get());
         parcel.setShipment(shipment);
@@ -147,16 +148,75 @@ public class ParcelServiceImpl implements ParcelService {
 
     @Override
     public List<ParcelDTO> getByCustomerId(Long customerId) {
-        return List.of();
+        Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
+
+        if (optionalCustomer.isEmpty()) {
+            throw new CustomException(404, "Customer not found");
+        }
+
+        List<Parcel> parcels = parcelRepository.findByCustomer_CustomerId(customerId);
+
+        List<ParcelDTO> parcelDTOList = new ArrayList<>();
+
+        for (Parcel parcel : parcels) {
+            ParcelDTO dto = new ParcelDTO();
+            dto.setParcelId(parcel.getParcelId());
+            dto.setTrackingNumber(parcel.getTrackingNumber());
+            dto.setWeight(parcel.getWeight());
+            dto.setCodAmount(parcel.getCodAmount());
+            dto.setStatus(parcel.getStatus());
+            dto.setCustomerId(parcel.getCustomer().getCustomerId());
+            dto.setOriginBranchId(parcel.getOriginBranch().getBranchId());
+            dto.setShipmentId(parcel.getShipment() != null ? parcel.getShipment().getShipmentId() : null);
+
+            parcelDTOList.add(dto);
+
+        }
+
+        return parcelDTOList;
     }
 
     @Override
     public ParcelDTO updateStatus(Long parcelId, ParcelDTO statusDto) {
-        return null;
+        Optional<Parcel> optionalParcel = parcelRepository.findById(parcelId);
+        if (optionalParcel.isEmpty()) {
+            throw new CustomException(404, "Parcel not found");
+        }
+
+        if (statusDto.getStatus() == null) {
+            throw new CustomException(400, "Status not found");
+        }
+
+        Parcel parcel = optionalParcel.get();
+        parcel.setStatus(statusDto.getStatus());
+        Parcel saved = parcelRepository.save(parcel);
+
+        ParcelDTO dto = new ParcelDTO();
+
+        dto.setParcelId(saved.getParcelId());
+        dto.setTrackingNumber(saved.getTrackingNumber());
+        dto.setWeight(saved.getWeight());
+        dto.setCodAmount(saved.getCodAmount());
+        dto.setStatus(saved.getStatus());
+        dto.setCustomerId(saved.getCustomer().getCustomerId());
+        dto.setOriginBranchId(saved.getOriginBranch().getBranchId());
+        dto.setShipmentId(saved.getShipment() != null ? saved.getShipment().getShipmentId() : null);
+
+
+        return dto;
+
     }
 
     @Override
     public void delete(Long parcelId) {
 
+        Optional<Parcel> optionalParcel = parcelRepository.findById(parcelId);
+        if (optionalParcel.isEmpty()) {
+            throw new CustomException(404, "Parcel not found");
+        }
+        if (optionalParcel.get().getStatus() != ParcelStatus.BOOKED) {
+            throw new CustomException(409, "Only parcels still in BOOKED status can be deleted");
+        }
+        parcelRepository.delete(optionalParcel.get());
     }
 }
