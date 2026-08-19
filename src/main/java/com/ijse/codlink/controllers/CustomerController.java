@@ -44,4 +44,11 @@ public class CustomerController {
         CustomerDTO created = customerService.createWalkIn(dto);
         return new CommonResponse(0, created, "Walk-in customer created");
     }
+
+    @PutMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse updateMyProfile(@RequestBody CustomerDTO dto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails principal = (UserDetails) authentication.getPrincipal();
+        return new CommonResponse(0, customerService.updateMyProfile(principal.getUsername(), dto), "Profile updated");
+    }
 }
