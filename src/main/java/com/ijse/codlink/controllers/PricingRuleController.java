@@ -25,4 +25,15 @@ public class PricingRuleController {
     public CommonResponse getByZone(@PathVariable Long zoneId) {
         return new CommonResponse(0, pricingRuleService.getByZoneId(zoneId), "Pricing rules fetched");
     }
+
+    @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse update(@PathVariable Long id, @RequestBody PricingRuleDTO dto) {
+        return new CommonResponse(0, pricingRuleService.update(id, dto), "Pricing rule updated");
+    }
+
+    @DeleteMapping(value = "/{id}")
+    public CommonResponse delete(@PathVariable Long id) {
+        pricingRuleService.delete(id);
+        return new CommonResponse(0, "Pricing rule deleted");
+    }
 }
