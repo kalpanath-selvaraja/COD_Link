@@ -8,4 +8,7 @@ public interface PricingRuleService {
 
     PricingRuleDTO create(PricingRuleDTO dto);
     List<PricingRuleDTO> getByZoneId(Long zoneId);
+
+    PricingRuleDTO update(Long ruleId, PricingRuleDTO dto);
+    void delete(Long ruleId);
 }

@@ -67,4 +67,33 @@ public class PricingRuleServiceImpl implements PricingRuleService {
         return list;
 
     }
+
+    @Override
+    public PricingRuleDTO update(Long ruleId, PricingRuleDTO dto) {
+
+        Optional<PricingRule> optionalRule = pricingRuleRepository.findById(ruleId);
+        if (optionalRule.isEmpty()) {
+            throw new CustomException(404, "Pricing rule not found");
+        }
+        PricingRule rule = optionalRule.get();
+        if (dto.getRate() != null) rule.setRate(dto.getRate());
+
+        if (dto.getWeightBracket() != null) rule.setWeightBracket(dto.getWeightBracket());
+
+        rule.setIsCod(dto.isCod());
+
+        PricingRule saved = pricingRuleRepository.save(rule);
+
+        return new PricingRuleDTO(saved.getRuleId(), saved.getServiceZone().getZoneId(),
+                saved.getRate(), saved.getWeightBracket(), saved.getIsCod());
+    }
+
+    @Override
+    public void delete(Long ruleId) {
+        Optional<PricingRule> optionalRule = pricingRuleRepository.findById(ruleId);
+        if (optionalRule.isEmpty()) {
+            throw new CustomException(404, "Pricing rule not found");
+        }
+        pricingRuleRepository.delete(optionalRule.get());
+    }
 }
