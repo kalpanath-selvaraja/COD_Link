@@ -30,4 +30,6 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
+    private Boolean active = true;
+
 }

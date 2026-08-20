@@ -15,5 +15,6 @@ public class UserDTO {
         private Long userId;
         private String username;
         private UserRole userRole;
+    private Boolean active;
 
 }

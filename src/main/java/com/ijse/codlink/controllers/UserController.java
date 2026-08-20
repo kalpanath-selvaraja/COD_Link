@@ -1,0 +1,21 @@
+package com.ijse.codlink.controllers;
+
+import com.ijse.codlink.dto.UserStatusUpdateDTO;
+import com.ijse.codlink.responce.CommonResponse;
+import com.ijse.codlink.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping(value = "api/users")
+@RequiredArgsConstructor
+public class UserController {
+
+    private final UserService userService;
+
+    @PatchMapping(value = "/{id}/status", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse updateStatus(@PathVariable Long id, @RequestBody UserStatusUpdateDTO dto) {
+        return new CommonResponse(0, userService.updateStatus(id, dto.isActive()), "User status updated");
+    }
+}

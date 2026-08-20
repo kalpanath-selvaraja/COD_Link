@@ -42,8 +42,12 @@ public class UserServiceImpl implements UserService {
             throw new CustomException(401, "Invalid username or password");
         }
 
+        if (Boolean.FALSE.equals(user.getActive())) {
+            throw new CustomException(403, "Account is deactivated");
+        }
 
-        return new UserDTO(user.getUserId(), user.getUsername(), user.getRole());
+
+        return new UserDTO(user.getUserId(), user.getUsername(), user.getRole(), user.getActive());
 
     }
 
@@ -63,5 +67,17 @@ public class UserServiceImpl implements UserService {
             userRepository.save(user);
 
 
+    }
+
+    @Override
+    public UserDTO updateStatus(Long userId, boolean active) {
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            throw new CustomException(404, "User not found");
+        }
+        User user = optionalUser.get();
+        user.setActive(active);
+        User saved = userRepository.save(user);
+        return new UserDTO(saved.getUserId(), saved.getUsername(), saved.getRole(), saved.getActive());
     }
 }

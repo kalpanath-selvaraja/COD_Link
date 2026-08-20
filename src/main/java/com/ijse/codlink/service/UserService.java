@@ -9,4 +9,6 @@ public interface UserService {
     UserDTO getUserDetails(AuthDTO authDTO);
 
     void saveUser(RegisterRequestDTO registerRequestDTO);
+
+    UserDTO updateStatus(Long userId, boolean active);
 }
