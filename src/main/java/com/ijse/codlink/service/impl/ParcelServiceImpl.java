@@ -30,8 +30,11 @@ public class ParcelServiceImpl implements ParcelService {
 
     @Override
     public ParcelDTO createForCustomer(Long customerId, ParcelDTO parcelDTO) {
-        parcelDTO.setCustomerId(customerId);
-        return null;
+        Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
+        if (optionalCustomer.isEmpty()) {
+            throw new CustomException(404, "Customer not found");
+        }
+        return toDto(buildAndSaveParcel(optionalCustomer.get(), parcelDTO));
     }
 
     @Override
@@ -44,14 +47,18 @@ public class ParcelServiceImpl implements ParcelService {
         if (optionalCustomer.isEmpty()) {
             throw new CustomException(404, "No customer profile linked to this account — create one at POST /api/customers/me first");
         }
+        return toDto(buildAndSaveParcel(optionalCustomer.get(), parcelDTO));
+    }
 
+
+    private Parcel buildAndSaveParcel(Customer customer, ParcelDTO parcelDTO) {
         Optional<Branch> optionalBranch = branchRepository.findById(parcelDTO.getOriginBranchId());
         if (optionalBranch.isEmpty()) {
             throw new CustomException(404, "Origin Branch not found");
         }
 
         Shipment shipment = null;
-        if(parcelDTO.getShipmentId()!=null){
+        if (parcelDTO.getShipmentId() != null) {
             Optional<Shipment> optionalShipment = shipmentRepository.findById(parcelDTO.getShipmentId());
             if (optionalShipment.isEmpty()) {
                 throw new CustomException(404, "Shipment not found");
@@ -60,20 +67,18 @@ public class ParcelServiceImpl implements ParcelService {
         }
 
         Parcel parcel = new Parcel();
-        parcel.setTrackingNumber("CDL-" +  UUID.randomUUID().toString().substring(0, 8).toUpperCase());  // tracking
+        parcel.setTrackingNumber("CDL-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         parcel.setWeight(parcelDTO.getWeight());
         parcel.setCodAmount(parcelDTO.getCodAmount());
         parcel.setStatus(ParcelStatus.BOOKED);
-        parcel.setCustomer(optionalCustomer.get());
+        parcel.setCustomer(customer);
         parcel.setOriginBranch(optionalBranch.get());
         parcel.setShipment(shipment);
         parcel.setPickupAddress(toAddress(parcelDTO.getPickupAddress()));
         parcel.setDeliveryAddress(toAddress(parcelDTO.getDeliveryAddress()));
 
-        return new ParcelDTO();
+        return parcelRepository.save(parcel); 
     }
-
-
 
     private Address toAddress(AddressDTO dto) {
         if (dto == null) {
@@ -94,85 +99,34 @@ public class ParcelServiceImpl implements ParcelService {
         return address;
     }
 
-
     @Override
     public ParcelDTO getById(Long parcelId) {
         Optional<Parcel> optionalParcel = parcelRepository.findById(parcelId);
-
         if (optionalParcel.isEmpty()) {
             throw new CustomException(404, "Parcel not found");
         }
-
-        Parcel parcel = optionalParcel.get();
-
-
-        ParcelDTO dto = new ParcelDTO();
-
-        dto.setParcelId(parcel.getParcelId());
-        dto.setTrackingNumber(parcel.getTrackingNumber());
-        dto.setWeight(parcel.getWeight());
-        dto.setCodAmount(parcel.getCodAmount());
-        dto.setStatus(parcel.getStatus());
-        dto.setCustomerId(parcel.getCustomer().getCustomerId());
-        dto.setOriginBranchId(parcel.getOriginBranch().getBranchId());
-        dto.setShipmentId(parcel.getShipment() != null ? parcel.getShipment().getShipmentId() : null);
-
-        return dto;
+        return toDto(optionalParcel.get());
     }
-
 
     @Override
     public ParcelDTO getByTrackingNumber(String trackingNumber) {
         Optional<Parcel> optionalParcel = parcelRepository.findByTrackingNumber(trackingNumber);
-
         if (optionalParcel.isEmpty()) {
             throw new CustomException(404, "No Parcel with that tracking number was found");
         }
-
-        Parcel parcel = optionalParcel.get();
-
-        ParcelDTO dto = new ParcelDTO();
-
-        dto.setParcelId(parcel.getParcelId());
-        dto.setTrackingNumber(parcel.getTrackingNumber());
-        dto.setWeight(parcel.getWeight());
-        dto.setCodAmount(parcel.getCodAmount());
-        dto.setStatus(parcel.getStatus());
-        dto.setCustomerId(parcel.getCustomer().getCustomerId());
-        dto.setOriginBranchId(parcel.getOriginBranch().getBranchId());
-        dto.setShipmentId(parcel.getShipment() != null ? parcel.getShipment().getShipmentId() : null);
-
-        return dto;
-
+        return toDto(optionalParcel.get());
     }
 
     @Override
     public List<ParcelDTO> getByCustomerId(Long customerId) {
         Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
-
         if (optionalCustomer.isEmpty()) {
             throw new CustomException(404, "Customer not found");
         }
-
-        List<Parcel> parcels = parcelRepository.findByCustomer_CustomerId(customerId);
-
         List<ParcelDTO> parcelDTOList = new ArrayList<>();
-
-        for (Parcel parcel : parcels) {
-            ParcelDTO dto = new ParcelDTO();
-            dto.setParcelId(parcel.getParcelId());
-            dto.setTrackingNumber(parcel.getTrackingNumber());
-            dto.setWeight(parcel.getWeight());
-            dto.setCodAmount(parcel.getCodAmount());
-            dto.setStatus(parcel.getStatus());
-            dto.setCustomerId(parcel.getCustomer().getCustomerId());
-            dto.setOriginBranchId(parcel.getOriginBranch().getBranchId());
-            dto.setShipmentId(parcel.getShipment() != null ? parcel.getShipment().getShipmentId() : null);
-
-            parcelDTOList.add(dto);
-
+        for (Parcel parcel : parcelRepository.findByCustomer_CustomerId(customerId)) {
+            parcelDTOList.add(toDto(parcel));
         }
-
         return parcelDTOList;
     }
 
@@ -182,34 +136,16 @@ public class ParcelServiceImpl implements ParcelService {
         if (optionalParcel.isEmpty()) {
             throw new CustomException(404, "Parcel not found");
         }
-
         if (statusDto.getStatus() == null) {
             throw new CustomException(400, "Status not found");
         }
-
         Parcel parcel = optionalParcel.get();
         parcel.setStatus(statusDto.getStatus());
-        Parcel saved = parcelRepository.save(parcel);
-
-        ParcelDTO dto = new ParcelDTO();
-
-        dto.setParcelId(saved.getParcelId());
-        dto.setTrackingNumber(saved.getTrackingNumber());
-        dto.setWeight(saved.getWeight());
-        dto.setCodAmount(saved.getCodAmount());
-        dto.setStatus(saved.getStatus());
-        dto.setCustomerId(saved.getCustomer().getCustomerId());
-        dto.setOriginBranchId(saved.getOriginBranch().getBranchId());
-        dto.setShipmentId(saved.getShipment() != null ? saved.getShipment().getShipmentId() : null);
-
-
-        return dto;
-
+        return toDto(parcelRepository.save(parcel));
     }
 
     @Override
     public void delete(Long parcelId) {
-
         Optional<Parcel> optionalParcel = parcelRepository.findById(parcelId);
         if (optionalParcel.isEmpty()) {
             throw new CustomException(404, "Parcel not found");
@@ -218,5 +154,18 @@ public class ParcelServiceImpl implements ParcelService {
             throw new CustomException(409, "Only parcels still in BOOKED status can be deleted");
         }
         parcelRepository.delete(optionalParcel.get());
+    }
+
+    private ParcelDTO toDto(Parcel parcel) {
+        ParcelDTO dto = new ParcelDTO();
+        dto.setParcelId(parcel.getParcelId());
+        dto.setTrackingNumber(parcel.getTrackingNumber());
+        dto.setWeight(parcel.getWeight());
+        dto.setCodAmount(parcel.getCodAmount());
+        dto.setStatus(parcel.getStatus());
+        dto.setCustomerId(parcel.getCustomer().getCustomerId());
+        dto.setOriginBranchId(parcel.getOriginBranch().getBranchId());
+        dto.setShipmentId(parcel.getShipment() != null ? parcel.getShipment().getShipmentId() : null);
+        return dto;
     }
 }
