@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,10 +32,11 @@ public class CourierServiceImpl implements CourierService {
 
 
     @Override
+    @Transactional
     public CourierDTO createCourierAccount(CourierDTO courierDTO) {
         Optional<User> optionalUser = userRepository.findByUsername(courierDTO.getUserName());
 
-        if(optionalUser.isEmpty()){
+        if(optionalUser.isPresent()){
             throw new CustomException(409,"Username already exists");
         }
 
