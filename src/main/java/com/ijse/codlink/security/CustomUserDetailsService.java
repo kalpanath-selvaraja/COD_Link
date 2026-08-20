@@ -25,6 +25,11 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("User not found");
         }
 
+        User foundUser = optionalUser.get();
+        if (Boolean.FALSE.equals(foundUser.getActive())) {
+            throw new UsernameNotFoundException("Account not found or inactive");
+        }
+
         return org.springframework.security.core.userdetails.User.builder()
                 .username(optionalUser.get().getUsername())
                 .password(optionalUser.get().getPassword())
