@@ -1,5 +1,6 @@
 package com.ijse.codlink.entity;
 
+import com.ijse.codlink.enumeration.VehicleStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,6 +21,8 @@ public class Vehicle {
     @ToString.Exclude
     private Courier courier;
 
+    @Enumerated(EnumType.STRING)
+    private VehicleStatus status = VehicleStatus.ACTIVE;
 
 
 }

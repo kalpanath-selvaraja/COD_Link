@@ -1,5 +1,6 @@
 package com.ijse.codlink.dto;
 
+import com.ijse.codlink.enumeration.VehicleStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,4 +16,5 @@ public class VehicleDTO {
     private String type;
     private String plateNumber;
     private Long courierId;
+    private VehicleStatus status;
 }

@@ -39,4 +39,11 @@ public class VehicleController {
         vehicleService.delete(id);
         return new CommonResponse(0, "Vehicle deleted");
     }
+
+    @PatchMapping(value = "/{id}/status", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse updateStatus(@PathVariable Long id, @RequestBody VehicleDTO dto) {
+        return new CommonResponse(0, vehicleService.updateStatus(id, dto), "Vehicle status updated");
+    }
+
+
 }

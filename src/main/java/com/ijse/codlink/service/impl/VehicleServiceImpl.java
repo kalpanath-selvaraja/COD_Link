@@ -82,7 +82,21 @@ public class VehicleServiceImpl implements VehicleService {
         vehicleRepository.delete(optionalVehicle.get());
     }
 
+    @Override
+    public VehicleDTO updateStatus(Long vehicleId, VehicleDTO dto) {
+        Optional<Vehicle> optionalVehicle = vehicleRepository.findById(vehicleId);
+        if (optionalVehicle.isEmpty()) {
+            throw new CustomException(404, "Vehicle not found");
+        }
+        if (dto.getStatus() == null) {
+            throw new CustomException(400, "Status is required");
+        }
+        Vehicle vehicle = optionalVehicle.get();
+        vehicle.setStatus(dto.getStatus());
+        return toDto(vehicleRepository.save(vehicle));
+    }
+
     private VehicleDTO toDto(Vehicle v) {
-        return new VehicleDTO(v.getVehicleId(), v.getType(), v.getPlateNumber(), v.getCourier().getCourierId());
+        return new VehicleDTO(v.getVehicleId(), v.getType(), v.getPlateNumber(), v.getCourier().getCourierId(), v.getStatus());
     }
 }

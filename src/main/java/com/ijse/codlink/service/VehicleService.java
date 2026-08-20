@@ -10,4 +10,6 @@ public interface VehicleService {
     List<VehicleDTO> getByCourierId(Long courierId);
     VehicleDTO update(Long vehicleId, VehicleDTO dto);
     void delete(Long vehicleId);
+
+    VehicleDTO updateStatus(Long vehicleId, VehicleDTO dto);
 }
