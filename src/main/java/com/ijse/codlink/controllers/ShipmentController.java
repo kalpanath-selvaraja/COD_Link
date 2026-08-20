@@ -28,4 +28,16 @@ public class ShipmentController {
 
         return new CommonResponse(0, shipmentDTOList,"Shipment fetched successfully");
     }
+
+
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse getById(@PathVariable Long id) {
+        return new CommonResponse(0, shipmentService.getById(id), "Shipment fetched");
+    }
+
+    @DeleteMapping(value = "/{id}")
+    public CommonResponse delete(@PathVariable Long id) {
+        shipmentService.delete(id);
+        return new CommonResponse(0, "Shipment deleted");
+    }
 }

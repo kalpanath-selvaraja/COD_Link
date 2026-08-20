@@ -5,6 +5,7 @@ import com.ijse.codlink.entity.Customer;
 import com.ijse.codlink.entity.Shipment;
 import com.ijse.codlink.exception.CustomException;
 import com.ijse.codlink.repository.CustomerRepository;
+import com.ijse.codlink.repository.ParcelRepository;
 import com.ijse.codlink.repository.ShipmentRepository;
 import com.ijse.codlink.service.ShipmentService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class ShipmentServiceImpl implements ShipmentService {
 
     private final ShipmentRepository shipmentRepository;
     private final CustomerRepository customerRepository;
+    private final ParcelRepository parcelRepository;
 
     @Override
     public ShipmentDTO create(ShipmentDTO shipmentDTO) {
@@ -64,5 +66,27 @@ public class ShipmentServiceImpl implements ShipmentService {
         }
 
         return list;
+    }
+
+    @Override
+    public ShipmentDTO getById(Long shipmentId) {
+        Optional<Shipment> optionalShipment = shipmentRepository.findById(shipmentId);
+        if (optionalShipment.isEmpty()) {
+            throw new CustomException(404, "Shipment not found");
+        }
+        Shipment s = optionalShipment.get();
+        return new ShipmentDTO(s.getShipmentId(), s.getCustomer().getCustomerId(), s.getCreatedAt());
+    }
+
+    @Override
+    public void delete(Long shipmentId) {
+        Optional<Shipment> optionalShipment = shipmentRepository.findById(shipmentId);
+        if (optionalShipment.isEmpty()) {
+            throw new CustomException(404, "Shipment not found");
+        }
+        if (parcelRepository.existsByShipment_ShipmentId(shipmentId)) {
+            throw new CustomException(409, "Cannot delete a shipment that still has parcels attached");
+        }
+        shipmentRepository.delete(optionalShipment.get());
     }
 }
