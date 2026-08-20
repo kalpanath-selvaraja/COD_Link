@@ -51,4 +51,21 @@ public class CustomerController {
         UserDetails principal = (UserDetails) authentication.getPrincipal();
         return new CommonResponse(0, customerService.updateMyProfile(principal.getUsername(), dto), "Profile updated");
     }
+
+
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse getById(@PathVariable Long id) {
+        return new CommonResponse(0, customerService.getById(id), "Customer fetched");
+    }
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse getAll() {
+        return new CommonResponse(0, customerService.getAll(), "Customers fetched");
+    }
+
+    @DeleteMapping(value = "/{id}")
+    public CommonResponse delete(@PathVariable Long id) {
+        customerService.delete(id);
+        return new CommonResponse(0, "Customer deleted");
+    }
 }

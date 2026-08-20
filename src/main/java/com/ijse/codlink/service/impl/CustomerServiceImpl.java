@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -115,6 +117,36 @@ public class CustomerServiceImpl implements CustomerService {
                 saved.getPhoneNumber(),
                 saved.getUser().getUserId());
 
+    }
+
+    @Override
+    public CustomerDTO getById(Long customerId) {
+        Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
+        if (optionalCustomer.isEmpty()) {
+            throw new CustomException(404, "Customer not found");
+        }
+        Customer c = optionalCustomer.get();
+        return new CustomerDTO(c.getCustomerId(), c.getName(), c.getPhoneNumber(),
+                c.getUser() != null ? c.getUser().getUserId() : null);
+    }
+
+    @Override
+    public List<CustomerDTO> getAll() {
+        List<CustomerDTO> list = new ArrayList<>();
+        for (Customer c : customerRepository.findAll()) {
+            list.add(new CustomerDTO(c.getCustomerId(), c.getName(), c.getPhoneNumber(),
+                    c.getUser() != null ? c.getUser().getUserId() : null));
+        }
+        return list;
+    }
+
+    @Override
+    public void delete(Long customerId) {
+        Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
+        if (optionalCustomer.isEmpty()) {
+            throw new CustomException(404, "Customer not found");
+        }
+        customerRepository.delete(optionalCustomer.get());
     }
 
 }

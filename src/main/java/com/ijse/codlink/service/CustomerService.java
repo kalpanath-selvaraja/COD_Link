@@ -8,4 +8,8 @@ public interface CustomerService {
     CustomerDTO getMyProfile(String username);
     CustomerDTO createWalkIn(CustomerDTO dto);
     CustomerDTO updateMyProfile(String username, CustomerDTO dto);
+
+    CustomerDTO getById(Long customerId);
+    java.util.List<CustomerDTO> getAll();
+    void delete(Long customerId);
 }
