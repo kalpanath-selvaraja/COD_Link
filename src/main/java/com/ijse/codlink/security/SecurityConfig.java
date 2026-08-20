@@ -35,23 +35,56 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login",
-                                "/api/auth/register" ,
-                                "/api/notification" ,
-                                "/api/audit-logs",
-                                "/api/pricing-rules/**" ,
-                                "/api/shipments/**").permitAll()// TEMP — testing only, lock down before submission (see known issues).
+                        // ---- Public ----
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/auth/testing", "/api/parcels/track/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/pricing-rules/**").permitAll()
 
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/parcels/track/**" ,
-                                "/api/auth/testing",
-                                "/api/audit-logs/**",
-                                "/api/pricing-rules/**",
-                                "/api/shipments/**").permitAll() // GUEST tracking, no login  // TEMP — testing only, lock down before submission (see known issues).
+                        // ---- Self-service (any authenticated user) — must precede the admin customer/parcel rules below ----
+                        .requestMatchers(HttpMethod.GET, "/api/customers/me").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/customers/me").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/customers/me").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/parcels/me").authenticated()
 
-
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // ---- Customers (admin) ----
                         .requestMatchers(HttpMethod.POST, "/api/customers/walk-in").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/customers", "/api/customers/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/customers/*").hasRole("ADMIN")
+
+                        // ---- Parcels (staff ops) ----
+                        .requestMatchers(HttpMethod.POST, "/api/parcels/for-customer/**").hasAnyRole("ADMIN", "COURIER")
+                        .requestMatchers(HttpMethod.PATCH, "/api/parcels/*/status").hasAnyRole("ADMIN", "COURIER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/parcels/*").hasRole("ADMIN")
+
+                        // ---- Master data / ops entities (blanket admin) ----
+                        .requestMatchers("/api/couriers", "/api/couriers/**").hasRole("ADMIN")
+                        .requestMatchers("/api/vehicles", "/api/vehicles/**").hasRole("ADMIN")
+                        .requestMatchers("/api/branches", "/api/branches/**").hasRole("ADMIN")
+                        .requestMatchers("/api/service-zones", "/api/service-zones/**").hasRole("ADMIN")
+                        .requestMatchers("/api/notification", "/api/notification/**").hasRole("ADMIN")
+                        .requestMatchers("/api/audit-logs", "/api/audit-logs/**").hasRole("ADMIN")
+                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // ---- PricingRule writes (GET already permitAll above) ----
+                        .requestMatchers(HttpMethod.POST, "/api/pricing-rules").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/pricing-rules/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/pricing-rules/**").hasRole("ADMIN")
+
+                        // ---- Shipment writes ----
+                        .requestMatchers(HttpMethod.POST, "/api/shipments").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/shipments/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/shipments/**").hasRole("ADMIN")
+
+                        // ---- Operational creates ----
+                        .requestMatchers(HttpMethod.POST, "/api/tracking-events").hasAnyRole("ADMIN", "COURIER")
+                        .requestMatchers(HttpMethod.POST, "/api/delivery-attempts").hasRole("COURIER")
+                        .requestMatchers(HttpMethod.POST, "/api/branch-transfers").hasAnyRole("ADMIN", "COURIER")
+                        .requestMatchers(HttpMethod.POST, "/api/cod-collections").hasRole("COURIER")
+                        .requestMatchers(HttpMethod.POST, "/api/reconciliation-batches/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/invoices").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/payments").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

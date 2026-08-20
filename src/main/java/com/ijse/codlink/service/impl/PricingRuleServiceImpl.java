@@ -46,7 +46,7 @@ public class PricingRuleServiceImpl implements PricingRuleService {
 
         Optional<ServiceZone> optionalZone = serviceZoneRepository.findById(zoneId);
         if (optionalZone.isEmpty()) {
-            throw new CustomException(501,"Service zone not found");
+            throw new CustomException(404,"Service zone not found");
         }
 
 
