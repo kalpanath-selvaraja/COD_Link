@@ -77,7 +77,7 @@ public class ParcelServiceImpl implements ParcelService {
         parcel.setPickupAddress(toAddress(parcelDTO.getPickupAddress()));
         parcel.setDeliveryAddress(toAddress(parcelDTO.getDeliveryAddress()));
 
-        return parcelRepository.save(parcel); 
+        return parcelRepository.save(parcel);
     }
 
     private Address toAddress(AddressDTO dto) {

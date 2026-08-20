@@ -17,8 +17,11 @@ public class Parcel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long parcelId;
 
+    @Column(unique = true)
     private String trackingNumber;
+
     private Double weight;
+
     private Double codAmount;
 
     @Enumerated(EnumType.STRING)
