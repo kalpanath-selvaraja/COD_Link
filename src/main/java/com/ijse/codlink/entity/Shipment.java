@@ -1,5 +1,6 @@
 package com.ijse.codlink.entity;
 
+import com.ijse.codlink.enumeration.ShipmentStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,9 +20,13 @@ public class Shipment {
 
     private LocalDateTime createdAt;
 
+    @Enumerated(EnumType.STRING)
+    private ShipmentStatus status = ShipmentStatus.ACTIVE;
+
     @ManyToOne
     @JoinColumn(name = "customer_id")
     @ToString.Exclude
     private Customer customer;
+
 }
 

@@ -40,4 +40,9 @@ public class ShipmentController {
         shipmentService.delete(id);
         return new CommonResponse(0, "Shipment deleted");
     }
+
+    @PatchMapping(value = "/{id}/cancel", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse cancel(@PathVariable Long id) {
+        return new CommonResponse(0, shipmentService.cancel(id), "Shipment cancelled");
+    }
 }

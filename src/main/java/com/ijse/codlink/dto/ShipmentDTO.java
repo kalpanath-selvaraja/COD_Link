@@ -1,5 +1,6 @@
 package com.ijse.codlink.dto;
 
+import com.ijse.codlink.enumeration.ShipmentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,7 @@ public class ShipmentDTO {
     private Long shipmentId;
     private Long customerId;
     private LocalDateTime createdAt;
+    private ShipmentStatus status;
 
     public ShipmentDTO(Long customerId) {
         this.customerId = customerId;

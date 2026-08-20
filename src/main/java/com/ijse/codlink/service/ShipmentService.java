@@ -9,4 +9,6 @@ public interface ShipmentService {
     List<ShipmentDTO> getByCustomerId(Long customerId);
     ShipmentDTO getById(Long shipmentId);
     void delete(Long shipmentId);
+
+    ShipmentDTO cancel(Long shipmentId);
 }

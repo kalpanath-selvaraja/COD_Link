@@ -3,6 +3,7 @@ package com.ijse.codlink.service.impl;
 import com.ijse.codlink.dto.ShipmentDTO;
 import com.ijse.codlink.entity.Customer;
 import com.ijse.codlink.entity.Shipment;
+import com.ijse.codlink.enumeration.ShipmentStatus;
 import com.ijse.codlink.exception.CustomException;
 import com.ijse.codlink.repository.CustomerRepository;
 import com.ijse.codlink.repository.ParcelRepository;
@@ -41,7 +42,7 @@ public class ShipmentServiceImpl implements ShipmentService {
 
         Shipment save = shipmentRepository.save(shipment);
 
-        return new ShipmentDTO(save.getShipmentId(),save.getCustomer().getCustomerId(),save.getCreatedAt());
+        return new ShipmentDTO(save.getShipmentId(), save.getCustomer().getCustomerId(), save.getCreatedAt(), save.getStatus());
 
     }
 
@@ -59,10 +60,8 @@ public class ShipmentServiceImpl implements ShipmentService {
         List<ShipmentDTO> list = new ArrayList<>();
 
         for(Shipment shipment : shipmentList){
-            list.add(
-                    new ShipmentDTO(shipment.getShipmentId(),
-                            shipment.getCustomer().getCustomerId(),
-                            shipment.getCreatedAt()));
+            list.add(new ShipmentDTO(shipment.getShipmentId(), shipment.getCustomer().getCustomerId(),
+                    shipment.getCreatedAt(), shipment.getStatus()));
         }
 
         return list;
@@ -75,7 +74,7 @@ public class ShipmentServiceImpl implements ShipmentService {
             throw new CustomException(404, "Shipment not found");
         }
         Shipment s = optionalShipment.get();
-        return new ShipmentDTO(s.getShipmentId(), s.getCustomer().getCustomerId(), s.getCreatedAt());
+        return new ShipmentDTO(s.getShipmentId(), s.getCustomer().getCustomerId(), s.getCreatedAt(), s.getStatus());
     }
 
     @Override
@@ -88,5 +87,20 @@ public class ShipmentServiceImpl implements ShipmentService {
             throw new CustomException(409, "Cannot delete a shipment that still has parcels attached");
         }
         shipmentRepository.delete(optionalShipment.get());
+    }
+
+    @Override
+    public ShipmentDTO cancel(Long shipmentId) {
+        Optional<Shipment> optionalShipment = shipmentRepository.findById(shipmentId);
+        if (optionalShipment.isEmpty()) {
+            throw new CustomException(404, "Shipment not found");
+        }
+        Shipment shipment = optionalShipment.get();
+        if (shipment.getStatus() == ShipmentStatus.CANCELLED) {
+            throw new CustomException(409, "Shipment already cancelled");
+        }
+        shipment.setStatus(ShipmentStatus.CANCELLED);
+        Shipment saved = shipmentRepository.save(shipment);
+        return new ShipmentDTO(saved.getShipmentId(), saved.getCustomer().getCustomerId(), saved.getCreatedAt(), saved.getStatus());
     }
 }
