@@ -4,6 +4,8 @@ import com.ijse.codlink.enumeration.ParcelStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 
 @Entity
 @Getter
@@ -22,7 +24,10 @@ public class Parcel {
 
     private Double weight;
 
-    private Double codAmount;
+    private BigDecimal codAmount;
+
+    private Double shippingFee;
+    private Double returnFee;
 
     @Enumerated(EnumType.STRING)
     private ParcelStatus status;
@@ -46,6 +51,11 @@ public class Parcel {
     @JoinColumn(name = "origin_branch_id")
     @ToString.Exclude
     private Branch originBranch;
+
+    @ManyToOne
+    @JoinColumn(name = "current_branch_id")
+    @ToString.Exclude
+    private Branch currentBranch;
 
     @ManyToOne
     @JoinColumn(name = "shipment_id")
