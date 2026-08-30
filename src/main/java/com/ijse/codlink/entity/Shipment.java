@@ -20,6 +20,7 @@ public class Shipment {
 
     private LocalDateTime createdAt;
 
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ShipmentStatus status = ShipmentStatus.ACTIVE;
 
