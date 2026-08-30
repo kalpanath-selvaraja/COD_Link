@@ -56,6 +56,7 @@ public class CourierServiceImpl implements CourierService {
         courier.setLicenseNumber(courierDTO.getLicenseNumber());
         courier.setUser(savedUser);
         courier.setBranch(optionalBranch.get());
+
         Courier saved = courierRepository.save(courier);
 
         CourierDTO dto = new CourierDTO();
@@ -163,5 +164,21 @@ public class CourierServiceImpl implements CourierService {
         }
 
         courierRepository.delete(optionalCourier.get());
+    }
+
+    @Override
+    public List<CourierDTO> getAll() {
+        List<CourierDTO> list = new ArrayList<>();
+        for (Courier courier : courierRepository.findAll()) {
+            CourierDTO dto = new CourierDTO();
+            dto.setCourierId(courier.getCourierId());
+            dto.setLicenseNumber(courier.getLicenseNumber());
+            dto.setUserId(courier.getUser().getUserId());
+            dto.setBranchId(courier.getBranch().getBranchId());
+            dto.setPassword(null);
+            dto.setUserName(null);
+            list.add(dto);
+        }
+        return list;
     }
 }

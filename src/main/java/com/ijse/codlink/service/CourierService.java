@@ -10,4 +10,6 @@ public interface CourierService {
     List<CourierDTO> getByBranch(Long branchId);
     CourierDTO updateCourierAccount(Long courierId ,CourierDTO courierDTO);
     void delete(Long courierId);
+
+    List<CourierDTO> getAll();
 }
