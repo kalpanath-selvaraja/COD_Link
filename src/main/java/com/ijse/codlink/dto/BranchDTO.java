@@ -15,4 +15,10 @@ public class BranchDTO {
     private String phone;
     private AddressDTO address;
 
+
+    public BranchDTO(String branchName, String phone, AddressDTO address) {
+        this.branchName = branchName;
+        this.phone = phone;
+        this.address = address;
+    }
 }
