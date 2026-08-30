@@ -4,6 +4,7 @@ import com.ijse.codlink.dto.CodCollectionDTO;
 import com.ijse.codlink.entity.CodCollection;
 import com.ijse.codlink.entity.Courier;
 import com.ijse.codlink.entity.Parcel;
+import com.ijse.codlink.enumeration.ParcelStatus;
 import com.ijse.codlink.exception.CustomException;
 import com.ijse.codlink.repository.CodCollectionRepository;
 import com.ijse.codlink.repository.CourierRepository;
@@ -30,9 +31,20 @@ public class CodCollectionServiceImpl implements CodCollectionService {
     @Override
     public CodCollectionDTO create(CodCollectionDTO dto) {
         Optional<Parcel> optionalParcel = parcelRepository.findById(dto.getParcelId());
+
         if (optionalParcel.isEmpty()) {
             throw new CustomException(404, "Parcel not found");
         }
+
+        if(optionalParcel.get().getCodAmount() != dto.getAmount()){
+            throw  new CustomException(409, "The COD amount does not matches, please input the correct amount..");
+
+        }
+
+        if(optionalParcel.get().getStatus() != ParcelStatus.DELIVERED){
+            throw new CustomException(409, "Parcels that are not at DELIVERED stage cannot have COD");
+        }
+
         Optional<Courier> optionalCourier = courierRepository.findById(dto.getCourierId());
         if (optionalCourier.isEmpty()) {
             throw new CustomException(404, "Courier not found");
