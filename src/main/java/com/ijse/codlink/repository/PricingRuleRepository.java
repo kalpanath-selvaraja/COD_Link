@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface PricingRuleRepository extends JpaRepository<PricingRule, Long> {
     List<PricingRule> findByServiceZone_ZoneId(Long zoneId);
+    List<PricingRule> findByServiceZone_ZoneIdAndIsCod(Long zoneId, Boolean isCod);
 }
