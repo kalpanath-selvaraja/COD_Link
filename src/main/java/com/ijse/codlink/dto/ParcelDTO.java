@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -13,12 +15,19 @@ import lombok.Setter;
 public class ParcelDTO {
     private Long parcelId;
     private String trackingNumber;
+    private String customerName;
+    private String originBranchName;
+    private String currentBranchName;
     private Double weight;
-    private Double codAmount;
+    private BigDecimal codAmount;
     private ParcelStatus status;
     private Long customerId;
     private Long originBranchId;
+    private Long currentBranchId;
     private Long shipmentId;   // shipment can be nullable
+    private Double shippingFee;
+    private Double returnFee;
+    private Boolean needsTransfer;
     private AddressDTO pickupAddress;
     private AddressDTO deliveryAddress;
 }
