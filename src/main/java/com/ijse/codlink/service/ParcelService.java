@@ -12,4 +12,8 @@ public interface ParcelService {
     List<ParcelDTO> getByCustomerId(Long customerId);
     ParcelDTO updateStatus(Long parcelId, ParcelDTO statusDto);
     void delete(Long parcelId);
+
+    ParcelDTO assignToShipment(Long parcelId, Long shipmentId);
+
+    List<ParcelDTO> getAll();
 }
