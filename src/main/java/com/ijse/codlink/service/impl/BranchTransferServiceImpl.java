@@ -4,6 +4,7 @@ import com.ijse.codlink.dto.BranchTransferDTO;
 import com.ijse.codlink.entity.Branch;
 import com.ijse.codlink.entity.BranchTransfer;
 import com.ijse.codlink.entity.Parcel;
+import com.ijse.codlink.enumeration.ParcelStatus;
 import com.ijse.codlink.exception.CustomException;
 import com.ijse.codlink.repository.BranchRepository;
 import com.ijse.codlink.repository.BranchTransferRepository;
@@ -12,6 +13,7 @@ import com.ijse.codlink.service.BranchTransferService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -28,6 +30,7 @@ public class BranchTransferServiceImpl implements BranchTransferService {
     private final BranchRepository branchRepository;
 
     @Override
+    @Transactional
     public BranchTransferDTO create(BranchTransferDTO dto) {
         Optional<Parcel> optionalParcel = parcelRepository.findById(dto.getParcelId());
         if (optionalParcel.isEmpty()) {
@@ -44,13 +47,40 @@ public class BranchTransferServiceImpl implements BranchTransferService {
         if (dto.getFromBranchId().equals(dto.getToBranchId())) {
             throw new CustomException(400, "Origin and destination branch must be different");
         }
+
+        Parcel parcel = optionalParcel.get();
+        Branch fromBranch = optionalFrom.get();
+        Branch toBranch = optionalTo.get();
+
+        if (parcel.getStatus() == ParcelStatus.DELIVERED
+                || parcel.getStatus() == ParcelStatus.RETURNED) {
+            throw new CustomException(409,
+                    "Cannot transfer a parcel — parcel status is " + parcel.getStatus());
+        }
+
+        Branch actualCurrentBranch = parcel.getCurrentBranch() != null
+                ? parcel.getCurrentBranch()
+                : parcel.getOriginBranch();
+
+        if (!actualCurrentBranch.getBranchId().equals(fromBranch.getBranchId())) {
+            throw new CustomException(409,
+                    "Origin branch does not match parcel's actual current branch (#"
+                            + actualCurrentBranch.getBranchId() + ")");
+        }
+
         BranchTransfer transfer = new BranchTransfer();
-        transfer.setParcel(optionalParcel.get());
-        transfer.setFromBranch(optionalFrom.get());
-        transfer.setToBranch(optionalTo.get());
+        transfer.setParcel(parcel);
+        transfer.setFromBranch(fromBranch);
+        transfer.setToBranch(toBranch);
         transfer.setDispatchedAt(LocalDateTime.now());
+
+        parcel.setCurrentBranch(toBranch);
+        parcelRepository.save(parcel);
+
         return toDto(branchTransferRepository.save(transfer));
     }
+
+
 
     @Override
     public List<BranchTransferDTO> getByParcelId(Long parcelId) {
