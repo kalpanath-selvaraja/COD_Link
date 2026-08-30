@@ -11,4 +11,5 @@ public interface ShipmentService {
     void delete(Long shipmentId);
 
     ShipmentDTO cancel(Long shipmentId);
+    List<ShipmentDTO> getAll();
 }
