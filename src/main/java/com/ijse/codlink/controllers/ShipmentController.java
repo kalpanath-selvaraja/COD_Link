@@ -45,4 +45,11 @@ public class ShipmentController {
     public CommonResponse cancel(@PathVariable Long id) {
         return new CommonResponse(0, shipmentService.cancel(id), "Shipment cancelled");
     }
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse getAll() {
+        return new CommonResponse(0, shipmentService.getAll(), "Shipments fetched");
+    }
+
+
 }
