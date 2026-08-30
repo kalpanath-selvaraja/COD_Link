@@ -43,18 +43,20 @@ public class BranchServiceImpl implements BranchService {
         if (branchDTOAddress == null) {
             throw new CustomException(400, "Branch address is required");
         }
-        Address address = new Address();
+        if (branchDTOAddress.getZoneId() == null) {
+            throw new CustomException(400, "Branch address service zone ID is required");
+        }
 
+        Optional<ServiceZone> zone = serviceZoneRepository.findById(branchDTOAddress.getZoneId());
+        if (zone.isEmpty()) {
+            throw new CustomException(404, "Service zone not found");
+        }
+
+        Address address = new Address();
         address.setStreet(branchDTOAddress.getStreet());
         address.setCity(branchDTOAddress.getCity());
         address.setPostalCode(branchDTOAddress.getPostalCode());
-        if (branchDTOAddress.getZoneId() != null) {
-            Optional<ServiceZone> zone = serviceZoneRepository.findById(branchDTOAddress.getZoneId());
-            if (zone.isEmpty()) {
-                throw new CustomException(404, "Service zone not found");
-            }
-            address.setServiceZone(zone.get());
-        }
+        address.setServiceZone(zone.get());
 
         branch.setAddress(address);
 
