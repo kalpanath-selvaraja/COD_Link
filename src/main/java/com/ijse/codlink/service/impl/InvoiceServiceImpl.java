@@ -2,9 +2,12 @@ package com.ijse.codlink.service.impl;
 
 import com.ijse.codlink.dto.InvoiceDTO;
 import com.ijse.codlink.entity.Invoice;
+import com.ijse.codlink.entity.Parcel;
 import com.ijse.codlink.entity.Shipment;
+import com.ijse.codlink.enumeration.ShipmentStatus;
 import com.ijse.codlink.exception.CustomException;
 import com.ijse.codlink.repository.InvoiceRepository;
+import com.ijse.codlink.repository.ParcelRepository;
 import com.ijse.codlink.repository.ShipmentRepository;
 import com.ijse.codlink.service.InvoiceService;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -21,6 +25,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     private final InvoiceRepository invoiceRepository;
     private final ShipmentRepository shipmentRepository;
+    private final ParcelRepository parcelRepository;   // NEW
 
     @Override
     public InvoiceDTO create(InvoiceDTO dto) {
@@ -28,15 +33,37 @@ public class InvoiceServiceImpl implements InvoiceService {
         if (optionalShipment.isEmpty()) {
             throw new CustomException(404, "Shipment not found");
         }
+        Shipment shipment = optionalShipment.get();
+
+        if (shipment.getStatus() == ShipmentStatus.CANCELLED) {
+            throw new CustomException(409, "Cannot invoice a cancelled shipment");
+        }
         if (invoiceRepository.existsByShipment_ShipmentId(dto.getShipmentId())) {
             throw new CustomException(409, "Invoice already exists for this shipment");
         }
-        if (dto.getAmount() == null || dto.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new CustomException(400, "Amount must be greater than zero");
+
+        List<Parcel> parcels = parcelRepository.findByShipment_ShipmentId(dto.getShipmentId());
+        if (parcels.isEmpty()) {
+            throw new CustomException(400, "Cannot invoice a shipment with no parcels attached");
         }
+
+        BigDecimal amount = BigDecimal.ZERO;
+        for (Parcel parcel : parcels) {
+            if (parcel.getShippingFee() == null) {
+                throw new CustomException(409, "Parcel " + parcel.getParcelId()
+                        + " (tracking " + parcel.getTrackingNumber() + ") has no shippingFee — "
+                        + "it was booked before pricing was wired in. Backfill it before invoicing this shipment.");
+            }
+            amount = amount.add(BigDecimal.valueOf(parcel.getShippingFee()));
+
+            if (parcel.getReturnFee() != null) {
+                amount = amount.add(BigDecimal.valueOf(parcel.getReturnFee()));
+            }
+        }
+
         Invoice invoice = new Invoice();
-        invoice.setShipment(optionalShipment.get());
-        invoice.setAmount(dto.getAmount());
+        invoice.setShipment(shipment);
+        invoice.setAmount(amount);
         return toDto(invoiceRepository.save(invoice));
     }
 
