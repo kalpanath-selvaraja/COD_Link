@@ -68,4 +68,16 @@ public class ParcelController {
         parcelService.delete(id);
         return new CommonResponse(0, "Parcel deleted");
     }
+
+
+    @PatchMapping(value = "/{id}/shipment/{shipmentId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse assignToShipment(@PathVariable Long id, @PathVariable Long shipmentId) {
+        return new CommonResponse(0, parcelService.assignToShipment(id, shipmentId), "Parcel attached to shipment");
+    }
+
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse getAll() {
+        return new CommonResponse(0, parcelService.getAll(), "Parcels fetched");
+    }
 }
