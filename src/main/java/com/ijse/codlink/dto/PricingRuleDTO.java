@@ -16,9 +16,9 @@ public class PricingRuleDTO {
     private Long zoneId;
     private BigDecimal rate;
     private String weightBracket;
-    private boolean isCod;
+    private Boolean isCod;
 
-    public PricingRuleDTO(Long zoneId, BigDecimal rate, String weightBracket, boolean isCod) {
+    public PricingRuleDTO(Long zoneId, BigDecimal rate, String weightBracket, Boolean isCod) {
         this.zoneId = zoneId;
         this.rate = rate;
         this.weightBracket = weightBracket;
