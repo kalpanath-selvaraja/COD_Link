@@ -39,4 +39,9 @@ public class CourierController {
         courierService.delete(id);
         return new CommonResponse(0, "Courier deleted");
     }
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse getAll() {
+        return new CommonResponse(0, courierService.getAll(), "Couriers fetched");
+    }
 }
