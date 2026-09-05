@@ -32,6 +32,16 @@ public class BranchTransferServiceImpl implements BranchTransferService {
     @Override
     @Transactional
     public BranchTransferDTO create(BranchTransferDTO dto) {
+        if (dto.getParcelId() == null) {
+            throw new CustomException(400, "parcelId is required");
+        }
+        if (dto.getFromBranchId() == null) {
+            throw new CustomException(400, "fromBranchId is required");
+        }
+        if (dto.getToBranchId() == null) {
+            throw new CustomException(400, "toBranchId is required");
+        }
+
         Optional<Parcel> optionalParcel = parcelRepository.findById(dto.getParcelId());
         if (optionalParcel.isEmpty()) {
             throw new CustomException(404, "Parcel not found");
@@ -79,8 +89,6 @@ public class BranchTransferServiceImpl implements BranchTransferService {
 
         return toDto(branchTransferRepository.save(transfer));
     }
-
-
 
     @Override
     public List<BranchTransferDTO> getByParcelId(Long parcelId) {
