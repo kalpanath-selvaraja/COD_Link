@@ -4,11 +4,13 @@ import com.ijse.codlink.dto.CodCollectionDTO;
 import com.ijse.codlink.entity.CodCollection;
 import com.ijse.codlink.entity.Courier;
 import com.ijse.codlink.entity.Parcel;
+import com.ijse.codlink.entity.User;
 import com.ijse.codlink.enumeration.ParcelStatus;
 import com.ijse.codlink.exception.CustomException;
 import com.ijse.codlink.repository.CodCollectionRepository;
 import com.ijse.codlink.repository.CourierRepository;
 import com.ijse.codlink.repository.ParcelRepository;
+import com.ijse.codlink.repository.UserRepository;
 import com.ijse.codlink.service.CodCollectionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,37 +29,45 @@ public class CodCollectionServiceImpl implements CodCollectionService {
     private final CodCollectionRepository codCollectionRepository;
     private final ParcelRepository parcelRepository;
     private final CourierRepository courierRepository;
+    private final UserRepository userRepository;
 
     @Override
-    public CodCollectionDTO create(CodCollectionDTO dto) {
+    public CodCollectionDTO create(String username, CodCollectionDTO dto) {
         Optional<Parcel> optionalParcel = parcelRepository.findById(dto.getParcelId());
-
         if (optionalParcel.isEmpty()) {
             throw new CustomException(404, "Parcel not found");
         }
+        Parcel parcel = optionalParcel.get();
 
-        if(optionalParcel.get().getCodAmount() != dto.getAmount()){
-            throw  new CustomException(409, "The COD amount does not matches, please input the correct amount..");
-
-        }
-
-        if(optionalParcel.get().getStatus() != ParcelStatus.DELIVERED){
+        if (parcel.getStatus() != ParcelStatus.DELIVERED) {
             throw new CustomException(409, "Parcels that are not at DELIVERED stage cannot have COD");
         }
 
-        Optional<Courier> optionalCourier = courierRepository.findById(dto.getCourierId());
-        if (optionalCourier.isEmpty()) {
-            throw new CustomException(404, "Courier not found");
-        }
-        if (codCollectionRepository.existsByParcel_ParcelId(dto.getParcelId())) {
-            throw new CustomException(409, "COD already collected for this parcel");
-        }
         if (dto.getAmount() == null || dto.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new CustomException(400, "Amount must be greater than zero");
         }
+
+        if (parcel.getCodAmount() == null || parcel.getCodAmount().compareTo(dto.getAmount()) != 0) {
+            throw new CustomException(409, "The COD amount does not match, please input the correct amount.");
+        }
+
+        Optional<User> optionalUser = userRepository.findByUsername(username);
+        if (optionalUser.isEmpty()) {
+            throw new CustomException(404, "User not found");
+        }
+        Optional<Courier> optionalCourier = courierRepository.findByUser_UserId(optionalUser.get().getUserId());
+        if (optionalCourier.isEmpty()) {
+            throw new CustomException(404, "No courier profile linked to this account");
+        }
+        Courier courier = optionalCourier.get();
+
+        if (codCollectionRepository.existsByParcel_ParcelId(dto.getParcelId())) {
+            throw new CustomException(409, "COD already collected for this parcel");
+        }
+
         CodCollection collection = new CodCollection();
-        collection.setParcel(optionalParcel.get());
-        collection.setCourier(optionalCourier.get());
+        collection.setParcel(parcel);
+        collection.setCourier(courier);
         collection.setAmount(dto.getAmount());
         collection.setReconciliationBatch(null);
         return toDto(codCollectionRepository.save(collection));

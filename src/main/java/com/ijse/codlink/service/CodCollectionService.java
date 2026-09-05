@@ -5,6 +5,6 @@ import com.ijse.codlink.dto.CodCollectionDTO;
 import java.util.List;
 
 public interface CodCollectionService {
-    CodCollectionDTO create(CodCollectionDTO dto);
+    CodCollectionDTO create(String username , CodCollectionDTO dto);
     List<CodCollectionDTO> getByCourierId(Long courierId);
 }

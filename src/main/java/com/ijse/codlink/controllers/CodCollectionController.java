@@ -5,6 +5,9 @@ import com.ijse.codlink.responce.CommonResponse;
 import com.ijse.codlink.service.CodCollectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,7 +19,9 @@ public class CodCollectionController {
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public CommonResponse create(@RequestBody CodCollectionDTO dto) {
-        return new CommonResponse(0, codCollectionService.create(dto), "COD collection recorded");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails principal = (UserDetails) authentication.getPrincipal();
+        return new CommonResponse(0, codCollectionService.create(principal.getUsername(), dto), "COD collection recorded");
     }
 
     @GetMapping(value = "/courier/{courierId}", produces = MediaType.APPLICATION_JSON_VALUE)
