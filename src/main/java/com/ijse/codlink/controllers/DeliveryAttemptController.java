@@ -5,6 +5,9 @@ import com.ijse.codlink.responce.CommonResponse;
 import com.ijse.codlink.service.DeliveryAttemptService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,7 +19,9 @@ public class DeliveryAttemptController {
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public CommonResponse create(@RequestBody DeliveryAttemptDTO dto) {
-        return new CommonResponse(0, deliveryAttemptService.create(dto), "Delivery attempt recorded");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails principal = (UserDetails) authentication.getPrincipal();
+        return new CommonResponse(0, deliveryAttemptService.create(principal.getUsername(), dto), "Delivery attempt recorded");
     }
 
     @GetMapping(value = "/parcel/{parcelId}", produces = MediaType.APPLICATION_JSON_VALUE)
