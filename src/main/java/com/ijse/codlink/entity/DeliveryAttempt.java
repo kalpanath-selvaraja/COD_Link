@@ -1,5 +1,6 @@
 package com.ijse.codlink.entity;
 
+import com.ijse.codlink.enumeration.AttemptOutcome;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,6 +20,10 @@ public class DeliveryAttempt {
 
     private String outcome;
     private LocalDateTime attemptedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AttemptOutcome outcomeCode;
 
     @ManyToOne
     @JoinColumn(name = "parcel_id", nullable = false)
