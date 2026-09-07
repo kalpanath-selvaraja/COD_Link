@@ -25,9 +25,11 @@ public class ParcelDTO {
     private Long originBranchId;
     private Long currentBranchId;
     private Long shipmentId;   // shipment can be nullable
-    private Double shippingFee;
-    private Double returnFee;
+    private BigDecimal shippingFee;
+    private BigDecimal returnFee;
     private Boolean needsTransfer;
     private AddressDTO pickupAddress;
     private AddressDTO deliveryAddress;
+    private Boolean isCod;  // new status
+
 }
