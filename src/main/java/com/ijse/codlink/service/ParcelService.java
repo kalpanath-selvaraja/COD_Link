@@ -16,4 +16,6 @@ public interface ParcelService {
     ParcelDTO assignToShipment(Long parcelId, Long shipmentId);
 
     List<ParcelDTO> getAll();
+    List<ParcelDTO> bookCartForCustomer(String username, List<ParcelDTO> parcelDtos);
+    List<ParcelDTO> bookCartForWalkIn(Long customerId, List<ParcelDTO> parcelDtos);
 }
