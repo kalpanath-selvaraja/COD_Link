@@ -26,8 +26,9 @@ public class Parcel {
 
     private BigDecimal codAmount;
 
-    private Double shippingFee;
-    private Double returnFee;
+    private BigDecimal shippingFee;
+    private BigDecimal returnFee;
+    private Boolean isCod;
 
     @Enumerated(EnumType.STRING)
     private ParcelStatus status;
