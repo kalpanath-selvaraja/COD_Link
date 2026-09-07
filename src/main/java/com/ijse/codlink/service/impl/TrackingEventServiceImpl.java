@@ -59,7 +59,7 @@ public class TrackingEventServiceImpl implements TrackingEventService {
         List<TrackingEvent> events = trackingEventRepository.findByParcel_ParcelId(parcelId);
         List<TrackingEventDTO> list = new ArrayList<>();
         for (TrackingEvent e : events) list.add(toDto(e));
-        return list; // [] if none — never 404 on an empty list, per convention
+        return list; // [] if none — never 404 on an empty list
     }
 
     private TrackingEventDTO toDto(TrackingEvent e) {

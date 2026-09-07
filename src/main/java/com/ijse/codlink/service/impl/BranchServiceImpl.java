@@ -21,11 +21,10 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class BranchServiceImpl implements BranchService {
-    
-    
+
     private final BranchRepository branchRepository;
     private final ServiceZoneRepository serviceZoneRepository;
-    
+
     @Override
     public BranchDTO createBranch(BranchDTO branchDTO) {
         
@@ -92,7 +91,7 @@ public class BranchServiceImpl implements BranchService {
         if (branchDTO.getBranchName() != null) branch.setBranchName(branchDTO.getBranchName());
         if (branchDTO.getPhone() != null) branch.setPhone(branchDTO.getPhone());
         // Address is intentionally not replaced on update a branch keeps its
-        // original address row If it truly relocates, delete and recreate.  (new way)
+        // original address row If it truly relocates, delete and recreate
         return toDto(branchRepository.save(branch));
     }
 
