@@ -25,7 +25,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     private final InvoiceRepository invoiceRepository;
     private final ShipmentRepository shipmentRepository;
-    private final ParcelRepository parcelRepository;   // NEW
+    private final ParcelRepository parcelRepository;
 
     @Override
     public InvoiceDTO create(InvoiceDTO dto) {
@@ -47,6 +47,16 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new CustomException(400, "Cannot invoice a shipment with no parcels attached");
         }
 
+        BigDecimal amount = calculateAmount(parcels);
+
+        Invoice invoice = new Invoice();
+        invoice.setShipment(shipment);
+        invoice.setAmount(amount);
+        return toDto(invoiceRepository.save(invoice));
+    }
+
+    @Override
+    public BigDecimal calculateAmount(List<Parcel> parcels) {
         BigDecimal amount = BigDecimal.ZERO;
         for (Parcel parcel : parcels) {
             if (parcel.getShippingFee() == null) {
@@ -54,17 +64,13 @@ public class InvoiceServiceImpl implements InvoiceService {
                         + " (tracking " + parcel.getTrackingNumber() + ") has no shippingFee — "
                         + "it was booked before pricing was wired in. Backfill it before invoicing this shipment.");
             }
-            amount = amount.add(BigDecimal.valueOf(parcel.getShippingFee()));
+            amount = amount.add(parcel.getShippingFee());
 
             if (parcel.getReturnFee() != null) {
-                amount = amount.add(BigDecimal.valueOf(parcel.getReturnFee()));
+                amount = amount.add(parcel.getReturnFee());
             }
         }
-
-        Invoice invoice = new Invoice();
-        invoice.setShipment(shipment);
-        invoice.setAmount(amount);
-        return toDto(invoiceRepository.save(invoice));
+        return amount;
     }
 
     @Override
