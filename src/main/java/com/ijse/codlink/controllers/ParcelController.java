@@ -40,6 +40,12 @@ public class ParcelController {
 
         return new CommonResponse(0,forCustomer, "Parcel booked");
     }
+    @PostMapping(value = "/for-customer/{customerId}/cart", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse bookCartForWalkIn(@PathVariable Long customerId, @RequestBody List<ParcelDTO> parcelDtos) {
+        List<ParcelDTO> booked = parcelService.bookCartForWalkIn(customerId, parcelDtos);
+        return new CommonResponse(0, booked, "Parcels booked and invoiced successfully");
+    }
+
 
     @GetMapping(value = "/track/{trackingNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
     public CommonResponse track(@PathVariable String trackingNumber) {
@@ -75,6 +81,15 @@ public class ParcelController {
         return new CommonResponse(0, parcelService.assignToShipment(id, shipmentId), "Parcel attached to shipment");
     }
 
+
+    @PostMapping(value = "/me/cart", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse bookCart(@RequestBody List<ParcelDTO> parcelDtos) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails principal = (UserDetails) authentication.getPrincipal();
+
+        List<ParcelDTO> booked = parcelService.bookCartForCustomer(principal.getUsername(), parcelDtos);
+        return new CommonResponse(0, booked, "Parcels booked and invoiced successfully");
+    }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public CommonResponse getAll() {
