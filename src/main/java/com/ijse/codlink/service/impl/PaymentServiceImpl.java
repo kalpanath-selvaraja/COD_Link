@@ -26,16 +26,39 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentDTO create(PaymentDTO dto) {
-        Optional<Invoice> optionalInvoice = invoiceRepository.findById(dto.getInvoiceId());
-        if (optionalInvoice.isEmpty()) {
-            throw new CustomException(404, "Invoice not found");
+        if (dto.getInvoiceId() == null) {
+            throw new CustomException(400, "invoiceId is required");
         }
         if (dto.getMethod() == null || dto.getMethod().isBlank()) {
             throw new CustomException(400, "Payment method is required");
         }
+        return recordPayment(dto.getInvoiceId(), dto.getMethod());
+    }
+
+    @Override
+    public PaymentDTO createAuto(Long invoiceId, String method) {
+        List<PaymentDTO> existing = getByInvoiceId(invoiceId);
+        if (!existing.isEmpty()) {
+            log.info("Auto-payment skipped — invoice {} already has a payment recorded", invoiceId);
+            return existing.get(0);
+        }
+        return recordPayment(invoiceId, method);
+    }
+
+    private PaymentDTO recordPayment(Long invoiceId, String method) {
+        Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceId);
+        if (optionalInvoice.isEmpty()) {
+            throw new CustomException(404, "Invoice not found");
+        }
+        if (paymentRepository.existsByInvoice_InvoiceId(invoiceId)) {
+            throw new CustomException(409, "Payment already recorded for this invoice");
+        }
+        Invoice invoice = optionalInvoice.get();
+
         Payment payment = new Payment();
-        payment.setInvoice(optionalInvoice.get());
-        payment.setMethod(dto.getMethod());
+        payment.setInvoice(invoice);
+        payment.setMethod(method);
+        payment.setAmount(invoice.getAmount());
         payment.setPaidAt(LocalDateTime.now());
         return toDto(paymentRepository.save(payment));
     }
@@ -54,6 +77,6 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private PaymentDTO toDto(Payment p) {
-        return new PaymentDTO(p.getPaymentId(), p.getInvoice().getInvoiceId(), p.getMethod(), p.getPaidAt());
+        return new PaymentDTO(p.getPaymentId(), p.getInvoice().getInvoiceId(), p.getMethod(), p.getAmount(), p.getPaidAt());
     }
 }
