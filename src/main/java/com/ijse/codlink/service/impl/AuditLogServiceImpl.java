@@ -10,6 +10,7 @@ import com.ijse.codlink.service.AuditLogService;
 import com.ijse.codlink.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,11 +21,11 @@ import java.util.Optional;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+
 public class AuditLogServiceImpl implements AuditLogService {
 
     private final AuditLogRepository auditLogRepository;
     private final UserRepository userRepository;
-
 
     @Override
     public AuditLogDTO createAuditLog(AuditLogDTO auditLogDTO) {
