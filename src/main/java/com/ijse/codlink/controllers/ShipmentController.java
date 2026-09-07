@@ -46,6 +46,11 @@ public class ShipmentController {
         return new CommonResponse(0, shipmentService.cancel(id), "Shipment cancelled");
     }
 
+    @PostMapping(value = "/{id}/finalize", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse finalize(@PathVariable Long id) {
+        return new CommonResponse(0, shipmentService.finalizeShipment(id), "Shipment finalized — invoice generated");
+    }
+
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public CommonResponse getAll() {
         return new CommonResponse(0, shipmentService.getAll(), "Shipments fetched");
