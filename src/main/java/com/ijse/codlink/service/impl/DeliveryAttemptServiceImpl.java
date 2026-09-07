@@ -5,13 +5,17 @@ import com.ijse.codlink.entity.Courier;
 import com.ijse.codlink.entity.DeliveryAttempt;
 import com.ijse.codlink.entity.Parcel;
 import com.ijse.codlink.entity.TrackingEvent;
+import com.ijse.codlink.entity.User;
+import com.ijse.codlink.enumeration.AttemptOutcome;
 import com.ijse.codlink.enumeration.ParcelStatus;
 import com.ijse.codlink.exception.CustomException;
 import com.ijse.codlink.repository.CourierRepository;
 import com.ijse.codlink.repository.DeliveryAttemptRepository;
 import com.ijse.codlink.repository.ParcelRepository;
 import com.ijse.codlink.repository.TrackingEventRepository;
+import com.ijse.codlink.repository.UserRepository;
 import com.ijse.codlink.service.DeliveryAttemptService;
+import com.ijse.codlink.service.ShipmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,21 +34,30 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
     private final DeliveryAttemptRepository deliveryAttemptRepository;
     private final ParcelRepository parcelRepository;
     private final CourierRepository courierRepository;
+    private final UserRepository userRepository;
     private final TrackingEventRepository trackingEventRepository;
+    private final ShipmentService shipmentService;
 
     @Override
     @Transactional
-    public DeliveryAttemptDTO create(DeliveryAttemptDTO dto) {
+    public DeliveryAttemptDTO create(String username, DeliveryAttemptDTO dto) {
         Optional<Parcel> optionalParcel = parcelRepository.findById(dto.getParcelId());
         if (optionalParcel.isEmpty()) {
             throw new CustomException(404, "Parcel not found");
         }
-        Optional<Courier> optionalCourier = courierRepository.findById(dto.getCourierId());
-        if (optionalCourier.isEmpty()) {
-            throw new CustomException(404, "Courier not found");
+
+        Optional<User> optionalUser = userRepository.findByUsername(username);
+        if (optionalUser.isEmpty()) {
+            throw new CustomException(404, "User not found");
         }
-        if (dto.getOutcome() == null || dto.getOutcome().isBlank()) {
-            throw new CustomException(400, "Outcome is required");
+        Optional<Courier> optionalCourier = courierRepository.findByUser_UserId(optionalUser.get().getUserId());
+        if (optionalCourier.isEmpty()) {
+            throw new CustomException(404, "No courier profile linked to this account");
+        }
+        Courier courier = optionalCourier.get();
+
+        if (dto.getOutcomeCode() == null) {
+            throw new CustomException(400, "outcomeCode is required (DELIVERED, FAILED, or RESCHEDULED)");
         }
 
         Parcel parcel = optionalParcel.get();
@@ -68,13 +81,14 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
         }
 
         DeliveryAttempt attempt = new DeliveryAttempt();
+        attempt.setOutcomeCode(dto.getOutcomeCode());
         attempt.setOutcome(dto.getOutcome());
         attempt.setAttemptedAt(LocalDateTime.now());
         attempt.setParcel(parcel);
-        attempt.setCourier(optionalCourier.get());
+        attempt.setCourier(courier);
         DeliveryAttempt savedAttempt = deliveryAttemptRepository.save(attempt);
 
-        if ("FAILED".equalsIgnoreCase(dto.getOutcome().trim())) {
+        if (dto.getOutcomeCode() == AttemptOutcome.FAILED) {
             TrackingEvent failedEvent = new TrackingEvent();
             failedEvent.setStatus("FAILED");
             failedEvent.setEventTime(LocalDateTime.now());
@@ -85,7 +99,7 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
             parcelRepository.save(parcel);
         }
 
-        if ("DELIVERED".equalsIgnoreCase(dto.getOutcome().trim())) {
+        if (dto.getOutcomeCode() == AttemptOutcome.DELIVERED) {
             TrackingEvent deliveredEvent = new TrackingEvent();
             deliveredEvent.setStatus("DELIVERED");
             deliveredEvent.setEventTime(LocalDateTime.now());
@@ -94,9 +108,11 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
 
             parcel.setStatus(ParcelStatus.DELIVERED);
             parcelRepository.save(parcel);
+
+            if (parcel.getShipment() != null) {
+                shipmentService.resolveShipmentIfComplete(parcel.getShipment().getShipmentId());
+            }
         }
-
-
 
         return toDto(savedAttempt);
     }
@@ -116,6 +132,6 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
 
     private DeliveryAttemptDTO toDto(DeliveryAttempt a) {
         return new DeliveryAttemptDTO(a.getAttemptId(), a.getParcel().getParcelId(),
-                a.getCourier().getCourierId(), a.getOutcome(), a.getAttemptedAt());
+                a.getCourier().getCourierId(), a.getOutcomeCode(), a.getOutcome(), a.getAttemptedAt());
     }
 }
