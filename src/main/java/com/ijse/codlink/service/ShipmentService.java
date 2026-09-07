@@ -12,4 +12,8 @@ public interface ShipmentService {
 
     ShipmentDTO cancel(Long shipmentId);
     List<ShipmentDTO> getAll();
+
+    ShipmentDTO finalizeShipment(Long shipmentId);
+
+    void resolveShipmentIfComplete(Long shipmentId);
 }
