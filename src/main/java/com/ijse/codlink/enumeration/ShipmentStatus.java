@@ -1,5 +1,5 @@
 package com.ijse.codlink.enumeration;
 
 public enum ShipmentStatus {
-    ACTIVE, CANCELLED
+    ACTIVE, CANCELLED, DELIVERED,COMPLETED
 }
