@@ -31,6 +31,8 @@ public class AuthController {
         UserResponseDTO userResponseDTO = new UserResponseDTO();
         userResponseDTO.setToken(token);
         userResponseDTO.setUserId(userDetails.getUserId());
+        userResponseDTO.setRole(userDetails.getUserRole());
+
 
         return  new CommonResponse(0,userResponseDTO,"JWT token");
 
