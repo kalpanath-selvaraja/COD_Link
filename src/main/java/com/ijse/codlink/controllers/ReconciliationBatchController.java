@@ -22,5 +22,10 @@ public class ReconciliationBatchController {
     public CommonResponse getByBranch(@PathVariable Long branchId) {
         return new CommonResponse(0, reconciliationBatchService.getByBranchId(branchId), "Reconciliation batches fetched");
     }
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public  CommonResponse getAll(){
+        return new CommonResponse(0,reconciliationBatchService.getAll(),"Reconciliation batches are fetched.  fetched");
+    }
 }
 
