@@ -76,6 +76,17 @@ public class ReconciliationBatchServiceImpl implements ReconciliationBatchServic
         return list;
     }
 
+    @Override
+    public List<ReconciliationBatchDTO> getAll() {
+
+        List<ReconciliationBatchDTO> list = new ArrayList<>();
+        for (ReconciliationBatch r : reconciliationBatchRepository.findAll()){
+            list.add(toDto(r));
+        }
+        return list;
+
+    }
+
     private ReconciliationBatchDTO toDto(ReconciliationBatch b) {
         return new ReconciliationBatchDTO(b.getBatchId(), b.getBranch().getBranchId(),
                 b.getTotal(), b.getReconciledAt());

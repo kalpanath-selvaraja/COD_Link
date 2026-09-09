@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,6 +54,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         Invoice invoice = new Invoice();
         invoice.setShipment(shipment);
         invoice.setAmount(amount);
+        invoice.setCreatedAt(LocalDateTime.now());
         return toDto(invoiceRepository.save(invoice));
     }
 
@@ -81,6 +84,15 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
         return toDto(optionalInvoice.get());
     }
+
+
+    @Override
+    public List<InvoiceDTO> getAll() {
+        List<InvoiceDTO> list = new ArrayList<>();
+        for (Invoice c : invoiceRepository.findAll()) list.add(toDto(c));
+        return list;
+    }
+
 
     private InvoiceDTO toDto(Invoice i) {
         return new InvoiceDTO(i.getInvoiceId(), i.getShipment().getShipmentId(), i.getAmount());

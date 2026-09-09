@@ -103,6 +103,18 @@ public class BranchTransferServiceImpl implements BranchTransferService {
         return list;
     }
 
+    @Override
+    public List<BranchTransferDTO> getAll() {
+        List<BranchTransferDTO> list = new ArrayList<>();
+
+        for(BranchTransfer b :branchTransferRepository.findAll()){
+            list.add(toDto(b));
+        }
+
+        return list;
+
+    }
+
     private BranchTransferDTO toDto(BranchTransfer t) {
         return new BranchTransferDTO(t.getTransferId(), t.getParcel().getParcelId(),
                 t.getFromBranch().getBranchId(), t.getToBranch().getBranchId(), t.getDispatchedAt());

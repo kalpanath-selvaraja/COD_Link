@@ -130,6 +130,13 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
         return list;
     }
 
+    @Override
+    public List<DeliveryAttemptDTO> getAll() {
+        List<DeliveryAttemptDTO> list = new ArrayList<>();
+        for (DeliveryAttempt a : deliveryAttemptRepository.findAllByOrderByAttemptedAtDesc()) list.add(toDto(a));
+        return list;
+    }
+
     private DeliveryAttemptDTO toDto(DeliveryAttempt a) {
         return new DeliveryAttemptDTO(a.getAttemptId(), a.getParcel().getParcelId(),
                 a.getCourier().getCourierId(), a.getOutcomeCode(), a.getOutcome(), a.getAttemptedAt());

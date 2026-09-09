@@ -45,6 +45,13 @@ public class PaymentServiceImpl implements PaymentService {
         return recordPayment(invoiceId, method);
     }
 
+    @Override
+    public List<PaymentDTO> getAll() {
+        List<PaymentDTO> list = new ArrayList<>();
+        for (Payment p : paymentRepository.findAll()) list.add(toDto(p));
+        return list;
+    }
+
     private PaymentDTO recordPayment(Long invoiceId, String method) {
         Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceId);
         if (optionalInvoice.isEmpty()) {
@@ -75,6 +82,8 @@ public class PaymentServiceImpl implements PaymentService {
         }
         return list;
     }
+
+
 
     private PaymentDTO toDto(Payment p) {
         return new PaymentDTO(p.getPaymentId(), p.getInvoice().getInvoiceId(), p.getMethod(), p.getAmount(), p.getPaidAt());

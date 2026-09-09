@@ -62,7 +62,19 @@ public class TrackingEventServiceImpl implements TrackingEventService {
         return list; // [] if none — never 404 on an empty list
     }
 
+    @Override
+    public List<TrackingEventDTO> getAll() {
+        List<TrackingEventDTO> list = new ArrayList<>();
+        for (TrackingEvent e : trackingEventRepository.findAllByOrderByEventTimeDesc()){
+            list.add(toDto(e));
+        }
+        return list;
+    }
+
     private TrackingEventDTO toDto(TrackingEvent e) {
         return new TrackingEventDTO(e.getEventId(), e.getParcel().getParcelId(), e.getStatus(), e.getEventTime());
     }
+
+
+
 }
