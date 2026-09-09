@@ -101,7 +101,12 @@ public class BranchServiceImpl implements BranchService {
         if (optionalBranch.isEmpty()) {
             throw new CustomException(404, "Branch not found");
         }
-        branchRepository.delete(optionalBranch.get());
+        try {
+            branchRepository.delete(optionalBranch.get());
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            throw new CustomException(409, "Cannot delete — this branch is still referenced by couriers, parcels, or other records.");
+        }
+
     }
 
     private BranchDTO toDto(Branch branch) {
