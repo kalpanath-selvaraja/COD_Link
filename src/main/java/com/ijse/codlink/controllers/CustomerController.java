@@ -1,6 +1,7 @@
 package com.ijse.codlink.controllers;
 
 import com.ijse.codlink.dto.CustomerDTO;
+import com.ijse.codlink.dto.CustomerLinkDTO;
 import com.ijse.codlink.responce.CommonResponse;
 import com.ijse.codlink.service.CustomerService;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +62,14 @@ public class CustomerController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public CommonResponse getAll() {
         return new CommonResponse(0, customerService.getAll(), "Customers fetched");
+    }
+
+    @PostMapping(value = "/link", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse linkToMyAccount(@RequestBody CustomerLinkDTO dto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails principal = (UserDetails) authentication.getPrincipal();
+        CustomerDTO linked = customerService.linkToMyAccount(principal.getUsername(), dto);
+        return new CommonResponse(0, linked, "Customer profile linked to your account");
     }
 
     @DeleteMapping(value = "/{id}")
