@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ReconciliationBatchRepository extends JpaRepository<ReconciliationBatch, Long> {
     List<ReconciliationBatch> findByBranch_BranchId(Long branchId);
+    List<ReconciliationBatch> findAll();
 }

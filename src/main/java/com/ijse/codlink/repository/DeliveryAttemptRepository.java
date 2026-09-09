@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface DeliveryAttemptRepository extends JpaRepository<DeliveryAttempt, Long> {
     List<DeliveryAttempt> findByParcel_ParcelId(Long parcelId);
+
+    List<DeliveryAttempt> findAllByOrderByAttemptedAtDesc();
 }

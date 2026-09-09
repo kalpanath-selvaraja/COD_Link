@@ -9,4 +9,6 @@ public interface CodCollectionRepository extends JpaRepository<CodCollection, Lo
     List<CodCollection> findByCourier_CourierId(Long courierId);
     boolean existsByParcel_ParcelId(Long parcelId);
     List<CodCollection> findByCourier_Branch_BranchIdAndReconciliationBatchIsNull(Long branchId);  // use by Recocliation
+
+    List<CodCollection> findAll();
 }

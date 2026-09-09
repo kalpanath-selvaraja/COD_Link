@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface BranchTransferRepository extends JpaRepository<BranchTransfer, Long> {
     List<BranchTransfer> findByParcel_ParcelId(Long parcelId);
+
+    List<BranchTransfer> findAll();
 }

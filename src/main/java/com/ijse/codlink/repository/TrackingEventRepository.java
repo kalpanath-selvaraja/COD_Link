@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface TrackingEventRepository extends JpaRepository<TrackingEvent, Long> {
     List<TrackingEvent> findByParcel_ParcelId(Long parcelId);
+
+    List<TrackingEvent> findAllByOrderByEventTimeDesc();
 }
