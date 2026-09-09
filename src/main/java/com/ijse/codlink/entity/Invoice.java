@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -18,6 +19,7 @@ public class Invoice {
     private Long invoiceId;
 
     private BigDecimal amount;
+    private LocalDateTime createdAt;
 
     @OneToOne
     @JoinColumn(name = "shipment_id", nullable = false, unique = true)
