@@ -23,6 +23,11 @@ public class InvoiceController {
     public CommonResponse getByShipment(@PathVariable Long shipmentId) {
         return new CommonResponse(0, invoiceService.getByShipmentId(shipmentId), "Invoice fetched");
     }
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public  CommonResponse getAll(){
+        return new CommonResponse(0,invoiceService.getAll(),"Invoice fetched");
+    }
 }
 
 
