@@ -23,5 +23,10 @@ public class PaymentController {
     public CommonResponse getByInvoice(@PathVariable Long invoiceId) {
         return new CommonResponse(0, paymentService.getByInvoiceId(invoiceId), "Payments fetched");
     }
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public  CommonResponse getAll(){
+        return new CommonResponse(0,paymentService.getAll(),"payments fetched");
+    }
 }
 
