@@ -23,4 +23,9 @@ public class BranchTransferController {
     public CommonResponse getByParcel(@PathVariable Long parcelId) {
         return new CommonResponse(0, branchTransferService.getByParcelId(parcelId), "Branch transfers fetched");
     }
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public  CommonResponse getAll(){
+        return new CommonResponse(0,branchTransferService.getAll(),"Branch Transfers  fetched");
+    }
 }
