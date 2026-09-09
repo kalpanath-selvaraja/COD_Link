@@ -28,4 +28,9 @@ public class DeliveryAttemptController {
     public CommonResponse getByParcel(@PathVariable Long parcelId) {
         return new CommonResponse(0, deliveryAttemptService.getByParcelId(parcelId), "Delivery attempts fetched");
     }
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse getAll() {
+        return new CommonResponse(0, deliveryAttemptService.getAll(), "Delivery attempts fetched");
+    }
 }
