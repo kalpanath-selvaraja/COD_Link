@@ -7,4 +7,6 @@ import java.util.List;
 public interface CodCollectionService {
     CodCollectionDTO create(String username , CodCollectionDTO dto);
     List<CodCollectionDTO> getByCourierId(Long courierId);
+
+    List<CodCollectionDTO> getAll();
 }

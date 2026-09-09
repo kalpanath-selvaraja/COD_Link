@@ -7,4 +7,5 @@ import java.util.List;
 public interface TrackingEventService {
     TrackingEventDTO create(TrackingEventDTO dto);
     List<TrackingEventDTO> getByParcelId(Long parcelId);
+    List<TrackingEventDTO> getAll();
 }

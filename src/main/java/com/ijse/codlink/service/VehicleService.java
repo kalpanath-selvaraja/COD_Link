@@ -12,4 +12,5 @@ public interface VehicleService {
     void delete(Long vehicleId);
 
     VehicleDTO updateStatus(Long vehicleId, VehicleDTO dto);
+    List<VehicleDTO> getAll();
 }

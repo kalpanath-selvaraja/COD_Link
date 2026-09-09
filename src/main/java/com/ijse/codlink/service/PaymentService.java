@@ -10,4 +10,6 @@ public interface PaymentService {
 
 
     PaymentDTO createAuto(Long invoiceId, String method);
+
+    List<PaymentDTO> getAll();
 }

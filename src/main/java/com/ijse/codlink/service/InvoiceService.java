@@ -10,4 +10,6 @@ public interface InvoiceService {
     InvoiceDTO create(InvoiceDTO dto);
     InvoiceDTO getByShipmentId(Long shipmentId);
     BigDecimal calculateAmount(List<Parcel> parcels);
+
+    List<InvoiceDTO> getAll();
 }
