@@ -30,4 +30,9 @@ public class TrackingEventController {
         return new CommonResponse(0, events, "Tracking events fetched");
     }
 
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse getAll() {
+        return new CommonResponse(0, trackingEventService.getAll(), "Tracking events fetched");
+    }
+
 }
