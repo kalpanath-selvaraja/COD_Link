@@ -96,6 +96,15 @@ public class VehicleServiceImpl implements VehicleService {
         return toDto(vehicleRepository.save(vehicle));
     }
 
+    @Override
+    public List<VehicleDTO> getAll() {
+        List<VehicleDTO> list = new ArrayList<>();
+        for (Vehicle v : vehicleRepository.findAll()) {
+            list.add(toDto(v));
+        }
+        return list;
+    }
+
     private VehicleDTO toDto(Vehicle v) {
         return new VehicleDTO(v.getVehicleId(), v.getType(), v.getPlateNumber(), v.getCourier().getCourierId(), v.getStatus());
     }
