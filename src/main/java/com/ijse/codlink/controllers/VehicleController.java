@@ -45,5 +45,10 @@ public class VehicleController {
         return new CommonResponse(0, vehicleService.updateStatus(id, dto), "Vehicle status updated");
     }
 
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse getAll() {
+        return new CommonResponse(0, vehicleService.getAll(), "Vehicles fetched");
+    }
+
 
 }
