@@ -47,8 +47,18 @@ public class CodCollectionServiceImpl implements CodCollectionService {
             throw new CustomException(400, "Amount must be greater than zero");
         }
 
-        if (parcel.getCodAmount() == null || parcel.getCodAmount().compareTo(dto.getAmount()) != 0) {
-            throw new CustomException(409, "The COD amount does not match, please input the correct amount.");
+        if (parcel.getCodAmount() == null) {
+            throw new CustomException(409, "This parcel has no COD amount on record — it cannot be a cash-on-delivery collection.");
+        }
+        if (parcel.getShippingFee() == null) {
+            throw new CustomException(409, "This parcel has no shipping fee on record — cannot verify the collected amount.");
+        }
+
+        BigDecimal expectedTotal = parcel.getCodAmount().add(parcel.getShippingFee());
+
+        if (expectedTotal.compareTo(dto.getAmount()) != 0) {
+            throw new CustomException(409, "Collected amount does not match. Expected LKR " + expectedTotal
+                    + " (goods value LKR " + parcel.getCodAmount() + " + shipping fee LKR " + parcel.getShippingFee() + ").");
         }
 
         Optional<User> optionalUser = userRepository.findByUsername(username);
@@ -83,6 +93,13 @@ public class CodCollectionServiceImpl implements CodCollectionService {
         for (CodCollection c : codCollectionRepository.findByCourier_CourierId(courierId)) {
             list.add(toDto(c));
         }
+        return list;
+    }
+
+    @Override
+    public List<CodCollectionDTO> getAll() {
+        List<CodCollectionDTO> list = new ArrayList<>();
+        for (CodCollection c : codCollectionRepository.findAll()) list.add(toDto(c));
         return list;
     }
 
