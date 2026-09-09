@@ -71,6 +71,17 @@ public class ParcelServiceImpl implements ParcelService {
         if (optionalCustomer.isEmpty()) {
             throw new CustomException(404, "No customer profile linked to this account — create one at POST /api/customers/me first");
         }
+
+        if (parcelDtos != null) {
+            for (int i = 0; i < parcelDtos.size(); i++) {
+                ParcelDTO dto = parcelDtos.get(i);
+                if (dto == null || dto.getCodAmount() == null || dto.getCodAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                    throw new CustomException(400, "Parcel at position " + (i + 1)
+                            + " is missing a COD amount — online bookings are cash-on-delivery only");
+                }
+            }
+        }
+
         return processCartBooking(optionalCustomer.get(), parcelDtos);
     }
 
