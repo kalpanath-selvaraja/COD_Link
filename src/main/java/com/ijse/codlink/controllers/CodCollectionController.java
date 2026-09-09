@@ -28,4 +28,9 @@ public class CodCollectionController {
     public CommonResponse getByCourier(@PathVariable Long courierId) {
         return new CommonResponse(0, codCollectionService.getByCourierId(courierId), "COD collections fetched");
     }
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse getAll() {
+        return new CommonResponse(0, codCollectionService.getAll(), "COD collections fetched");
+    }
 }
