@@ -12,6 +12,7 @@ import com.ijse.codlink.repository.UserRepository;
 import com.ijse.codlink.service.CourierService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -163,7 +164,11 @@ public class CourierServiceImpl implements CourierService {
             throw new CustomException(404, "Courier not found");
         }
 
-        courierRepository.delete(optionalCourier.get());
+        try {
+            courierRepository.delete(optionalCourier.get());
+        } catch (DataIntegrityViolationException e) {
+            throw new CustomException(409, "Cannot delete — this courier is still referenced by delivery attempts, COD collections, or vehicles. Remove or reassign those first.");
+        }
     }
 
     @Override
