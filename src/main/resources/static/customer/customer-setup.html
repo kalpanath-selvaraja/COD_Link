@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Up Your Profile | CODLink</title>
+    <link rel="stylesheet" href="../css/normalize.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+
+<div class="dashboard-container">
+    <div class="main-content" style="margin: 0 auto; max-width: 720px;">
+        <main class="content-body">
+
+            <section class="section-box" id="already-linked-note" style="display:none;">
+                <p>You already have a customer profile. Redirecting to parcel booking…</p>
+            </section>
+
+            <section class="section-box" id="setup-forms">
+                <div class="section-header">
+                    <h3>Set Up Your Customer Profile</h3>
+                </div>
+                <p style="margin-bottom: 18px; color: var(--color-text-muted); font-size: 13.5px;">
+                    Before you can book parcels, you need a customer profile attached to your login.
+                    Choose one:
+                </p>
+
+                <!-- New profile -->
+                <div style="margin-bottom: 28px;">
+                    <h4 style="margin-bottom: 10px; font-size: 14px; color: var(--color-primary);">
+                        I'm booking for the first time
+                    </h4>
+                    <form id="create-form">
+                        <div class="form-grid grid-2">
+                            <div class="form-group">
+                                <label for="newName">Full Name</label>
+                                <input type="text" id="newName" class="form-control" placeholder="e.g. John Doe">
+                            </div>
+                            <div class="form-group">
+                                <label for="newPhone">Phone Number</label>
+                                <input type="text" id="newPhone" class="form-control" placeholder="e.g. +94 77 123 4567">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-action">Create New Profile</button>
+                    </form>
+                </div>
+
+                <!-- Link existing -->
+                <div>
+                    <h4 style="margin-bottom: 10px; font-size: 14px; color: var(--color-primary);">
+                        I've sent parcels before at a branch counter
+                    </h4>
+                    <p style="margin-bottom: 10px; color: var(--color-text-muted); font-size: 12.5px;">
+                        Ask staff for your Customer ID, or check an old receipt. You'll also need the
+                        phone number on that record.
+                    </p>
+                    <form id="link-form">
+                        <div class="form-grid grid-2">
+                            <div class="form-group">
+                                <label for="linkCustomerId">Customer ID</label>
+                                <input type="number" id="linkCustomerId" class="form-control" placeholder="e.g. 42">
+                            </div>
+                            <div class="form-group">
+                                <label for="linkPhone">Phone Number on Record</label>
+                                <input type="text" id="linkPhone" class="form-control" placeholder="e.g. +94 77 123 4567">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-action btn-ghost">Link Existing Profile</button>
+                    </form>
+                </div>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+    $(document).ready(function () {
+
+        const BASE_URL = 'http://localhost:8080';
+
+        function getToken() {
+            return localStorage.getItem('codlink_jwt_token') || localStorage.getItem('JWT');
+        }
+
+        const token = getToken();
+        if (!token) {
+            window.location.href = '../login.html';
+            return;
+        }
+
+        const ajaxHeaders = {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        };
+
+        function isOk(response) {
+            return response && response.status === 0;
+        }
+
+        function isAuthError(response) {
+            return response && (response.status === 401 || response.status === 403);
+        }
+
+        function goToBooking() {
+            window.location.href = 'parcel-booking.html';
+        }
+
+        // ---- If a profile already exists, skip the forms entirely ----
+        $.ajax({
+            url: BASE_URL + '/api/customers/me',
+            method: 'GET',
+            headers: ajaxHeaders
+        }).done(function (response) {
+            if (isOk(response)) {
+                $('#setup-forms').hide();
+                $('#already-linked-note').show();
+
+                localStorage.setItem('customer_id', response.body.customerId);
+                localStorage.setItem('username', response.body.name)
+                setTimeout(goToBooking, 120);
+            }
+
+        });
+
+        // ---- Create new profile ----
+        $('#create-form').on('submit', function (e) {
+            e.preventDefault();
+
+            const name = $('#newName').val().trim();
+            const phoneNumber = $('#newPhone').val().trim();
+
+            if (!name) {
+                alert('Name is required.');
+                return;
+            }
+
+            $.ajax({
+                url: BASE_URL + '/api/customers/me',
+                method: 'POST',
+                headers: ajaxHeaders,
+                data: JSON.stringify({ name: name, phoneNumber: phoneNumber })
+            }).done(function (response) {
+
+                if (isAuthError(response)) {
+                    alert(response.message || 'Session expired.');
+                    localStorage.clear();
+                    window.location.href = '../login.html';
+                    return;
+                }
+
+                if (!isOk(response)) {
+                    alert('Could not create profile: ' + response.message);
+                    return;
+                }
+
+                localStorage.setItem('customer_id', response.body.customerId);
+                localStorage.setItem('username', response.body.name)
+
+                alert('Profile created. Redirecting to parcel booking…');
+                goToBooking();
+
+            }).fail(function (xhr) {
+                alert('Request failed: ' + (xhr.responseText || xhr.status));
+            });
+        });
+
+        // ---- Link existing profile ----
+        $('#link-form').on('submit', function (e) {
+            e.preventDefault();
+
+            const customerId = $('#linkCustomerId').val();
+            const phoneNumber = $('#linkPhone').val().trim();
+
+            if (!customerId || !phoneNumber) {
+                alert('Both Customer ID and phone number are required.');
+                return;
+            }
+
+            $.ajax({
+                url: BASE_URL + '/api/customers/link',
+                method: 'POST',
+                headers: ajaxHeaders,
+                data: JSON.stringify({ customerId: parseInt(customerId, 10), phoneNumber: phoneNumber })
+            }).done(function (response) {
+
+                if (isAuthError(response)) {
+                    alert(response.message || 'Session expired.');
+                    localStorage.clear();
+                    window.location.href = '../login.html';
+                    return;
+                }
+
+                if (!isOk(response)) {
+                    alert('Could not link profile: ' + response.message);
+                    return;
+                }
+
+                alert('Profile linked. Redirecting to parcel booking…');
+                goToBooking();
+
+            }).fail(function (xhr) {
+                alert('Request failed: ' + (xhr.responseText || xhr.status));
+            });
+        });
+
+    });
+</script>
+</body>
+</html>

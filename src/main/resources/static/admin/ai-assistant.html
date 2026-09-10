@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant | CODLink Logistics Platform</title>
+    <link rel="stylesheet" href="../css/normalize.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <style>
+        .assistant-layout { display: flex; flex-direction: column; height: calc(100vh - 140px); max-width: 900px; }
+        .assistant-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; background: var(--color-surface-subtle); border: 1px solid var(--color-border); border-radius: var(--radius-md) var(--radius-md) 0 0; }
+        .assistant-msg { padding: 12px 16px; border-radius: 12px; max-width: 70%; line-height: 1.5; font-size: 14px; }
+        .assistant-msg.user { align-self: flex-end; background: var(--color-primary); color: #fff; }
+        .assistant-msg.bot { align-self: flex-start; background: var(--color-surface); border: 1px solid var(--color-border); color: var(--color-text-main); }
+        .assistant-msg.error { align-self: flex-start; background: var(--color-error-bg); color: var(--color-error-text); border: 1px solid var(--color-error-border); }
+        .assistant-empty { text-align: center; color: var(--color-text-subtle); font-size: 13px; margin: auto; }
+        .assistant-input-row { display: flex; border: 1px solid var(--color-border); border-top: none; border-radius: 0 0 var(--radius-md) var(--radius-md); background: var(--color-surface); }
+        .assistant-input-row input { flex: 1; border: none; padding: 14px 18px; font-size: 14px; outline: none; border-radius: 0 0 0 var(--radius-md); }
+        .assistant-input-row button { border: none; background: var(--color-accent); color: #fff; padding: 0 24px; font-weight: 600; cursor: pointer; border-radius: 0 0 var(--radius-md) 0; }
+        .assistant-suggestions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+        .assistant-suggestion-chip { background: var(--color-accent-light); color: var(--color-accent-hover); border: 1px solid rgba(255,98,0,0.2); padding: 6px 14px; border-radius: var(--radius-full); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+        .assistant-suggestion-chip:hover { background: var(--color-accent); color: #fff; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="sidebar-brand-icon">
+                <svg viewBox="0 0 24 24"><path d="M20 8l-8 5-8-5V6l8 5 8-5v2zm0-4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"/></svg>
+            </div>
+            <div>COD<span>Link</span><span class="tagline">Enterprise Logistics</span></div>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li class="sidebar-section-title">Core Operations</li>
+            <li><a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>Dashboard</a></li>
+            <li><a href="parcels.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>Parcels</a></li>
+            <li><a href="shipments.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>Shipments</a></li>
+            <li><a href="couriers.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Couriers</a></li>
+            <li><a href="branches.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M9 8h1"/><path d="M9 12h1"/><path d="M9 16h1"/><path d="M14 8h1"/><path d="M14 12h1"/><path d="M14 16h1"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/></svg>Branches</a></li>
+            <li><a href="vehicles.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 10.9 2 11.2 2 11.5V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>Vehicles</a></li>
+            <li><a href="customers.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Customers</a></li>
+
+            <li class="sidebar-section-title">Finance & Rules</li>
+            <li><a href="service-zones.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/></svg>Service Zones</a></li>
+            <li><a href="pricing-rules.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>Pricing Rules</a></li>
+            <li><a href="cod-collections.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>COD Collections</a></li>
+            <li><a href="reconciliation.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>Reconciliation</a></li>
+            <li><a href="invoices.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg>Invoices</a></li>
+            <li><a href="payments.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>Payments</a></li>
+            <li><a href="ai-assistant.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>AI Assistant</a></li>
+
+            <li class="sidebar-section-title">Monitoring & Tracking</li>
+            <li><a href="branch-transfers.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>Branch Transfers</a></li>
+            <li><a href="delivery-attempts.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>Delivery Attempts</a></li>
+            <li><a href="tracking-events.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Tracking Events</a></li>
+
+        </ul>
+    </aside>
+
+    <div class="main-content">
+        <header class="top-bar">
+            <div class="top-bar-title-group">
+                <nav class="top-bar-breadcrumbs" aria-label="Breadcrumb">
+                    <span>Admin</span> / <span>Finance</span> / <span>AI Assistant</span>
+                </nav>
+                <h2>AI Sales & Customer Assistant</h2>
+            </div>
+            <div class="user-info">
+                <div class="user-profile">
+                    <div class="user-avatar" id="user-avatar" aria-hidden="true">--</div>
+                    <span id="user-display"></span>
+                    <span class="user-badge" id="user-badge"></span>
+                </div>
+                <button id="btn-logout" class="btn-logout">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+                    Logout
+                </button>
+            </div>
+        </header>
+
+        <main class="content-body">
+            <section class="section-box">
+                <div class="section-header">
+                    <h3>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                        Ask about sales or customers
+                    </h3>
+                </div>
+
+                <div class="assistant-suggestions">
+                    <span class="assistant-suggestion-chip" data-q="What are the total sales?">Total sales</span>
+                    <span class="assistant-suggestion-chip" data-q="What are the weekly sales?">Weekly sales</span>
+                    <span class="assistant-suggestion-chip" data-q="How many total customers do we have?">Total customers</span>
+                </div>
+
+                <div class="assistant-layout">
+                    <div id="assistant-messages" class="assistant-messages">
+                        <div class="assistant-empty">Ask a question or tap a suggestion above to get started.</div>
+                    </div>
+                    <form id="assistant-form" class="assistant-input-row">
+                        <input type="text" id="assistant-input" placeholder="e.g. What were this week's sales?" autocomplete="off">
+                        <button type="submit">Send</button>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+    $(document).ready(function () {
+        const BASE_URL = 'http://localhost:8080';
+
+        function getToken() {
+            return localStorage.getItem('codlink_jwt_token') || localStorage.getItem('JWT');
+        }
+
+        function decodeJwt(token) {
+            try {
+                const payload = token.split('.')[1];
+                return JSON.parse(decodeURIComponent(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
+                    .split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+            } catch (e) {
+                return null;
+            }
+        }
+
+        const token = getToken();
+        if (!token) {
+            window.location.href = '../login.html';
+            return;
+        }
+        const claims = decodeJwt(token);
+        if (!claims) {
+            localStorage.clear();
+            window.location.href = '../login.html';
+            return;
+        }
+
+        const session = {
+            token: token,
+            username: claims.username || claims.sub || 'Unknown',
+            role: (claims.role || '').toString().toUpperCase()
+        };
+
+        $('#user-display').text(session.username);
+        $('#user-avatar').text(session.username.substring(0, 2).toUpperCase());
+        $('#user-badge').text(session.role);
+        if (session.role === 'ADMIN') {
+            $('#user-badge').css({ 'background-color': '#e42b0c', color: '#fff' });
+        }
+
+
+        if (session.role !== 'ADMIN') {
+            alert('This page is admin-only.');
+            window.location.href = '../dashboard.html';
+            return;
+        }
+
+        $('#btn-logout').on('click', function () {
+            localStorage.clear();
+            window.location.href = '../login.html';
+        });
+
+        function appendMessage(text, cssClass) {
+            $('.assistant-empty').remove();
+            const $box = $('#assistant-messages');
+            $box.append(`<div class="assistant-msg ${cssClass}">${text}</div>`);
+            $box.scrollTop($box[0].scrollHeight);
+        }
+
+        function sendMessage(message) {
+            if (!message) return;
+            appendMessage(message, 'user');
+
+            $.ajax({
+                url: BASE_URL + '/api/chat',
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + session.token, 'Content-Type': 'application/json' },
+                data: JSON.stringify({ message })
+            }).done(function (res) {
+                if (!res || res.status !== 0) {
+                    appendMessage(res && res.message ? res.message : 'Something went wrong.', 'error');
+                    return;
+                }
+                appendMessage(res.body, 'bot');
+            }).fail(function (xhr) {
+                if (xhr.status === 401 || xhr.status === 403) {
+                    appendMessage('Session expired or not authorized.', 'error');
+                    return;
+                }
+                appendMessage('Request failed: ' + (xhr.responseText || xhr.status), 'error');
+            });
+        }
+
+        $('#assistant-form').on('submit', function (e) {
+            e.preventDefault();
+            const $input = $('#assistant-input');
+            const message = $input.val().trim();
+            $input.val('');
+            sendMessage(message);
+        });
+
+        $('.assistant-suggestion-chip').on('click', function () {
+            sendMessage($(this).data('q'));
+        });
+    });
+</script>
+</body>
+</html>
