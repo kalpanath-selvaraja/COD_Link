@@ -11,4 +11,7 @@ public class UserResponseDTO {
     private long userId;
     private String token;
     private UserRole role;
+    private Boolean isReceptionist;
+    private  String username;
+
 }
