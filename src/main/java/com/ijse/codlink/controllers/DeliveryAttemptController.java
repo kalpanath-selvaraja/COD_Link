@@ -3,6 +3,7 @@ package com.ijse.codlink.controllers;
 import com.ijse.codlink.dto.DeliveryAttemptDTO;
 import com.ijse.codlink.responce.CommonResponse;
 import com.ijse.codlink.service.DeliveryAttemptService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -18,7 +19,7 @@ public class DeliveryAttemptController {
     private final DeliveryAttemptService deliveryAttemptService;
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse create(@RequestBody DeliveryAttemptDTO dto) {
+    public CommonResponse create(@Valid @RequestBody DeliveryAttemptDTO dto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails principal = (UserDetails) authentication.getPrincipal();
         return new CommonResponse(0, deliveryAttemptService.create(principal.getUsername(), dto), "Delivery attempt recorded");

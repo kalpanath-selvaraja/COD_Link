@@ -4,6 +4,7 @@ import com.ijse.codlink.dto.CustomerDTO;
 import com.ijse.codlink.dto.CustomerLinkDTO;
 import com.ijse.codlink.responce.CommonResponse;
 import com.ijse.codlink.service.CustomerService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -65,7 +66,7 @@ public class CustomerController {
     }
 
     @PostMapping(value = "/link", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse linkToMyAccount(@RequestBody CustomerLinkDTO dto) {
+    public CommonResponse linkToMyAccount(@Valid  @RequestBody CustomerLinkDTO dto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails principal = (UserDetails) authentication.getPrincipal();
         CustomerDTO linked = customerService.linkToMyAccount(principal.getUsername(), dto);

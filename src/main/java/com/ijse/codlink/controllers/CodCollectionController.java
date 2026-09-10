@@ -3,6 +3,7 @@ package com.ijse.codlink.controllers;
 import com.ijse.codlink.dto.CodCollectionDTO;
 import com.ijse.codlink.responce.CommonResponse;
 import com.ijse.codlink.service.CodCollectionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -18,7 +19,7 @@ public class CodCollectionController {
     private final CodCollectionService codCollectionService;
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse create(@RequestBody CodCollectionDTO dto) {
+    public CommonResponse create(@Valid @RequestBody CodCollectionDTO dto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails principal = (UserDetails) authentication.getPrincipal();
         return new CommonResponse(0, codCollectionService.create(principal.getUsername(), dto), "COD collection recorded");
