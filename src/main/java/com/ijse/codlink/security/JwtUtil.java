@@ -36,6 +36,7 @@ public class JwtUtil {
         claims.put("userId", user.getUserId());
         claims.put("role", user.getUserRole());
         claims.put("username", user.getUsername());
+        claims.put("isReceptionist", Boolean.TRUE.equals(user.getIsReceptionist()));
 
         return Jwts.builder()
                 .setClaims(claims)
