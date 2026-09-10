@@ -38,7 +38,6 @@ public class SecurityConfig {
                         // ---- Public Static Resources & Frontend ----
                         .requestMatchers(
                                 "/",
-                                "/index.html",
                                 "/login.html",
                                 "/*.html",
                                 "/*.css",
