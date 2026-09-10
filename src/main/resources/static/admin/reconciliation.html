@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reconciliation | CODLink Logistics Platform</title>
+    <link rel="stylesheet" href="../css/normalize.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="sidebar-brand-icon"><svg viewBox="0 0 24 24"><path d="M20 8l-8 5-8-5V6l8 5 8-5v2zm0-4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"/></svg></div>
+            <div>COD<span>Link</span><span class="tagline">Enterprise Logistics</span></div>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-section-title">Core Operations</li>
+            <li class = "dashboard" ><a href="dashboard.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                Dashboard
+            </a></li>
+            <li class="create-admin"><a href="create-admin.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                Create Admin
+            </a></li>
+            <li class = "parcels"><a href="parcels.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                Parcels
+            </a></li>
+            <li class = "shipments"><a href="shipments.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
+                Shipments
+            </a></li>
+            <li class = "couriers"><a href="couriers.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Couriers
+            </a></li>
+            <li class = "branches"><a href="branches.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M9 8h1"/><path d="M9 12h1"/><path d="M9 16h1"/><path d="M14 8h1"/><path d="M14 12h1"/><path d="M14 16h1"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/></svg>
+                Branches
+            </a></li>
+            <li class = "vehicles"><a href="vehicles.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 10.9 2 11.2 2 11.5V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+                Vehicles
+            </a></li>
+            <li class = "customers"><a href="customers.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Customers
+            </a></li>
+
+            <li class="sidebar-section-title">Finance & Rules</li>
+            <li class = "service-zones"><a href="service-zones.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/></svg>
+                Service Zones
+            </a></li>
+            <li class = "pricing-rules"><a href="pricing-rules.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+                Pricing Rules
+            </a></li>
+            <li class = "cod-collections"><a href="cod-collections.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                COD Collections
+            </a></li>
+            <li class = "reconciliation"><a href="reconciliation.html" class="active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+                Reconciliation
+            </a></li>
+            <li class = "invoices"><a href="invoices.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg>
+                Invoices
+            </a></li>
+            <li class = "payments"><a href="payments.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                Payments
+            </a></li>
+
+            <li class="sidebar-section-title">Monitoring & Tracking</li>
+            <li class = "branch-transfers" ><a href="branch-transfers.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
+                Branch Transfers
+            </a></li>
+            <li class = "delivery-attempts"><a href="delivery-attempts.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+                Delivery Attempts
+            </a></li>
+            <li class = "tracking-events"><a href="tracking-events.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                Tracking Events
+            </a></li>
+        </ul>
+    </aside>
+
+    <div class="main-content">
+        <header class="top-bar">
+            <div class="top-bar-title-group">
+                <nav class="top-bar-breadcrumbs" aria-label="Breadcrumb"><span>Admin</span> / <span>Finance</span> / <span>Reconciliation</span></nav>
+                <h2>Branch Financial Reconciliation</h2>
+            </div>
+            <div class="user-info">
+                <div class="user-profile">
+                    <div class="user-avatar" id="user-avatar" aria-hidden="true">--</div>
+                    <span id="user-display"></span>
+                    <span class="user-badge" id="user-badge"></span>
+                </div>
+                <button id="btn-logout" class="btn-logout">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+                    Logout
+                </button>
+            </div>
+        </header>
+
+        <main class="content-body">
+            <div class="role-note" style="background: var(--color-info-bg); border: 1px solid var(--color-info-border); color: var(--color-info-text); padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 18px;">
+                A batch's total is computed automatically from every unbatched COD collection for the selected branch
+                — there is no manual amount or status field. Creating a batch fails if the branch has no unbatched
+                collections (either none exist yet, or they've already been reconciled into an earlier batch).
+            </div>
+
+            <section class="section-box">
+                <div class="section-header">
+                    <h3>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+                        Open End-of-Day Settlement Batch
+                    </h3>
+                </div>
+                <form id="batch-form">
+                    <div class="form-grid grid-2">
+                        <div class="form-group">
+                            <label for="branchId">Branch</label>
+                            <select id="branchId" class="form-control">
+                                <option value="">Loading branches…</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button type="submit" class="btn-action">Create Settlement Batch</button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <section class="section-box">
+                <div class="section-header">
+                    <h3>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                        Reconciliation Batches
+                    </h3>
+                    <div class="section-actions">
+                        <button id="btn-refresh" class="btn-action btn-ghost">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                        <tr><th>Batch ID</th><th>Branch</th><th>Total Reconciled</th><th>Reconciled At</th></tr>
+                        </thead>
+                        <tbody id="batch-table-body">
+                        <tr><td colspan="4" style="text-align:center;">Loading…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+    $(document).ready(function () {
+        const BASE_URL = 'http://localhost:8080';
+
+        function getToken() { return localStorage.getItem('codlink_jwt_token') || localStorage.getItem('JWT'); }
+        function decodeJwt(token) {
+            try {
+                const payload = token.split('.')[1];
+                return JSON.parse(decodeURIComponent(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
+                    .split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+            } catch (e) { return null; }
+        }
+
+        const token = getToken();
+        if (!token) { window.location.href = '../login.html'; return; }
+        const claims = decodeJwt(token);
+        if (!claims) { localStorage.clear(); window.location.href = '../login.html'; return; }
+
+        const session = { token, username: claims.username || claims.sub || 'Unknown', role: (claims.role || '').toUpperCase() };
+        const ajaxHeaders = { 'Authorization': 'Bearer ' + session.token, 'Content-Type': 'application/json' };
+
+        function isOk(res) { return res && res.status === 0; }
+        function handleAuthFailure(res) {
+            if (res && (res.status === 401 || res.status === 403)) {
+                alert(res.message || 'Session expired or not authorized.');
+                localStorage.clear();
+                window.location.href = '../login.html';
+                return true;
+            }
+            return false;
+        }
+
+        $('#user-display').text(session.username);
+        $('#user-avatar').text(session.username.substring(0, 2).toUpperCase());
+        $('#user-badge').text(session.role);
+        if (session.role === 'ADMIN') $('#user-badge').css({ 'background-color': '#e42b0c', color: '#fff' });
+
+        // POST/GET /api/reconciliation-batches are both hasRole(ADMIN) server-side.
+        if (session.role !== 'ADMIN') {
+            alert('This page is admin-only.');
+            window.location.href = '../dashboard.html';
+            return;
+        }
+
+        $('#btn-logout').on('click', function () { localStorage.clear(); window.location.href = '../login.html'; });
+
+        let branchCache = {}; // branchId -> branchName
+
+        function loadBranches() {
+            return $.ajax({ url: BASE_URL + '/api/branches', method: 'GET', headers: ajaxHeaders })
+                .done(res => {
+                    if (!isOk(res)) return;
+                    branchCache = {};
+                    const options = res.body.map(b => {
+                        branchCache[b.branchId] = b.branchName;
+                        return `<option value="${b.branchId}">${b.branchName} (#${b.branchId})</option>`;
+                    }).join('');
+                    $('#branchId').html('<option value="">— select branch —</option>' + options);
+                })
+                .fail(() => $('#branchId').html('<option value="">Failed to load branches</option>'));
+        }
+
+        function branchLabel(id) {
+            return branchCache[id] ? `${branchCache[id]} (#${id})` : ('Branch #' + id);
+        }
+
+        function loadBatches() {
+            const $body = $('#batch-table-body');
+            $body.html('<tr><td colspan="4" style="text-align:center;">Loading…</td></tr>');
+            $.ajax({ url: BASE_URL + '/api/reconciliation-batches', method: 'GET', headers: ajaxHeaders })
+                .done(res => {
+                    if (handleAuthFailure(res)) return;
+                    if (!isOk(res)) { $body.html(`<tr><td colspan="4" style="text-align:center;">${res.message}</td></tr>`); return; }
+                    $body.empty();
+                    if (!res.body.length) { $body.append('<tr><td colspan="4" style="text-align:center;">No reconciliation batches yet.</td></tr>'); return; }
+                    res.body.forEach(b => {
+                        $body.append(`
+                        <tr>
+                            <td>#${b.batchId}</td>
+                            <td>${branchLabel(b.branchId)}</td>
+                            <td><strong>$${Number(b.total).toFixed(2)}</strong></td>
+                            <td>${b.reconciledAt ? new Date(b.reconciledAt).toLocaleString() : '—'}</td>
+                        </tr>`);
+                    });
+                })
+                .fail(() => $body.html('<tr><td colspan="4" style="text-align:center; color:red;">Failed to reach backend.</td></tr>'));
+        }
+
+        $('#batch-form').on('submit', function (e) {
+            e.preventDefault();
+            const branchId = $('#branchId').val();
+            if (!branchId) { alert('Select a branch.'); return; }
+
+            $.ajax({
+                url: BASE_URL + '/api/reconciliation-batches/branch/' + branchId,
+                method: 'POST',
+                headers: ajaxHeaders
+            }).done(res => {
+                if (handleAuthFailure(res)) return;
+                if (!isOk(res)) { alert('Could not create batch: ' + res.message); return; }
+                $('#batchId').val('');
+                loadBatches();
+            }).fail(xhr => alert('Request failed: ' + (xhr.responseText || xhr.status)));
+        });
+
+        $('#btn-refresh').on('click', loadBatches);
+        loadBranches().always(loadBatches);
+    });
+</script>
+</body>
+</html>
