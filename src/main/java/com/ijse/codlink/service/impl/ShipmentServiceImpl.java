@@ -8,7 +8,7 @@ import com.ijse.codlink.entity.Parcel;
 import com.ijse.codlink.entity.Shipment;
 import com.ijse.codlink.enumeration.ParcelStatus;
 import com.ijse.codlink.enumeration.ShipmentStatus;
-import com.ijse.codlink.exception.CustomException;
+import com.ijse.codlink.exception.CustomException;import com.ijse.codlink.repository.CodCollectionRepository;
 import com.ijse.codlink.repository.CustomerRepository;
 import com.ijse.codlink.repository.InvoiceRepository;
 import com.ijse.codlink.repository.ParcelRepository;
@@ -40,6 +40,7 @@ public class ShipmentServiceImpl implements ShipmentService {
     private final PaymentRepository paymentRepository;
     private final InvoiceService invoiceService;
     private final PaymentService paymentService;
+    private final CodCollectionRepository codCollectionRepository;
 
     @Override
     public ShipmentDTO create(ShipmentDTO shipmentDTO) {
@@ -185,7 +186,6 @@ public class ShipmentServiceImpl implements ShipmentService {
             paymentService.createAuto(createdInvoice.getInvoiceId(), "PREPAID");
         }
 
-
         resolveShipmentIfComplete(shipmentId);
 
         return getById(shipmentId);
@@ -212,6 +212,19 @@ public class ShipmentServiceImpl implements ShipmentService {
                 p.getStatus() == ParcelStatus.DELIVERED || p.getStatus() == ParcelStatus.RETURNED);
         if (!allFinished) {
             return;
+        }
+
+        boolean isCodShipment = parcels.stream().anyMatch(p -> Boolean.TRUE.equals(p.getIsCod()));
+        if (isCodShipment) {
+            boolean allDeliveredParcelsCollected = parcels.stream()
+                    .filter(p -> p.getStatus() == ParcelStatus.DELIVERED)
+                    .allMatch(p -> codCollectionRepository.existsByParcel_ParcelId(p.getParcelId()));
+
+            if (!allDeliveredParcelsCollected) {
+                log.info("Shipment {} has all parcels delivered/returned but is COD and at least one " +
+                        "delivered parcel has no recorded cash collection yet — deferring completion", shipmentId);
+                return;
+            }
         }
 
         Optional<Invoice> optionalInvoice = invoiceRepository.findByShipment_ShipmentId(shipmentId);
