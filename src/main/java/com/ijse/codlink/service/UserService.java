@@ -11,4 +11,6 @@ public interface UserService {
     void saveUser(RegisterRequestDTO registerRequestDTO);
 
     UserDTO updateStatus(Long userId, boolean active);
+
+    UserDTO createAdminAccount(RegisterRequestDTO registerRequestDTO);
 }

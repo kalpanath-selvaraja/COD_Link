@@ -12,4 +12,7 @@ public interface CourierService {
     void delete(Long courierId);
 
     List<CourierDTO> getAll();
+
+    CourierDTO getMyProfile(String username);
+
 }
