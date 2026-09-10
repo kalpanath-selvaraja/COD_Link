@@ -19,7 +19,6 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
 
     public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
@@ -32,6 +31,7 @@ public class UserServiceImpl implements UserService {
         String password = authDTO.getPassword();
 
         Optional<User> optionalUser = userRepository.findByUsername(authDTO.getUsername());
+
 
         if(optionalUser.isEmpty()){
             throw new CustomException(401, "Invalid username or password");
@@ -46,25 +46,23 @@ public class UserServiceImpl implements UserService {
             throw new CustomException(403, "Account is deactivated");
         }
 
-
-        return new UserDTO(user.getUserId(), user.getUsername(), user.getRole(), user.getActive());
-
+        return new UserDTO(user.getUserId(), user.getUsername(), user.getRole(), user.getActive(), user.getIsReceptionist());
     }
 
     @Override
     public void saveUser(RegisterRequestDTO  request) {
 
-            Optional<User> existing = userRepository.findByUsername(request.getUsername());
-            if (existing.isPresent()) {
-                throw new CustomException(409, "Username already taken");
-            }
+        Optional<User> existing = userRepository.findByUsername(request.getUsername());
+        if (existing.isPresent()) {
+            throw new CustomException(409, "Username already taken");
+        }
 
-            User user = new User();
+        User user = new User();
 
-            user.setUsername(request.getUsername());
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
-            user.setRole(UserRole.USER);
-            userRepository.save(user);
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(UserRole.USER);
+        userRepository.save(user);
 
 
     }
@@ -78,6 +76,33 @@ public class UserServiceImpl implements UserService {
         User user = optionalUser.get();
         user.setActive(active);
         User saved = userRepository.save(user);
-        return new UserDTO(saved.getUserId(), saved.getUsername(), saved.getRole(), saved.getActive());
+        return new UserDTO(saved.getUserId(), saved.getUsername(), saved.getRole(), saved.getActive(), saved.getIsReceptionist());
+    }
+
+    @Override
+    public UserDTO createAdminAccount(RegisterRequestDTO request) {
+        Optional<User> existing = userRepository.findByUsername(request.getUsername());
+        if (existing.isPresent()) {
+            throw new CustomException(409, "Username already taken");
+        }
+
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        if(request.getIsReceptionist() == true){
+            user.setRole(UserRole.RECEPTIONIST);
+            user.setIsReceptionist(Boolean.TRUE);
+        }else {
+            user.setRole(UserRole.ADMIN);
+            user.setIsReceptionist(Boolean.FALSE);
+
+        }
+
+        user.setActive(true);
+       user.setIsReceptionist(Boolean.TRUE.equals(request.getIsReceptionist()));
+
+        User saved = userRepository.save(user);
+        return new UserDTO(saved.getUserId(), saved.getUsername(), saved.getRole(), saved.getActive(), saved.getIsReceptionist());
     }
 }
