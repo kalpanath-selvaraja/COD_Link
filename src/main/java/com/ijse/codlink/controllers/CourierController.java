@@ -5,6 +5,9 @@ import com.ijse.codlink.responce.CommonResponse;
 import com.ijse.codlink.service.CourierService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,6 +16,13 @@ import org.springframework.web.bind.annotation.*;
 public class CourierController {
 
     private final CourierService courierService;
+
+    @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse getMyProfile() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails principal = (UserDetails) authentication.getPrincipal();
+        return new CommonResponse(0, courierService.getMyProfile(principal.getUsername()), "Courier profile fetched");
+    }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public CommonResponse create(@RequestBody CourierDTO dto) {
