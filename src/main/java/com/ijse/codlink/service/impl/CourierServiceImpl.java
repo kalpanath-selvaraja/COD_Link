@@ -72,7 +72,28 @@ public class CourierServiceImpl implements CourierService {
         return dto;
     }
 
+    @Override
+    public CourierDTO getMyProfile(String username) {
+        Optional<User> optionalUser = userRepository.findByUsername(username);
+        if (optionalUser.isEmpty()) {
+            throw new CustomException(404, "User not found");
+        }
+        Optional<Courier> optionalCourier = courierRepository.findByUser_UserId(optionalUser.get().getUserId());
+        if (optionalCourier.isEmpty()) {
+            throw new CustomException(404, "No courier profile linked to this account");
+        }
+        Courier courier = optionalCourier.get();
 
+        CourierDTO dto = new CourierDTO();
+        dto.setCourierId(courier.getCourierId());
+        dto.setLicenseNumber(courier.getLicenseNumber());
+        dto.setUserId(courier.getUser().getUserId());
+        dto.setBranchId(courier.getBranch().getBranchId());
+        dto.setPassword(null);
+        dto.setUserName(null);
+
+        return dto;
+    }
 
     @Override
     public CourierDTO getById(Long id) {
