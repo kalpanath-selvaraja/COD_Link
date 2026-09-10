@@ -9,6 +9,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,6 +23,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -53,23 +55,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             userDetails, null, userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                }else {
+                    log.warn("JWT failed validation for user '{}' on {} {} from {} — request will proceed unauthenticated",
+                            username, request.getMethod(), request.getRequestURI(), request.getRemoteAddr());
                 }
             }
 
             filterChain.doFilter(request, response);
 
         } catch (ExpiredJwtException ex) {
+            log.warn("Expired JWT on {} {} from {}: {}", request.getMethod(), request.getRequestURI(), request.getRemoteAddr(), ex.getMessage());
             handleJwtException(response, 401, "Token expired");
         } catch (SignatureException ex) {
+            log.warn("Invalid JWT signature on {} {} from {} — possible tampering: {}", request.getMethod(), request.getRequestURI(), request.getRemoteAddr(), ex.getMessage());
             handleJwtException(response, 401, "Invalid token signature");
         } catch (MalformedJwtException ex) {
+            log.warn("Malformed JWT on {} {} from {}: {}", request.getMethod(), request.getRequestURI(), request.getRemoteAddr(), ex.getMessage());
             handleJwtException(response, 401, "Invalid token format");
 
-        } catch (org.springframework.security.core.userdetails.UsernameNotFoundException  ex) {
-
+        } catch (org.springframework.security.core.userdetails.UsernameNotFoundException ex) {
+            log.warn("JWT referenced unknown or inactive account on {} {} from {}: {}", request.getMethod(), request.getRequestURI(), request.getRemoteAddr(), ex.getMessage());
             handleJwtException(response, 403, "Account not found or inactive");
 
         } catch (Exception ex) {
+            log.error("Unexpected authentication failure on {} {} from {}", request.getMethod(), request.getRequestURI(), request.getRemoteAddr(), ex);
             handleJwtException(response, 500, "Authentication failed");
         }
 
