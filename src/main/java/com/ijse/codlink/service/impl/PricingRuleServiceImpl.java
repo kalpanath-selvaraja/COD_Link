@@ -29,11 +29,14 @@ public class PricingRuleServiceImpl implements PricingRuleService {
 
     @Override
     public PricingRuleDTO create(PricingRuleDTO dto) {
+        log.info("Execute method create()");
         Optional<ServiceZone> optionalZone = serviceZoneRepository.findById(dto.getZoneId());
         if (optionalZone.isEmpty()) {
+            log.error("Service zone not found with ID: {}", dto.getZoneId());
             throw new CustomException(404, "Service zone not found");
         }
         if (dto.getIsCod() == null) {
+            log.error("isCod is required");
             throw new CustomException(400, "isCod is required");
         }
 
@@ -51,8 +54,10 @@ public class PricingRuleServiceImpl implements PricingRuleService {
 
     @Override
     public List<PricingRuleDTO> getByZoneId(Long zoneId) {
+        log.info("Execute method getByZoneId()");
         Optional<ServiceZone> optionalZone = serviceZoneRepository.findById(zoneId);
         if (optionalZone.isEmpty()) {
+            log.error("Service zone not found with ID: {}", zoneId);
             throw new CustomException(404, "Service zone not found");
         }
 
@@ -73,8 +78,11 @@ public class PricingRuleServiceImpl implements PricingRuleService {
 
     @Override
     public PricingRuleDTO update(Long ruleId, PricingRuleDTO dto) {
+        log.info("Execute method update()");
         Optional<PricingRule> optionalRule = pricingRuleRepository.findById(ruleId);
         if (optionalRule.isEmpty()) {
+            log.error("Pricing rule not found with ID: {}", ruleId);
+            log.error("Pricing rule not found with ID: {}", ruleId);
             throw new CustomException(404, "Pricing rule not found");
         }
         PricingRule rule = optionalRule.get();
@@ -91,8 +99,11 @@ public class PricingRuleServiceImpl implements PricingRuleService {
 
     @Override
     public void delete(Long ruleId) {
+        log.info("Execute method delete()");
         Optional<PricingRule> optionalRule = pricingRuleRepository.findById(ruleId);
         if (optionalRule.isEmpty()) {
+            log.error("Pricing rule not found with ID: {}", ruleId);
+            log.error("Pricing rule not found with ID: {}", ruleId);
             throw new CustomException(404, "Pricing rule not found");
         }
         pricingRuleRepository.delete(optionalRule.get());
@@ -102,11 +113,14 @@ public class PricingRuleServiceImpl implements PricingRuleService {
 
     @Override
     public BigDecimal calculateShippingFee(Long zoneId, Double weight, boolean isCod) {
+        log.info("Execute method calculateShippingFee()");
         Optional<ServiceZone> optionalZone = serviceZoneRepository.findById(zoneId);
         if (optionalZone.isEmpty()) {
+            log.error("Service zone not found with ID: {}", zoneId);
             throw new CustomException(404, "Service zone not found");
         }
         if (weight == null || weight <= 0) {
+            log.error("Weight must be greater than zero");
             throw new CustomException(400, "Weight must be greater than zero");
         }
 
@@ -120,6 +134,7 @@ public class PricingRuleServiceImpl implements PricingRuleService {
         }
 
         log.warn("No pricing rule matched: zone={}, weight={}kg, isCod={}", zoneId, weight, isCod);
+            log.error("No pricing rule matches zone {} weight {}kg isCod {}", zoneId, weight, isCod);
         throw new CustomException(404, "No pricing rule matches zone " + zoneId
                 + ", weight " + weight + "kg, isCod=" + isCod
                 + " — add a PricingRule row covering this combination");

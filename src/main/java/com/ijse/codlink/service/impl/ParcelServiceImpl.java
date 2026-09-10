@@ -36,7 +36,6 @@ public class ParcelServiceImpl implements ParcelService {
     private final PricingRuleService pricingRuleService;
     private final InvoiceRepository invoiceRepository;
 
-
     private static final BigDecimal RETURN_SURCHARGE_MULTIPLIER = new BigDecimal("1.10");
     private static final BigDecimal CROSS_ZONE_PICKUP_SURCHARGE_MULTIPLIER = new BigDecimal("1.15");
     private static final Map<ParcelStatus, Set<ParcelStatus>> ALLOWED_TRANSITIONS = new EnumMap<>(ParcelStatus.class);
@@ -53,8 +52,10 @@ public class ParcelServiceImpl implements ParcelService {
 
     @Override
     public ParcelDTO createForCustomer(Long customerId, ParcelDTO parcelDTO) {
+        log.info("Execute method createForCustomer()");
         Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
         if (optionalCustomer.isEmpty()) {
+            log.error("Customer not found with ID: {}", customerId);
             throw new CustomException(404, "Customer not found");
         }
         return toDto(buildAndSaveParcel(optionalCustomer.get(), parcelDTO));
@@ -63,12 +64,15 @@ public class ParcelServiceImpl implements ParcelService {
     @Override
     @Transactional
     public List<ParcelDTO> bookCartForCustomer(String username, List<ParcelDTO> parcelDtos) {
+        log.info("Execute method bookCartForCustomer()");
         Optional<User> optionalUser = userRepository.findByUsername(username);
         if (optionalUser.isEmpty()) {
+            log.error("User not found with username: {}", username);
             throw new CustomException(404, "User not found");
         }
         Optional<Customer> optionalCustomer = customerRepository.findByUser_UserId(optionalUser.get().getUserId());
         if (optionalCustomer.isEmpty()) {
+            log.error("No customer profile linked to user ID: {}", optionalUser.get().getUserId());
             throw new CustomException(404, "No customer profile linked to this account — create one at POST /api/customers/me first");
         }
 
@@ -76,6 +80,7 @@ public class ParcelServiceImpl implements ParcelService {
             for (int i = 0; i < parcelDtos.size(); i++) {
                 ParcelDTO dto = parcelDtos.get(i);
                 if (dto == null || dto.getCodAmount() == null || dto.getCodAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                    log.error("Parcel at position {} is missing a COD amount", (i + 1));
                     throw new CustomException(400, "Parcel at position " + (i + 1)
                             + " is missing a COD amount — online bookings are cash-on-delivery only");
                 }
@@ -88,8 +93,10 @@ public class ParcelServiceImpl implements ParcelService {
     @Override
     @Transactional
     public List<ParcelDTO> bookCartForWalkIn(Long customerId, List<ParcelDTO> parcelDtos) {
+        log.info("Execute method bookCartForWalkIn()");
         Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
         if (optionalCustomer.isEmpty()) {
+            log.error("Customer not found with ID: {}", customerId);
             throw new CustomException(404, "Customer not found");
         }
         return processCartBooking(optionalCustomer.get(), parcelDtos);
@@ -165,15 +172,17 @@ public class ParcelServiceImpl implements ParcelService {
         return result;
     }
 
-
     @Override
     public ParcelDTO createMine(String username, ParcelDTO parcelDTO) {
+        log.info("Execute method createMine()");
         Optional<User> optionalUser = userRepository.findByUsername(username);
         if (optionalUser.isEmpty()) {
+            log.error("User not found with username: {}", username);
             throw new CustomException(404, "User not found");
         }
         Optional<Customer> optionalCustomer = customerRepository.findByUser_UserId(optionalUser.get().getUserId());
         if (optionalCustomer.isEmpty()) {
+            log.error("No customer profile linked to user ID: {}", optionalUser.get().getUserId());
             throw new CustomException(404, "No customer profile linked to this account — create one at POST /api/customers/me first");
         }
         return toDto(buildAndSaveParcel(optionalCustomer.get(), parcelDTO));
@@ -189,6 +198,7 @@ public class ParcelServiceImpl implements ParcelService {
         if (parcelDTO.getShipmentId() != null) {
             Optional<Shipment> optionalShipment = shipmentRepository.findById(parcelDTO.getShipmentId());
             if (optionalShipment.isEmpty()) {
+            log.error("Shipment not found with ID: {}", parcelDTO.getShipmentId());
                 throw new CustomException(404, "Shipment not found");
             }
             shipment = optionalShipment.get();
@@ -213,7 +223,6 @@ public class ParcelServiceImpl implements ParcelService {
         BigDecimal fee = pricingRuleService.calculateShippingFee(
                 deliveryAddress.getServiceZone().getZoneId(), parcelDTO.getWeight(), isCod);
 
-
         boolean crossZonePickup = pickupAddress.getServiceZone() != null
                 && !pickupAddress.getServiceZone().getZoneId().equals(deliveryAddress.getServiceZone().getZoneId());
 
@@ -237,7 +246,6 @@ public class ParcelServiceImpl implements ParcelService {
 
         return parcelRepository.save(parcel);
     }
-
 
     private void validateShipmentCompatibility(Shipment shipment, Address incomingDeliveryAddress, boolean incomingIsCod) {
         List<Parcel> parcelList = parcelRepository.findByShipment_ShipmentId(shipment.getShipmentId());
@@ -284,8 +292,10 @@ public class ParcelServiceImpl implements ParcelService {
 
     @Override
     public ParcelDTO getById(Long parcelId) {
+        log.info("Execute method getById()");
         Optional<Parcel> optionalParcel = parcelRepository.findById(parcelId);
         if (optionalParcel.isEmpty()) {
+            log.error("Parcel not found with ID: {}", parcelId);
             throw new CustomException(404, "Parcel not found");
         }
         return toDto(optionalParcel.get());
@@ -293,8 +303,10 @@ public class ParcelServiceImpl implements ParcelService {
 
     @Override
     public ParcelDTO getByTrackingNumber(String trackingNumber) {
+        log.info("Execute method getByTrackingNumber()");
         Optional<Parcel> optionalParcel = parcelRepository.findByTrackingNumber(trackingNumber);
         if (optionalParcel.isEmpty()) {
+            log.error("No Parcel with tracking number found: {}", trackingNumber);
             throw new CustomException(404, "No Parcel with that tracking number was found");
         }
         return toDto(optionalParcel.get());
@@ -302,8 +314,10 @@ public class ParcelServiceImpl implements ParcelService {
 
     @Override
     public List<ParcelDTO> getByCustomerId(Long customerId) {
+        log.info("Execute method getByCustomerId()");
         Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
         if (optionalCustomer.isEmpty()) {
+            log.error("Customer not found with ID: {}", customerId);
             throw new CustomException(404, "Customer not found");
         }
         List<ParcelDTO> parcelDTOList = new ArrayList<>();
@@ -315,15 +329,19 @@ public class ParcelServiceImpl implements ParcelService {
 
     @Override
     public ParcelDTO updateStatus(Long parcelId, ParcelDTO statusDto) {
+        log.info("Execute method updateStatus()");
         if (parcelId == null) {
+            log.error("Parcel ID is required");
             throw new CustomException(400, "parcelId is required");
         }
         if (statusDto == null || statusDto.getStatus() == null) {
+            log.error("Status is required");
             throw new CustomException(400, "Status is required");
         }
 
         Optional<Parcel> optionalParcel = parcelRepository.findById(parcelId);
         if (optionalParcel.isEmpty()) {
+            log.error("Parcel not found with ID: {}", parcelId);
             throw new CustomException(404, "Parcel not found");
         }
 
@@ -333,6 +351,7 @@ public class ParcelServiceImpl implements ParcelService {
 
         Set<ParcelStatus> allowedNext = ALLOWED_TRANSITIONS.get(currentStatus);
         if (allowedNext == null || !allowedNext.contains(targetStatus)) {
+            log.error("Cannot transition parcel from {} to {}", currentStatus, targetStatus);
             throw new CustomException(409,
                     "Cannot transition parcel from " + currentStatus + " to " + targetStatus);
         }
@@ -361,11 +380,14 @@ public class ParcelServiceImpl implements ParcelService {
 
     @Override
     public void delete(Long parcelId) {
+        log.info("Execute method delete()");
         Optional<Parcel> optionalParcel = parcelRepository.findById(parcelId);
         if (optionalParcel.isEmpty()) {
+            log.error("Parcel not found with ID: {}", parcelId);
             throw new CustomException(404, "Parcel not found");
         }
         if (optionalParcel.get().getStatus() != ParcelStatus.BOOKED) {
+            log.error("Cannot delete parcel with ID: {} because it is not in BOOKED status", parcelId);
             throw new CustomException(409, "Only parcels still in BOOKED status can be deleted");
         }
         parcelRepository.delete(optionalParcel.get());
@@ -373,12 +395,15 @@ public class ParcelServiceImpl implements ParcelService {
 
     @Override
     public ParcelDTO assignToShipment(Long parcelId, Long shipmentId) {
+        log.info("Execute method assignToShipment()");
         Optional<Parcel> optionalParcel = parcelRepository.findById(parcelId);
         if (optionalParcel.isEmpty()) {
+            log.error("Parcel not found with ID: {}", parcelId);
             throw new CustomException(404, "Parcel not found");
         }
         Optional<Shipment> optionalShipment = shipmentRepository.findById(shipmentId);
         if (optionalShipment.isEmpty()) {
+            log.error("Shipment not found with ID: {}", shipmentId);
             throw new CustomException(404, "Shipment not found");
         }
 
@@ -386,18 +411,23 @@ public class ParcelServiceImpl implements ParcelService {
         Shipment shipment = optionalShipment.get();
 
         if (shipment.getStatus() == ShipmentStatus.CANCELLED) {
+            log.error("Cannot attach parcel with ID: {} to cancelled shipment {}", parcelId, shipmentId);
             throw new CustomException(409, "Cannot attach a parcel to a cancelled shipment");
         }
         if (invoiceRepository.existsByShipment_ShipmentId(shipmentId)) {
+            log.error("Cannot assign parcel with ID: {} to shipment {} because shipment already has an invoice", parcelId, shipmentId);
             throw new CustomException(409, "Shipment already has an invoice — attaching more parcels would make it stale. No reissue endpoint exists yet.");
         }
         if (parcel.getShipment() != null) {
+            log.error("Parcel with ID: {} is already attached to shipment {}", parcelId, parcel.getShipment().getShipmentId());
             throw new CustomException(409, "Parcel is already attached to shipment " + parcel.getShipment().getShipmentId());
         }
         if (parcel.getStatus() != ParcelStatus.BOOKED) {
+            log.error("Cannot assign parcel with ID: {} to shipment because its status is {} (expected BOOKED)", parcelId, parcel.getStatus());
             throw new CustomException(409, "Only BOOKED parcels can be assigned to a shipment — current status is " + parcel.getStatus());
         }
         if (!parcel.getCustomer().getCustomerId().equals(shipment.getCustomer().getCustomerId())) {
+            log.error("Parcel with ID: {} customer ID does not match shipment with ID: {} customer ID", parcelId, shipmentId);
             throw new CustomException(409, "Parcel's customer does not match shipment's customer");
         }
 
@@ -410,6 +440,7 @@ public class ParcelServiceImpl implements ParcelService {
 
     @Override
     public List<ParcelDTO> getAll() {
+        log.info("Execute method getAll()");
         List<ParcelDTO> list = new ArrayList<>();
         for (Parcel parcel : parcelRepository.findAllWithCustomerAndBranch()) {
             list.add(toDto(parcel));

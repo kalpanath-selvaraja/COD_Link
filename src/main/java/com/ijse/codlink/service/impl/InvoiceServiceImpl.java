@@ -31,6 +31,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public InvoiceDTO create(InvoiceDTO dto) {
+        log.info("Execute method create()");
         Optional<Shipment> optionalShipment = shipmentRepository.findById(dto.getShipmentId());
         if (optionalShipment.isEmpty()) {
             throw new CustomException(404, "Shipment not found");

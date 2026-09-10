@@ -26,10 +26,13 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentDTO create(PaymentDTO dto) {
+        log.info("Execute method create()");
         if (dto.getInvoiceId() == null) {
+            log.error("invoiceId is required");
             throw new CustomException(400, "invoiceId is required");
         }
         if (dto.getMethod() == null || dto.getMethod().isBlank()) {
+            log.error("Payment method is required");
             throw new CustomException(400, "Payment method is required");
         }
         return recordPayment(dto.getInvoiceId(), dto.getMethod());
@@ -37,6 +40,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentDTO createAuto(Long invoiceId, String method) {
+        log.info("Execute method createAuto()");
         List<PaymentDTO> existing = getByInvoiceId(invoiceId);
         if (!existing.isEmpty()) {
             log.info("Auto-payment skipped — invoice {} already has a payment recorded", invoiceId);
@@ -47,6 +51,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public List<PaymentDTO> getAll() {
+        log.info("Execute method getAll()");
         List<PaymentDTO> list = new ArrayList<>();
         for (Payment p : paymentRepository.findAll()) list.add(toDto(p));
         return list;
@@ -55,6 +60,7 @@ public class PaymentServiceImpl implements PaymentService {
     private PaymentDTO recordPayment(Long invoiceId, String method) {
         Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceId);
         if (optionalInvoice.isEmpty()) {
+            log.error("Invoice not found with ID: {}", invoiceId);
             throw new CustomException(404, "Invoice not found");
         }
         if (paymentRepository.existsByInvoice_InvoiceId(invoiceId)) {
@@ -72,8 +78,10 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public List<PaymentDTO> getByInvoiceId(Long invoiceId) {
+        log.info("Execute method getByInvoiceId()");
         Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceId);
         if (optionalInvoice.isEmpty()) {
+            log.error("Invoice not found with ID: {}", invoiceId);
             throw new CustomException(404, "Invoice not found");
         }
         List<PaymentDTO> list = new ArrayList<>();

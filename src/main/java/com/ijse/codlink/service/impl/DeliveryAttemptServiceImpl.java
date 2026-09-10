@@ -41,17 +41,21 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
     @Override
     @Transactional
     public DeliveryAttemptDTO create(String username, DeliveryAttemptDTO dto) {
+        log.info("Execute method create()");
         Optional<Parcel> optionalParcel = parcelRepository.findById(dto.getParcelId());
         if (optionalParcel.isEmpty()) {
+            log.error("Parcel not found with ID: {}", dto.getParcelId());
             throw new CustomException(404, "Parcel not found");
         }
 
         Optional<User> optionalUser = userRepository.findByUsername(username);
         if (optionalUser.isEmpty()) {
+            log.error("User not found with username: {}", username);
             throw new CustomException(404, "User not found");
         }
         Optional<Courier> optionalCourier = courierRepository.findByUser_UserId(optionalUser.get().getUserId());
         if (optionalCourier.isEmpty()) {
+            log.error("No courier profile linked to user ID: {}", optionalUser.get().getUserId());
             throw new CustomException(404, "No courier profile linked to this account");
         }
         Courier courier = optionalCourier.get();
@@ -66,7 +70,7 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
                 || parcel.getStatus() == ParcelStatus.FAILED
                 || parcel.getStatus() == ParcelStatus.RETURNED) {
             throw new CustomException(409,
-                    "Cannot log a delivery attempt — parcel status is " + parcel.getStatus());
+                    "Cannot log a delivery attempt - parcel status is " + parcel.getStatus());
         }
 
         if (parcel.getStatus() == ParcelStatus.BOOKED) {

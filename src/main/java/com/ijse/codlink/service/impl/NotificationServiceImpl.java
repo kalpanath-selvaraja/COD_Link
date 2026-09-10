@@ -29,6 +29,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public NotificationDTO createNotification(NotificationDTO dto) {
+        log.info("Execute method createNotification()");
         Optional<User> optionalUser = userRepository.findById(dto.getUserId());
 
         if (optionalUser.isEmpty()) {
@@ -48,6 +49,7 @@ public class NotificationServiceImpl implements NotificationService {
     public List<NotificationDTO> getByUserId(Long userId) {
 
 
+        log.info("Execute method getByUserId()");
         Optional<User> optionalUser = userRepository.findByUserId(userId);
 
         if (optionalUser.isEmpty()) {

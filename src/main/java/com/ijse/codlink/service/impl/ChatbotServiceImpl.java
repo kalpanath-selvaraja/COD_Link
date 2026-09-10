@@ -25,6 +25,7 @@ public class ChatbotServiceImpl implements ChatbotService {
 
     @Override
     public String handleQuery(String message) {
+        log.info("Execute method handleQuery()");
         if (message == null || message.isBlank()) {
             return OUT_OF_SCOPE;
         }

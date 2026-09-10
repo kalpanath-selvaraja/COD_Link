@@ -35,15 +35,18 @@ public class CourierServiceImpl implements CourierService {
     @Override
     @Transactional
     public CourierDTO createCourierAccount(CourierDTO courierDTO) {
+        log.info("Execute method createCourierAccount()");
         Optional<User> optionalUser = userRepository.findByUsername(courierDTO.getUserName());
 
         if(optionalUser.isPresent()){
+            log.error("Username already exists: {}", courierDTO.getUserName());
             throw new CustomException(409,"Username already exists");
         }
 
         Optional<Branch> optionalBranch = branchRepository.findById(courierDTO.getBranchId());
 
         if(optionalBranch.isEmpty()){
+            log.error("Branch not found with ID: {}", courierDTO.getBranchId());
             throw new CustomException(404,"Branch not found");
         }
 
@@ -74,12 +77,15 @@ public class CourierServiceImpl implements CourierService {
 
     @Override
     public CourierDTO getMyProfile(String username) {
+        log.info("Execute method getMyProfile()");
         Optional<User> optionalUser = userRepository.findByUsername(username);
         if (optionalUser.isEmpty()) {
+            log.error("User not found with username: {}", username);
             throw new CustomException(404, "User not found");
         }
         Optional<Courier> optionalCourier = courierRepository.findByUser_UserId(optionalUser.get().getUserId());
         if (optionalCourier.isEmpty()) {
+            log.error("No courier profile linked to user ID: {}", optionalUser.get().getUserId());
             throw new CustomException(404, "No courier profile linked to this account");
         }
         Courier courier = optionalCourier.get();
@@ -97,9 +103,11 @@ public class CourierServiceImpl implements CourierService {
 
     @Override
     public CourierDTO getById(Long id) {
+        log.info("Execute method getById()");
         Optional<Courier> optionalCourier = courierRepository.findById(id);
 
         if(optionalCourier.isEmpty()){
+            log.error("Courier not found with ID: {}", id);
             throw new CustomException(404,"Courier not found");
         }
         Courier courier = optionalCourier.get();
@@ -118,9 +126,11 @@ public class CourierServiceImpl implements CourierService {
 
     @Override
     public List<CourierDTO> getByBranch(Long branchId) {
+        log.info("Execute method getByBranch()");
         Optional<Branch> optionalBranch = branchRepository.findById(branchId);
 
         if(optionalBranch.isEmpty()){
+            log.error("Branch not found with ID: {}", branchId);
             throw new CustomException(404,"Branch not found");
         }
 
@@ -146,9 +156,11 @@ public class CourierServiceImpl implements CourierService {
 
     @Override
     public CourierDTO updateCourierAccount(Long courierId, CourierDTO courierDTO) {
+        log.info("Execute method updateCourierAccount()");
 
         Optional<Courier> optionalCourier = courierRepository.findById(courierId);
         if(optionalCourier.isEmpty()){
+            log.error("Courier not found with ID: {}", courierId);
             throw new CustomException(404,"Courier not found");
         }
 
@@ -160,6 +172,7 @@ public class CourierServiceImpl implements CourierService {
         if (courierDTO.getBranchId() != null) {
             Optional<Branch> optionalBranch = branchRepository.findById(courierDTO.getBranchId());
             if (optionalBranch.isEmpty()) {
+                log.error("Branch not found with ID: {}", courierDTO.getBranchId());
                 throw new CustomException(404, "Branch not found");
             }
             courier.setBranch(optionalBranch.get());
@@ -180,20 +193,24 @@ public class CourierServiceImpl implements CourierService {
 
     @Override
     public void delete(Long courierId) {
+        log.info("Execute method delete()");
         Optional<Courier> optionalCourier = courierRepository.findById(courierId);
         if (optionalCourier.isEmpty()) {
+            log.error("Courier not found with ID: {}", courierId);
             throw new CustomException(404, "Courier not found");
         }
 
         try {
             courierRepository.delete(optionalCourier.get());
         } catch (DataIntegrityViolationException e) {
+            log.error("Data integrity violation while deleting courier: {}", e.getMessage());
             throw new CustomException(409, "Cannot delete — this courier is still referenced by delivery attempts, COD collections, or vehicles. Remove or reassign those first.");
         }
     }
 
     @Override
     public List<CourierDTO> getAll() {
+        log.info("Execute method getAll()");
         List<CourierDTO> list = new ArrayList<>();
         for (Courier courier : courierRepository.findAll()) {
             CourierDTO dto = new CourierDTO();

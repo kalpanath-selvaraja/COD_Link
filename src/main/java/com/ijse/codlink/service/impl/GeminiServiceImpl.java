@@ -26,6 +26,7 @@ public class GeminiServiceImpl implements GeminiService {
 
     @Override
     public String generateReply(String prompt) {
+        log.info("Execute method generateReply()");
         try {
             Map<String, Object> body = Map.of(
                     "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt))))

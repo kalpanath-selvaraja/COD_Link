@@ -32,29 +32,37 @@ public class BranchTransferServiceImpl implements BranchTransferService {
     @Override
     @Transactional
     public BranchTransferDTO create(BranchTransferDTO dto) {
+        log.info("Execute method create()");
         if (dto.getParcelId() == null) {
+            log.error("Parcel ID is required");
             throw new CustomException(400, "parcelId is required");
         }
         if (dto.getFromBranchId() == null) {
+            log.error("From branch ID is required");
             throw new CustomException(400, "fromBranchId is required");
         }
         if (dto.getToBranchId() == null) {
+            log.error("To branch ID is required");
             throw new CustomException(400, "toBranchId is required");
         }
 
         Optional<Parcel> optionalParcel = parcelRepository.findById(dto.getParcelId());
         if (optionalParcel.isEmpty()) {
+            log.error("Parcel not found with ID: {}", dto.getParcelId());
             throw new CustomException(404, "Parcel not found");
         }
         Optional<Branch> optionalFrom = branchRepository.findById(dto.getFromBranchId());
         if (optionalFrom.isEmpty()) {
+            log.error("Origin branch not found with ID: {}", dto.getFromBranchId());
             throw new CustomException(404, "Origin branch not found");
         }
         Optional<Branch> optionalTo = branchRepository.findById(dto.getToBranchId());
         if (optionalTo.isEmpty()) {
+            log.error("Destination branch not found with ID: {}", dto.getToBranchId());
             throw new CustomException(404, "Destination branch not found");
         }
         if (dto.getFromBranchId().equals(dto.getToBranchId())) {
+            log.error("Origin and destination branch must be different");
             throw new CustomException(400, "Origin and destination branch must be different");
         }
 
@@ -64,6 +72,7 @@ public class BranchTransferServiceImpl implements BranchTransferService {
 
         if (parcel.getStatus() == ParcelStatus.DELIVERED
                 || parcel.getStatus() == ParcelStatus.RETURNED) {
+            log.error("Cannot transfer a parcel — parcel status is {}", parcel.getStatus());
             throw new CustomException(409,
                     "Cannot transfer a parcel — parcel status is " + parcel.getStatus());
         }
@@ -73,6 +82,7 @@ public class BranchTransferServiceImpl implements BranchTransferService {
                 : parcel.getOriginBranch();
 
         if (!actualCurrentBranch.getBranchId().equals(fromBranch.getBranchId())) {
+            log.error("Origin branch does not match parcel's actual current branch (#{})", actualCurrentBranch.getBranchId());
             throw new CustomException(409,
                     "Origin branch does not match parcel's actual current branch (#"
                             + actualCurrentBranch.getBranchId() + ")");
@@ -92,8 +102,10 @@ public class BranchTransferServiceImpl implements BranchTransferService {
 
     @Override
     public List<BranchTransferDTO> getByParcelId(Long parcelId) {
+        log.info("Execute method getByParcelId()");
         Optional<Parcel> optionalParcel = parcelRepository.findById(parcelId);
         if (optionalParcel.isEmpty()) {
+            log.error("Parcel not found with ID: {}", parcelId);
             throw new CustomException(404, "Parcel not found");
         }
         List<BranchTransferDTO> list = new ArrayList<>();
@@ -105,6 +117,7 @@ public class BranchTransferServiceImpl implements BranchTransferService {
 
     @Override
     public List<BranchTransferDTO> getAll() {
+        log.info("Execute method getAll()");
         List<BranchTransferDTO> list = new ArrayList<>();
 
         for(BranchTransfer b :branchTransferRepository.findAll()){
@@ -116,6 +129,7 @@ public class BranchTransferServiceImpl implements BranchTransferService {
     }
 
     private BranchTransferDTO toDto(BranchTransfer t) {
+        log.info("Execute method toDto()");
         return new BranchTransferDTO(t.getTransferId(), t.getParcel().getParcelId(),
                 t.getFromBranch().getBranchId(), t.getToBranch().getBranchId(), t.getDispatchedAt());
     }

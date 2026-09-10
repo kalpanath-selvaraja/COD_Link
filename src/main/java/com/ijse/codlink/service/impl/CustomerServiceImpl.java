@@ -27,6 +27,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomerDTO createMyProfile(String username, CustomerDTO dto) {
+        log.info("Execute method createMyProfile()");
 
         Optional<User> optionalUser = userRepository.findByUsername(username);
 
@@ -54,6 +55,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomerDTO getMyProfile(String username) {
+        log.info("Execute method getMyProfile()");
         Optional<User> optionalUser = userRepository.findByUsername(username);
 
         if (optionalUser.isEmpty()) {
@@ -78,6 +80,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomerDTO createWalkIn(CustomerDTO dto) {
+        log.info("Execute method createWalkIn()");
 
         Customer customer = new Customer();
         customer.setName(dto.getName());
@@ -91,6 +94,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomerDTO updateMyProfile(String username, CustomerDTO dto) {
+        log.info("Execute method updateMyProfile()");
 
         Optional<User> optionalUser = userRepository.findByUsername(username);
 
@@ -123,6 +127,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomerDTO getById(Long customerId) {
+        log.info("Execute method getById()");
         Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
         if (optionalCustomer.isEmpty()) {
             throw new CustomException(404, "Customer not found");
@@ -134,6 +139,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public List<CustomerDTO> getAll() {
+        log.info("Execute method getAll()");
         List<CustomerDTO> list = new ArrayList<>();
         for (Customer c : customerRepository.findAll()) {
 
@@ -145,6 +151,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public void delete(Long customerId) {
+        log.info("Execute method delete()");
         Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
         if (optionalCustomer.isEmpty()) {
             throw new CustomException(404, "Customer not found");
@@ -152,12 +159,14 @@ public class CustomerServiceImpl implements CustomerService {
         try {
             customerRepository.delete(optionalCustomer.get());
         } catch (DataIntegrityViolationException e) {
+            log.error("Data integrity violation while deleting customer: {}", e.getMessage());
             throw new CustomException(409, "Cannot delete — this customer is still referenced by parcels or shipments. Remove or reassign those first.");
         }
     }
 
     @Override
     public CustomerDTO linkToMyAccount(String username, CustomerLinkDTO dto) {
+        log.info("Execute method linkToMyAccount()");
         Optional<User> optionalUser = userRepository.findByUsername(username);
         if (optionalUser.isEmpty()) {
             throw new CustomException(404, "User not found");
