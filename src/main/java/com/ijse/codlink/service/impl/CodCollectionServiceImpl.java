@@ -12,9 +12,11 @@ import com.ijse.codlink.repository.CourierRepository;
 import com.ijse.codlink.repository.ParcelRepository;
 import com.ijse.codlink.repository.UserRepository;
 import com.ijse.codlink.service.CodCollectionService;
+import com.ijse.codlink.service.ShipmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -30,8 +32,10 @@ public class CodCollectionServiceImpl implements CodCollectionService {
     private final ParcelRepository parcelRepository;
     private final CourierRepository courierRepository;
     private final UserRepository userRepository;
+    private final ShipmentService shipmentService;
 
     @Override
+    @Transactional
     public CodCollectionDTO create(String username, CodCollectionDTO dto) {
         Optional<Parcel> optionalParcel = parcelRepository.findById(dto.getParcelId());
         if (optionalParcel.isEmpty()) {
@@ -80,7 +84,14 @@ public class CodCollectionServiceImpl implements CodCollectionService {
         collection.setCourier(courier);
         collection.setAmount(dto.getAmount());
         collection.setReconciliationBatch(null);
-        return toDto(codCollectionRepository.save(collection));
+        CodCollection saved = codCollectionRepository.save(collection);
+
+
+        if (parcel.getShipment() != null) {
+            shipmentService.resolveShipmentIfComplete(parcel.getShipment().getShipmentId());
+        }
+
+        return toDto(saved);
     }
 
     @Override
