@@ -32,4 +32,6 @@ public class User {
 
     private Boolean active = true;
 
+    private Boolean isReceptionist = false;
+
 }
