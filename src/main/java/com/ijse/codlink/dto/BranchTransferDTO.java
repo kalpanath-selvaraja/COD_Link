@@ -1,5 +1,6 @@
 package com.ijse.codlink.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,8 +14,15 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class BranchTransferDTO {
     private Long transferId;
+
+    @NotNull(message = "parcelId is required")
     private Long parcelId;
+
+    @NotNull(message = "fromBranchId is required")
     private Long fromBranchId;
+
+    @NotNull(message = "toBranchId is required")
     private Long toBranchId;
+
     private LocalDateTime dispatchedAt;
 }
