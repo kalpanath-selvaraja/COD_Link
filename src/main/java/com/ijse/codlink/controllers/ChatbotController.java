@@ -6,6 +6,9 @@ import com.ijse.codlink.service.ChatbotService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,8 +18,11 @@ public class ChatbotController {
 
     private final ChatbotService chatbotService;
 
+    // ChatbotController.java
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse chat(@Valid @RequestBody ChatbotRequestDTO dto) {
-        return new CommonResponse(0, chatbotService.handleQuery(dto.getMessage()), "Chatbot response");
+    public CommonResponse chat(@RequestBody ChatbotRequestDTO dto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String role = authentication.getAuthorities().iterator().next().getAuthority();
+        return new CommonResponse(0, chatbotService.handleQuery(role, dto.getMessage()), "Chatbot response");
     }
 }

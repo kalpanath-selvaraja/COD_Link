@@ -90,11 +90,11 @@
                     </h3>
                 </div>
 
-                <div class="assistant-suggestions">
-                    <span class="assistant-suggestion-chip" data-q="What are the total sales?">Total sales</span>
-                    <span class="assistant-suggestion-chip" data-q="What are the weekly sales?">Weekly sales</span>
-                    <span class="assistant-suggestion-chip" data-q="How many total customers do we have?">Total customers</span>
-                </div>
+<!--                <div class="assistant-suggestions">-->
+<!--                    <span class="assistant-suggestion-chip" data-q="What are the total sales?">Total sales</span>-->
+<!--                    <span class="assistant-suggestion-chip" data-q="What are the weekly sales?">Weekly sales</span>-->
+<!--                    <span class="assistant-suggestion-chip" data-q="How many total customers do we have?">Total customers</span>-->
+<!--                </div>-->
 
                 <div class="assistant-layout">
                     <div id="assistant-messages" class="assistant-messages">
@@ -169,7 +169,11 @@
         function appendMessage(text, cssClass) {
             $('.assistant-empty').remove();
             const $box = $('#assistant-messages');
-            $box.append(`<div class="assistant-msg ${cssClass}">${text}</div>`);
+
+            // Create the div safely and use .text() to encode HTML entities
+            const $msgDiv = $('<div>').addClass('assistant-msg ' + cssClass).text(text);
+
+            $box.append($msgDiv);
             $box.scrollTop($box[0].scrollHeight);
         }
 
@@ -190,10 +194,16 @@
                 appendMessage(res.body, 'bot');
             }).fail(function (xhr) {
                 if (xhr.status === 401 || xhr.status === 403) {
-                    appendMessage('Session expired or not authorized.', 'error');
+                    alert('Session expired. Please log in again.');
+                    localStorage.clear();
+                    window.location.href = '../login.html';
                     return;
                 }
-                appendMessage('Request failed: ' + (xhr.responseText || xhr.status), 'error');
+
+                const msg = (xhr.responseJSON && xhr.responseJSON.message)
+                    ? xhr.responseJSON.message
+                    : (xhr.responseText || xhr.status);
+                appendMessage('Request failed: ' + msg, 'error');
             });
         }
 

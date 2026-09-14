@@ -190,9 +190,12 @@
           // login.html to authenticate, rather than silently logging them in.
           window.location.href = './login.html?registered=1';
         }).fail(function (xhr) {
-          showAlert('Request failed: ' + (xhr.responseText || xhr.status));
+            const msg = xhr.responseJSON && xhr.responseJSON.message
+                ? xhr.responseJSON.message
+                : "Registration failed. Username may be taken.";
+            showAlert(msg);
         }).always(function () {
-          setLoading(false);
+            setLoading(false);
         });
       });
     });

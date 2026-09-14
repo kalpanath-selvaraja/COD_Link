@@ -25,6 +25,10 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
                 Create Admin
             </a></li>
+            <li><a href="ai-assistant.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                AI Assistant
+            </a></li>
             <li class = "parcels"><a href="parcels.html" >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
                 Parcels
@@ -211,9 +215,9 @@
         const ajaxHeaders = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
 
         function isOk(res) { return res && res.status === 0; }
-        function handleAuthFailure(res) {
-            if (res && (res.status === 401 || res.status === 403)) {
-                alert(res.message || 'Session expired or not authorized.');
+        function handleAuthFailure(xhr) {
+            if (xhr && (xhr.status === 401 || xhr.status === 403)) {
+                alert('Session expired or not authorized.');
                 localStorage.clear();
                 window.location.href = '../login.html';
                 return true;
@@ -244,13 +248,20 @@
                 .done(res => {
                     if (!isOk(res)) return;
                     branchCache = {};
-                    const options = res.body.map(b => {
+                    const $from = $('#fromBranchId').empty().append('<option value="">— select branch —</option>');
+                    const $to = $('#toBranchId').empty().append('<option value="">— select branch —</option>');
+
+                    res.body.forEach(b => {
                         branchCache[b.branchId] = b.branchName;
-                        return `<option value="${b.branchId}">${b.branchName} (#${b.branchId})</option>`;
-                    }).join('');
-                    $('#fromBranchId, #toBranchId').html('<option value="">— select branch —</option>' + options);
+                        const optionText = `${b.branchName} (#${b.branchId})`;
+                        $from.append($('<option>').val(b.branchId).text(optionText));
+                        $to.append($('<option>').val(b.branchId).text(optionText));
+                    });
                 })
-                .fail(() => $('#fromBranchId, #toBranchId').html('<option value="">Failed to load branches</option>'));
+                .fail(xhr => {
+                    if (handleAuthFailure(xhr)) return;
+                    $('#fromBranchId, #toBranchId').html('<option value="">Failed to load branches</option>');
+                });
         }
 
         function branchLabel(id) {
@@ -262,19 +273,18 @@
             $body.html('<tr><td colspan="5" style="text-align:center;">Loading…</td></tr>');
             $.ajax({ url: BASE_URL + '/api/branch-transfers', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
-                    if (handleAuthFailure(res)) return;
+
                     if (!isOk(res)) { $body.html(`<tr><td colspan="5" style="text-align:center;">${res.message}</td></tr>`); return; }
                     $body.empty();
                     if (!res.body.length) { $body.append('<tr><td colspan="5" style="text-align:center;">No transfers yet.</td></tr>'); return; }
                     res.body.forEach(t => {
-                        $body.append(`
-                        <tr>
-                            <td>#${t.transferId}</td>
-                            <td>#${t.parcelId}</td>
-                            <td>${branchLabel(t.fromBranchId)}</td>
-                            <td>${branchLabel(t.toBranchId)}</td>
-                            <td>${t.dispatchedAt ? new Date(t.dispatchedAt).toLocaleString() : '—'}</td>
-                        </tr>`);
+                        const $tr = $('<tr>');
+                        $tr.append($('<td>').text('#' + t.transferId));
+                        $tr.append($('<td>').text('#' + t.parcelId));
+                        $tr.append($('<td>').text(branchLabel(t.fromBranchId)));
+                        $tr.append($('<td>').text(branchLabel(t.toBranchId)));
+                        $tr.append($('<td>').text(t.dispatchedAt ? new Date(t.dispatchedAt).toLocaleString() : '—'));
+                        $body.append($tr);
                     });
                 })
                 .fail(() => $body.html('<tr><td colspan="5" style="text-align:center; color:red;">Failed to reach backend.</td></tr>'));
@@ -301,11 +311,15 @@
                     toBranchId: parseInt(toBranchId, 10)
                 })
             }).done(res => {
-                if (handleAuthFailure(res)) return;
+
                 if (!isOk(res)) { alert('Transfer rejected: ' + res.message); return; }
                 $('#transfer-form')[0].reset();
                 loadTransfers();
-            }).fail(xhr => alert('Request failed: ' + (xhr.responseText || xhr.status)));
+            }).fail(xhr => {
+                if (handleAuthFailure(xhr)) return;
+                const msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : xhr.status;
+                alert('Request failed: ' + msg);
+            });
         });
 
         $('#btn-refresh').on('click', loadTransfers);

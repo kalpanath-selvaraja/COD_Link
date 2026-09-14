@@ -4,7 +4,9 @@ import com.ijse.codlink.dto.CourierDTO;
 import com.ijse.codlink.responce.CommonResponse;
 import com.ijse.codlink.service.CourierService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,40 +20,47 @@ public class CourierController {
     private final CourierService courierService;
 
     @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse getMyProfile() {
+    public ResponseEntity<CommonResponse> getMyProfile() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails principal = (UserDetails) authentication.getPrincipal();
-        return new CommonResponse(0, courierService.getMyProfile(principal.getUsername()), "Courier profile fetched");
+        CommonResponse response = new CommonResponse(0, courierService.getMyProfile(principal.getUsername()), "Courier profile fetched");
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse create(@RequestBody CourierDTO dto) {
-        return new CommonResponse(0, courierService.createCourierAccount(dto), "Courier account created");
+    public ResponseEntity<CommonResponse> create(@RequestBody CourierDTO dto) {
+        CommonResponse response = new CommonResponse(0, courierService.createCourierAccount(dto), "Courier account created");
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse getById(@PathVariable Long id) {
-        return new CommonResponse(0, courierService.getById(id), "Courier fetched");
+    public ResponseEntity<CommonResponse> getById(@PathVariable Long id) {
+        CommonResponse response = new CommonResponse(0, courierService.getById(id), "Courier fetched");
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping(value = "/branch/{branchId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse getByBranch(@PathVariable Long branchId) {
-        return new CommonResponse(0, courierService.getByBranch(branchId), "Couriers fetched");
+    public ResponseEntity<CommonResponse> getByBranch(@PathVariable Long branchId) {
+        CommonResponse response = new CommonResponse(0, courierService.getByBranch(branchId), "Couriers fetched");
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse update(@PathVariable Long id, @RequestBody CourierDTO dto) {
-        return new CommonResponse(0, courierService.updateCourierAccount(id, dto), "Courier updated");
+    public ResponseEntity<CommonResponse> update(@PathVariable Long id, @RequestBody CourierDTO dto) {
+        CommonResponse response = new CommonResponse(0, courierService.updateCourierAccount(id, dto), "Courier updated");
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping(value = "/{id}")
-    public CommonResponse delete(@PathVariable Long id) {
+    public ResponseEntity<CommonResponse> delete(@PathVariable Long id) {
         courierService.delete(id);
-        return new CommonResponse(0, "Courier deleted");
+        CommonResponse response = new CommonResponse(0, "Courier deleted");
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse getAll() {
-        return new CommonResponse(0, courierService.getAll(), "Couriers fetched");
+    public ResponseEntity<CommonResponse> getAll() {
+        CommonResponse response = new CommonResponse(0, courierService.getAll(), "Couriers fetched");
+        return ResponseEntity.ok(response);
     }
 }

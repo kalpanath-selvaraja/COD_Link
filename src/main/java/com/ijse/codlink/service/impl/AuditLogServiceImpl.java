@@ -39,11 +39,13 @@ public class AuditLogServiceImpl implements AuditLogService {
 
 
 
-        AuditLog log = new AuditLog();
-        log.setAction(auditLogDTO.getAction());
-        log.setLogTime(LocalDateTime.now());
-        log.setUser(optionalUser.get());
-        AuditLog saved = auditLogRepository.save(log);
+        AuditLog auditLoglog = new AuditLog();
+        auditLoglog.setAction(auditLogDTO.getAction());
+        auditLoglog.setLogTime(LocalDateTime.now());
+        auditLoglog.setUser(optionalUser.get());
+        AuditLog saved = auditLogRepository.save(auditLoglog);
+
+        log.info("Auditlog Created");
 
         return new AuditLogDTO(saved.getLogId(), saved.getUser().getUserId(), saved.getAction(), saved.getLogTime());
 
@@ -75,6 +77,8 @@ public class AuditLogServiceImpl implements AuditLogService {
             auditLogDTO.setLogTime(auditLog.getLogTime());
             auditLogDTOList.add(auditLogDTO);
         }
+
+        log.info("AuditLog Fetched");
 
         return auditLogDTOList;
     }

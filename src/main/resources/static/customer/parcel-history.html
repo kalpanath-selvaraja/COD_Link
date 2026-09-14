@@ -123,9 +123,9 @@
 
         function isOk(res) { return res && res.status === 0; }
 
-        function handleAuthFailure(res) {
-            if (res && (res.status === 401 || res.status === 403)) {
-                alert(res.message || 'Session expired or not authorized.');
+        function handleAuthFailure(xhr) {
+            if (xhr && (xhr.status === 401 || xhr.status === 403)) {
+                alert('Session expired or not authorized.');
                 localStorage.clear();
                 window.location.href = '../login.html';
                 return true;
@@ -183,7 +183,6 @@
             ensureCustomerId().then(customerId => {
                 return $.ajax({ url: BASE_URL + '/api/parcels/customer/' + customerId, method: 'GET', headers: ajaxHeaders });
             }).then(response => {
-                if (handleAuthFailure(response)) return;
                 if (!isOk(response)) {
                     $tbody.html(`<tr><td colspan="7" style="text-align: center;">${response.message}</td></tr>`);
                     return;
@@ -204,24 +203,29 @@
                     if (parcel.status === 'FAILED') statusClass = 'status-failed';
                     if (parcel.status === 'RETURNED') statusClass = 'status-transfer';
 
-                    const weight = parcel.weight ? parcel.weight + ' kg' : '--';
-                    const cod = parcel.codAmount ? '$' + parseFloat(parcel.codAmount).toFixed(2) : '--';
+                    const $tr = $('<tr>');
+                    $tr.append($('<td>').text('#' + parcel.parcelId));
+                    $tr.append($('<td>').append($('<strong>').text(parcel.trackingNumber || 'N/A')));
+                    $tr.append($('<td>').text(parcel.customerName || 'You'));
 
-                    const row = `
-                    <tr>
-                        <td>#${parcel.parcelId}</td>
-                        <td><strong>${parcel.trackingNumber || 'N/A'}</strong></td>
-                        <td>${parcel.customerName || 'You'}</td>
-                        <td>${weight}</td>
-                        <td>${cod}</td>
-                        <td><span class="status-pill ${statusClass}">${parcel.status || 'PENDING'}</span></td>
-                        <td>#${parcel.shipmentId || 'N/A'}</td>
-                    </tr>
-                    `;
-                    $tbody.append(row);
+                    const weight = parcel.weight ? parcel.weight + ' kg' : '--';
+                    $tr.append($('<td>').text(weight));
+
+                    const cod = parcel.codAmount ? '$' + parseFloat(parcel.codAmount).toFixed(2) : '--';
+                    $tr.append($('<td>').text(cod));
+
+                    const $statusSpan = $('<span>').addClass('status-pill ' + statusClass).text(parcel.status || 'PENDING');
+                    $tr.append($('<td>').append($statusSpan));
+
+                    $tr.append($('<td>').text('#' + (parcel.shipmentId || 'N/A')));
+
+                    $tbody.append($tr);
                 });
             }).catch(err => {
-                $tbody.html(`<tr><td colspan="7" style="text-align: center; color:red;">${err.message || 'Failed to load parcel history.'}</td></tr>`);
+
+                if (err && err.status && handleAuthFailure(err)) return;
+
+                $tbody.html(`<tr><td colspan="7" style="text-align: center; color:red;">${err.message || err.statusText || 'Failed to load parcel history.'}</td></tr>`);
             });
         }
 

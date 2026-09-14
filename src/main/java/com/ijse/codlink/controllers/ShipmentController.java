@@ -4,7 +4,9 @@ import com.ijse.codlink.dto.ShipmentDTO;
 import com.ijse.codlink.responce.CommonResponse;
 import com.ijse.codlink.service.ShipmentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,42 +18,41 @@ public class ShipmentController {
     private final ShipmentService shipmentService;
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse createShipment(@RequestBody ShipmentDTO shipmentDTO) {
+    public ResponseEntity<CommonResponse> createShipment(@RequestBody ShipmentDTO shipmentDTO) {
         ShipmentDTO dto = shipmentService.create(shipmentDTO);
-
-        return new CommonResponse(0, dto,"Shipment created successfully");
+        CommonResponse response = new CommonResponse(0, dto, "Shipment created successfully");
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping(value = "/customer/{customerId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse getShipmentByCustomer(@PathVariable Long customerId) {
+    public ResponseEntity<CommonResponse> getShipmentByCustomer(@PathVariable Long customerId) {
         List<ShipmentDTO> shipmentDTOList = shipmentService.getByCustomerId(customerId);
-
-        return new CommonResponse(0, shipmentDTOList,"Shipment fetched successfully");
+        CommonResponse response = new CommonResponse(0, shipmentDTOList, "Shipment fetched successfully");
+        return ResponseEntity.ok(response);
     }
 
-
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse getById(@PathVariable Long id) {
-        return new CommonResponse(0, shipmentService.getById(id), "Shipment fetched");
+    public ResponseEntity<CommonResponse> getById(@PathVariable Long id) {
+        CommonResponse response = new CommonResponse(0, shipmentService.getById(id), "Shipment fetched");
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping(value = "/{id}")
-    public CommonResponse delete(@PathVariable Long id) {
+    public ResponseEntity<CommonResponse> delete(@PathVariable Long id) {
         shipmentService.delete(id);
-        return new CommonResponse(0, "Shipment deleted");
+        CommonResponse response = new CommonResponse(0, "Shipment deleted");
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping(value = "/{id}/cancel", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse cancel(@PathVariable Long id) {
-        return new CommonResponse(0, shipmentService.cancel(id), "Shipment cancelled");
+    public ResponseEntity<CommonResponse> cancel(@PathVariable Long id) {
+        CommonResponse response = new CommonResponse(0, shipmentService.cancel(id), "Shipment cancelled");
+        return ResponseEntity.ok(response);
     }
-
-
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse getAll() {
-        return new CommonResponse(0, shipmentService.getAll(), "Shipments fetched");
+    public ResponseEntity<CommonResponse> getAll() {
+        CommonResponse response = new CommonResponse(0, shipmentService.getAll(), "Shipments fetched");
+        return ResponseEntity.ok(response);
     }
-
-
 }

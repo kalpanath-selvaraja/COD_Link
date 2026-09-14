@@ -4,6 +4,7 @@ import com.ijse.codlink.dto.CustomerDTO;
 import com.ijse.codlink.dto.CustomerLinkDTO;
 import com.ijse.codlink.entity.Customer;
 import com.ijse.codlink.entity.User;
+import com.ijse.codlink.enumeration.UserStatus;
 import com.ijse.codlink.exception.CustomException;
 import com.ijse.codlink.repository.CustomerRepository;
 import com.ijse.codlink.repository.UserRepository;
@@ -46,6 +47,7 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setName(dto.getName());
         customer.setPhoneNumber(dto.getPhoneNumber());
         customer.setUser(user);
+        customer.setStatus(UserStatus.ACTIVE);
 
         Customer saved = customerRepository.save(customer);
 
@@ -85,9 +87,10 @@ public class CustomerServiceImpl implements CustomerService {
         Customer customer = new Customer();
         customer.setName(dto.getName());
         customer.setPhoneNumber(dto.getPhoneNumber());
+        customer.setStatus(UserStatus.ACTIVE);
 
         Customer save = customerRepository.save(customer);
-        return new CustomerDTO(save.getCustomerId(), save.getName(), save.getPhoneNumber(), null);
+        return new CustomerDTO(save.getCustomerId(), save.getName(), save.getPhoneNumber(), 0L);
 
 
     }
@@ -141,7 +144,7 @@ public class CustomerServiceImpl implements CustomerService {
     public List<CustomerDTO> getAll() {
         log.info("Execute method getAll()");
         List<CustomerDTO> list = new ArrayList<>();
-        for (Customer c : customerRepository.findAll()) {
+        for (Customer c : customerRepository.findCustomerByStatus(UserStatus.ACTIVE)) {
 
             list.add(new CustomerDTO(c.getCustomerId(), c.getName(), c.getPhoneNumber(),
                     c.getUser() != null ? c.getUser().getUserId() : null));
@@ -156,12 +159,10 @@ public class CustomerServiceImpl implements CustomerService {
         if (optionalCustomer.isEmpty()) {
             throw new CustomException(404, "Customer not found");
         }
-        try {
-            customerRepository.delete(optionalCustomer.get());
-        } catch (DataIntegrityViolationException e) {
-            log.error("Data integrity violation while deleting customer: {}", e.getMessage());
-            throw new CustomException(409, "Cannot delete — this customer is still referenced by parcels or shipments. Remove or reassign those first.");
-        }
+
+        Customer customer = optionalCustomer.get();
+        customer.setStatus(UserStatus.INACTIVE);
+        customerRepository.save(customer);
     }
 
     @Override
@@ -196,6 +197,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         Customer customer = optionalCustomer.get();
         customer.setUser(user);
+        customer.setStatus(UserStatus.ACTIVE);
         Customer saved = customerRepository.save(customer);
 
         return new CustomerDTO(saved.getCustomerId(), saved.getName(), saved.getPhoneNumber(), saved.getUser().getUserId());

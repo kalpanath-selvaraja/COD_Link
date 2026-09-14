@@ -235,8 +235,9 @@
           // this is an unauthenticated endpoint and those fields are PII.
           $('#result-tracking').text(parcel.trackingNumber || trackingNumber);
 
-          const statusClass = STATUS_CLASS[parcel.status] || 'status-booked';
-          $('#result-status').html(`<span class="status-pill ${statusClass}">${parcel.status || 'UNKNOWN'}</span>`);
+            const statusClass = STATUS_CLASS[parcel.status] || 'status-booked';
+            const $statusSpan = $('<span>').addClass('status-pill ' + statusClass).text(parcel.status || 'UNKNOWN');
+            $('#result-status').empty().append($statusSpan);
 
           $('#result-weight').text(parcel.weight != null ? parcel.weight + ' kg' : '—');
 
@@ -252,9 +253,12 @@
 
           $result.addClass('is-visible');
         }).fail(function (xhr) {
-          showAlert('Request failed: ' + (xhr.responseText || xhr.status));
+            const msg = xhr.responseJSON && xhr.responseJSON.message
+                ? xhr.responseJSON.message
+                : "Tracking request failed. Please check the number and try again.";
+            showAlert(msg);
         }).always(function () {
-          setLoading(false);
+            setLoading(false);
         });
       });
     });

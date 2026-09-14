@@ -62,7 +62,7 @@ public class BranchServiceImpl implements BranchService {
         address.setServiceZone(zone.get());
 
         branch.setAddress(address);
-
+        log.info("Branch Created");
         return toDto(branchRepository.save(branch));
     }
 
@@ -74,6 +74,8 @@ public class BranchServiceImpl implements BranchService {
             log.error("Could not find branch by branch ID.");
             throw new CustomException(404, "Branch not found");
         }
+        log.info("Branch fetched by ID");
+
         return toDto(optionalBranch.get());
 
     }
@@ -85,6 +87,8 @@ public class BranchServiceImpl implements BranchService {
         for (Branch branch : branchRepository.findAll()) {
             list.add(toDto(branch));
         }
+        log.info("Branch fetched");
+
         return list;
     }
 
@@ -102,6 +106,8 @@ public class BranchServiceImpl implements BranchService {
         if (branchDTO.getBranchName() != null) branch.setBranchName(branchDTO.getBranchName());
         if (branchDTO.getPhone() != null) branch.setPhone(branchDTO.getPhone());
 
+        log.info("Branch updated. ");
+
         return toDto(branchRepository.save(branch));
     }
 
@@ -115,6 +121,7 @@ public class BranchServiceImpl implements BranchService {
             throw new CustomException(404, "Branch not found");
         }
         try {
+
             branchRepository.delete(optionalBranch.get());
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
             log.info("Data integrity exception: trying to delete while the other tables are referencing it.");

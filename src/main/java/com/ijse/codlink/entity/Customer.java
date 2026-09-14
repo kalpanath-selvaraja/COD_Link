@@ -1,5 +1,6 @@
 package com.ijse.codlink.entity;
 
+import com.ijse.codlink.enumeration.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,6 +18,7 @@ public class Customer {
 
     private String Name;
     private String phoneNumber;
+    private UserStatus status;
 
     @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id", unique = true)

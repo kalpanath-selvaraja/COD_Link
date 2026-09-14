@@ -100,6 +100,15 @@
             return response && response.status === 0;
         }
 
+        function handleAuthFailure(xhr) {
+            if (xhr && (xhr.status === 401 || xhr.status === 403)) {
+                alert('Session expired or not authorized.');
+                localStorage.clear();
+                window.location.href = '../login.html';
+                return true;
+            }
+            return false;
+        }
         function isAuthError(response) {
             return response && (response.status === 401 || response.status === 403);
         }
@@ -109,6 +118,7 @@
         }
 
         // ---- If a profile already exists, skip the forms entirely ----
+        // ---- If a profile already exists, skip the forms entirely ----
         $.ajax({
             url: BASE_URL + '/api/customers/me',
             method: 'GET',
@@ -117,12 +127,12 @@
             if (isOk(response)) {
                 $('#setup-forms').hide();
                 $('#already-linked-note').show();
-
                 localStorage.setItem('customer_id', response.body.customerId);
-                localStorage.setItem('username', response.body.name)
+                localStorage.setItem('username', response.body.name);
                 setTimeout(goToBooking, 120);
             }
-
+        }).fail(function(xhr) {
+            handleAuthFailure(xhr);
         });
 
         // ---- Create new profile ----
@@ -143,27 +153,20 @@
                 headers: ajaxHeaders,
                 data: JSON.stringify({ name: name, phoneNumber: phoneNumber })
             }).done(function (response) {
-
-                if (isAuthError(response)) {
-                    alert(response.message || 'Session expired.');
-                    localStorage.clear();
-                    window.location.href = '../login.html';
-                    return;
-                }
-
                 if (!isOk(response)) {
                     alert('Could not create profile: ' + response.message);
                     return;
                 }
-
                 localStorage.setItem('customer_id', response.body.customerId);
-                localStorage.setItem('username', response.body.name)
+                localStorage.setItem('username', response.body.name);
 
                 alert('Profile created. Redirecting to parcel booking…');
                 goToBooking();
 
             }).fail(function (xhr) {
-                alert('Request failed: ' + (xhr.responseText || xhr.status));
+                if (handleAuthFailure(xhr)) return;
+                const msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : (xhr.responseText || xhr.status);
+                alert('Request failed: ' + msg);
             });
         });
 
@@ -185,24 +188,17 @@
                 headers: ajaxHeaders,
                 data: JSON.stringify({ customerId: parseInt(customerId, 10), phoneNumber: phoneNumber })
             }).done(function (response) {
-
-                if (isAuthError(response)) {
-                    alert(response.message || 'Session expired.');
-                    localStorage.clear();
-                    window.location.href = '../login.html';
-                    return;
-                }
-
                 if (!isOk(response)) {
                     alert('Could not link profile: ' + response.message);
                     return;
                 }
-
                 alert('Profile linked. Redirecting to parcel booking…');
                 goToBooking();
 
             }).fail(function (xhr) {
-                alert('Request failed: ' + (xhr.responseText || xhr.status));
+                if (handleAuthFailure(xhr)) return;
+                const msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : (xhr.responseText || xhr.status);
+                alert('Request failed: ' + msg);
             });
         });
 

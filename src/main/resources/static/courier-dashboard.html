@@ -139,9 +139,10 @@
         }
 
         function isOk(res) { return res && res.status === 0; }
-        function handleAuthFailure(res) {
-            if (res && (res.status === 401 || res.status === 403)) {
-                alert(res.message || 'Session expired or not authorized.');
+
+        function handleAuthFailure(xhr) {
+            if (xhr && (xhr.status === 401 || xhr.status === 403)) {
+                alert('Session expired or not authorized.');
                 localStorage.clear();
                 window.location.href = './login.html';
                 return true;
@@ -163,21 +164,31 @@
             }
             attempts.forEach((a, i) => {
                 const p = parcels[i];
+                const $tr = $('<tr>');
+
                 if (!p) {
-                    $body.append(`<tr><td>#${a.parcelId}</td><td colspan="4" style="color:red;">Could not load parcel details</td><td>${new Date(a.attemptedAt).toLocaleString()}</td></tr>`);
+                    $tr.append($('<td>').text('#' + a.parcelId));
+                    $tr.append($('<td colspan="4" style="color:red;">').text('Could not load parcel details'));
+                    $tr.append($('<td>').text(new Date(a.attemptedAt).toLocaleString()));
+                    $body.append($tr);
                     return;
                 }
+
                 const type = p.isCod ? 'COD' : 'PREPAID';
                 const amount = p.isCod ? '$' + Number(p.codAmount || 0).toFixed(2) : '—';
-                $body.append(`
-                <tr>
-                    <td>#${p.parcelId}</td>
-                    <td><strong>${p.trackingNumber}</strong></td>
-                    <td>${p.weight} kg</td>
-                    <td><span class="status-pill ${p.isCod ? 'status-warning' : 'status-neutral'}">${type}</span></td>
-                    <td>${amount}</td>
-                    <td>${new Date(a.attemptedAt).toLocaleString()}</td>
-                </tr>`);
+
+                $tr.append($('<td>').text('#' + p.parcelId));
+                $tr.append($('<td>').append($('<strong>').text(p.trackingNumber)));
+                $tr.append($('<td>').text(p.weight + ' kg'));
+
+                const statusClass = p.isCod ? 'status-warning' : 'status-neutral';
+                const $statusSpan = $('<span>').addClass('status-pill ' + statusClass).text(type);
+                $tr.append($('<td>').append($statusSpan));
+
+                $tr.append($('<td>').text(amount));
+                $tr.append($('<td>').text(new Date(a.attemptedAt).toLocaleString()));
+
+                $body.append($tr);
             });
         }
 
@@ -187,7 +198,10 @@
             const requests = top5.map(a =>
                 $.ajax({ url: BASE_URL + '/api/parcels/' + a.parcelId, method: 'GET', headers: ajaxHeaders })
                     .then(res => (res && res.status === 0) ? res.body : null)
-                    .catch(() => null)
+                    .catch(xhr => {
+                        handleAuthFailure(xhr);
+                        return null;
+                    })
             );
             $.when.apply($, requests).then(function () {
                 const results = requests.length === 1 ? [arguments[0]] : Array.prototype.slice.call(arguments);
@@ -198,13 +212,11 @@
         function loadDashboard() {
             $.ajax({ url: BASE_URL + '/api/couriers/me', method: 'GET', headers: ajaxHeaders })
                 .done(meRes => {
-                    if (handleAuthFailure(meRes)) return;
                     if (!isOk(meRes)) { alert('Could not load your courier profile: ' + meRes.message); return; }
                     const myCourierId = meRes.body.courierId;
 
                     $.ajax({ url: BASE_URL + '/api/delivery-attempts', method: 'GET', headers: ajaxHeaders })
                         .done(attRes => {
-                            if (handleAuthFailure(attRes)) return;
                             if (!isOk(attRes)) { alert(attRes.message); return; }
 
                             const myAttempts = attRes.body.filter(a => a.courierId === myCourierId);
@@ -214,20 +226,28 @@
                             $('#stat-delivered').text(myDelivered.length);
                             loadRecentDeliveredDetails(myDelivered);
                         })
-                        .fail(() => alert('Failed to load delivery attempts.'));
+                        .fail(xhr => {
+                            if (handleAuthFailure(xhr)) return;
+                            alert('Failed to load delivery attempts.');
+                        });
 
                     $.ajax({ url: BASE_URL + '/api/cod-collections', method: 'GET', headers: ajaxHeaders })
                         .done(codRes => {
-                            if (handleAuthFailure(codRes)) return;
                             if (!isOk(codRes)) { alert(codRes.message); return; }
                             const myTotal = codRes.body
                                 .filter(c => c.courierId === myCourierId)
                                 .reduce((sum, c) => sum + Number(c.amount || 0), 0);
                             $('#stat-collected').text('$' + myTotal.toFixed(2));
                         })
-                        .fail(() => alert('Failed to load COD collections.'));
+                        .fail(xhr => {
+                            if (handleAuthFailure(xhr)) return;
+                            alert('Failed to load COD collections.');
+                        });
                 })
-                .fail(() => alert('Failed to load your courier profile — check backend is running.'));
+                .fail(xhr => {
+                    if (handleAuthFailure(xhr)) return;
+                    alert('Failed to load your courier profile — check backend is running.');
+                });
         }
 
         $('#btn-refresh').on('click', loadDashboard);

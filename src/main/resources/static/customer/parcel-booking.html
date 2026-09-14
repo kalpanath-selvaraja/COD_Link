@@ -293,9 +293,10 @@
         };
 
         function isOk(res) { return res && res.status === 0; }
-        function handleAuthFailure(res) {
-            if (res && (res.status === 401 || res.status === 403)) {
-                alert(res.message || 'Session expired or not authorized.');
+
+        function handleAuthFailure(xhr) {
+            if (xhr && (xhr.status === 401 || xhr.status === 403)) {
+                alert('Session expired or not authorized.');
                 localStorage.clear();
                 window.location.href = '../login.html';
                 return true;
@@ -530,7 +531,9 @@
                 renderCart();
                 loadMyParcels();
             }).fail(xhr => {
-                alert('Request failed: ' + (xhr.responseText || xhr.status));
+                if (handleAuthFailure(xhr)) return;
+                const msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : (xhr.responseText || xhr.status);
+                alert('Request failed: ' + msg);
             }).always(() => {
                 $btn.prop('disabled', false).text('Submit Cart & Book');
             });
@@ -541,16 +544,22 @@
             bookedParcels.forEach(p => {
                 (groups[p.shipmentId] = groups[p.shipmentId] || []).push(p);
             });
-            let html = '<div class="booking-result"><h4>Booked ' + bookedParcels.length + ' parcel(s) across ' + Object.keys(groups).length + ' shipment(s):</h4>';
+
+            const $panel = $('#booking-result-panel').empty();
+            const $resultDiv = $('<div class="booking-result">');
+            $resultDiv.append($('<h4>').text(`Booked ${bookedParcels.length} parcel(s) across ${Object.keys(groups).length} shipment(s):`));
+
             Object.entries(groups).forEach(([shipmentId, parcels]) => {
-                html += `<div class="shipment-group"><div class="shipment-group-title">Shipment #${shipmentId}</div>`;
+                const $groupDiv = $('<div class="shipment-group">');
+                $groupDiv.append($('<div class="shipment-group-title">').text('Shipment #' + shipmentId));
+
                 parcels.forEach(p => {
-                    html += `<div>• ${p.trackingNumber} — ${p.weight}kg — fee $${p.shippingFee} — COD $${p.codAmount} — status ${p.status}</div>`;
+                    const lineText = `• ${p.trackingNumber} — ${p.weight}kg — fee $${p.shippingFee} — COD $${p.codAmount} — status ${p.status}`;
+                    $groupDiv.append($('<div>').text(lineText));
                 });
-                html += '</div>';
+                $resultDiv.append($groupDiv);
             });
-            html += '</div>';
-            $('#booking-result-panel').html(html);
+            $panel.append($resultDiv);
         }
 
         // ================= Your Parcels (last 5) =================
@@ -576,18 +585,21 @@
                     return;
                 }
                 top5.forEach(p => {
-                    $body.append(`
-                    <tr>
-                        <td>#${p.parcelId}</td>
-                        <td><strong>${p.trackingNumber}</strong></td>
-                        <td>${p.weight} kg</td>
-                        <td>$${Number(p.codAmount || 0).toFixed(2)}</td>
-                        <td><span class="status-pill ${statusClass[p.status] || 'status-neutral'}">${p.status}</span></td>
-                    </tr>
-                `);
+                    const $tr = $('<tr>');
+                    $tr.append($('<td>').text('#' + p.parcelId));
+                    $tr.append($('<td>').append($('<strong>').text(p.trackingNumber)));
+                    $tr.append($('<td>').text(p.weight + ' kg'));
+                    $tr.append($('<td>').text('$' + Number(p.codAmount || 0).toFixed(2)));
+
+                    const $statusSpan = $('<span>').addClass('status-pill ' + (statusClass[p.status] || 'status-neutral')).text(p.status);
+                    $tr.append($('<td>').append($statusSpan));
+
+                    $body.append($tr);
                 });
+
             }).catch(err => {
-                $body.html(`<tr><td colspan="5" style="text-align:center; color:red;">${err.message || 'Failed to load your parcels.'}</td></tr>`);
+                if (err && err.status && handleAuthFailure(err)) return; // err is the xhr object here
+                $body.html(`<tr><td colspan="5" style="text-align:center; color:red;">${err.message || err.statusText || 'Failed to load your parcels.'}</td></tr>`);
             });
         }
 

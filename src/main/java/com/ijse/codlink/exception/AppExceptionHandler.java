@@ -19,16 +19,21 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class AppExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {CustomException.class})
-    public ResponseEntity<CommonResponse> handleCustomException(CustomException exception, WebRequest request) {
+    public ResponseEntity<CommonResponse> handleCustomException(CustomException exception) {
         log.warn("Handled exception: {}",exception.getMessage() );
-        return ResponseEntity.ok(new CommonResponse(exception.getStatus(),exception.getMessage()));
+
+
+        return ResponseEntity.status(exception.getStatus())
+                .body(new CommonResponse(exception.getStatus() ,exception.getMessage()));
     }
 
     @ExceptionHandler(value = {Exception.class})
     public ResponseEntity<CommonResponse> handlerServerException(Exception exception , WebRequest webRequest){
         log.error("Unhandled exception: {}",exception.getMessage() );
-        return ResponseEntity.ok(new CommonResponse(500,"Something went wrong"));
+        return ResponseEntity.status(500).body(new CommonResponse(500, "Something went wrong"));
     }
+
+
 
     @Override
     protected @Nullable ResponseEntity<Object> handleMethodArgumentNotValid(
@@ -40,7 +45,7 @@ public class AppExceptionHandler extends ResponseEntityExceptionHandler {
                 .orElse("Validation Failed");
 
         log.warn("Validation Failed: {}", messsage );
-        return ResponseEntity.ok(new CommonResponse(400,messsage));
+        return ResponseEntity.status(400).body(new CommonResponse(400, messsage));
     }
 
     @Override
@@ -48,7 +53,7 @@ public class AppExceptionHandler extends ResponseEntityExceptionHandler {
             HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
 
         log.warn("Malformed request body: {}", ex.getMessage());
-        return ResponseEntity.ok(new CommonResponse(400, "Malformed request body"));
+        return ResponseEntity.status(400).body(new CommonResponse(400, "Malformed request body"));
     }
 }
 
