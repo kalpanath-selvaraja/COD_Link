@@ -15,10 +15,10 @@ import java.util.Map;
 @Slf4j
 public class GeminiServiceImpl implements GeminiService {
 
-    @Value("${gemini.api.key}")
+    @Value("${spring.ai.google.genai.api-key}")
     private String apiKey;
 
-    @Value("${gemini.model:gemini-3.5-flash-lite}")
+    @Value("${spring.ai.google.genai.chat.model}")
     private String model;
 
     private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/";

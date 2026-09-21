@@ -24,6 +24,7 @@ public class DataSeeder implements CommandLineRunner {
     @Value("${app.default-admin.username}")
     private String defaultAdminUsername;
 
+
     @Value("${app.default-admin.password}")
     private String defaultAdminPassword;
 
