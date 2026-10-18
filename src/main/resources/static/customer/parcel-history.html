@@ -6,6 +6,7 @@
     <title>Parcel History | CODLink Logistics Platform</title>
     <link rel="stylesheet" href="../css/normalize.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="/js/text.js"></script>
 </head>
 <body>
 
@@ -183,7 +184,7 @@
                 return $.ajax({ url: BASE_URL + '/api/parcels/customer/' + customerId, method: 'GET', headers: ajaxHeaders });
             }).then(response => {
                 if (!isOk(response)) {
-                    $tbody.html(`<tr><td colspan="7" style="text-align: center;">${response.message}</td></tr>`);
+                    $tbody.html(`<tr><td colspan="7" style="text-align: center;">${escapeHtml(response.message)}</td></tr>`);
                     return;
                 }
 
@@ -224,7 +225,7 @@
 
                 if (err && err.status && handleAuthFailure(err)) return;
 
-                $tbody.html(`<tr><td colspan="7" style="text-align: center; color:red;">${err.message || err.statusText || 'Failed to load parcel history.'}</td></tr>`);
+                $tbody.html(`<tr><td colspan="7" style="text-align: center; color:red;">${escapeHtml(err.message || err.statusText || 'Failed to load parcel history.')}</td></tr>`);
             });
         }
 

@@ -6,6 +6,7 @@
     <title>Shipments Management | CODLink Logistics Platform</title>
     <link rel="stylesheet" href="../css/normalize.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="/js/text.js"></script>
 </head>
 <body>
 
@@ -291,7 +292,7 @@
             $.ajax({ url: BASE_URL + '/api/shipments', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
 
-                    if (!isOk(res)) { $body.html(`<tr><td colspan="6" style="text-align:center;">${res.message}</td></tr>`); return; }
+                    if (!isOk(res)) { $body.html(`<tr><td colspan="6" style="text-align:center;">${escapeHtml(res.message)}</td></tr>`); return; }
                     renderRows(res.body);
                 })
                 .fail(xhr => {
@@ -306,7 +307,7 @@
             $.ajax({ url: BASE_URL + '/api/shipments/customer/' + customerId, method: 'GET', headers: ajaxHeaders })
                 .done(res => {
 
-                    if (!isOk(res)) { $body.html(`<tr><td colspan="6" style="text-align:center;">${res.message}</td></tr>`); return; }
+                    if (!isOk(res)) { $body.html(`<tr><td colspan="6" style="text-align:center;">${escapeHtml(res.message)}</td></tr>`); return; }
                     renderRows(res.body);
                 })
                 .fail(xhr => {
@@ -369,7 +370,7 @@
                         $cell.html(`<span class="helper-text">No invoice</span>`);
                         return;
                     }
-                    $cell.html(`<strong>$${Number(res.body.amount).toFixed(2)}</strong> (#${res.body.invoiceId})`);
+                    $cell.html(`<strong>$${escapeHtml(Number(res.body.amount).toFixed(2))}</strong> (#${escapeHtml(res.body.invoiceId)})`);
                 })
                 .fail(xhr => {
                     if (handleAuthFailure(xhr)) return;

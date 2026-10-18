@@ -6,6 +6,7 @@
     <title>Couriers Management | CODLink Logistics Platform</title>
     <link rel="stylesheet" href="../css/normalize.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="/js/text.js"></script>
 </head>
 <body>
 
@@ -289,7 +290,7 @@
                     const $sel = $('#branchId').empty().append('<option value="">— select branch —</option>');
                     res.body.forEach(b => {
                         branchCache[b.branchId] = b.branchName;
-                        $sel.append(`<option value="${b.branchId}">${b.branchName} (#${b.branchId})</option>`);
+                        $sel.append(`<option value="${escapeHtml(b.branchId)}">${escapeHtml(b.branchName)} (#${escapeHtml(b.branchId)})</option>`);
                     });
                     // Table may have rendered before branches loaded on first paint — re-render now that names resolve.
                     loadCouriers();
@@ -316,7 +317,7 @@
                 $tr.append($('<td>').text(c.userId != null ? '#' + c.userId : '—'));
 
                 const $actions = $('<td>').html(`
-            <button type="button" class="btn-action btn-ghost btn-delete" data-id="${c.courierId}">Delete</button>
+            <button type="button" class="btn-action btn-ghost btn-delete" data-id="${escapeHtml(c.courierId)}">Delete</button>
         `);
                 $tr.append($actions);
                 $body.append($tr);
@@ -329,7 +330,7 @@
             $.ajax({ url: BASE_URL + '/api/couriers', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
 
-                    if (!isOk(res)) { $body.html(`<tr><td colspan="5" style="text-align:center;">${res.message}</td></tr>`); return; }
+                    if (!isOk(res)) { $body.html(`<tr><td colspan="5" style="text-align:center;">${escapeHtml(res.message)}</td></tr>`); return; }
                     renderRows(res.body);
                 })
                 .fail(() => $body.html('<tr><td colspan="5" style="text-align:center; color:red;">Failed to reach backend.</td></tr>'));
@@ -341,7 +342,7 @@
             $.ajax({ url: BASE_URL + '/api/couriers/branch/' + branchId, method: 'GET', headers: ajaxHeaders })
                 .done(res => {
 
-                    if (!isOk(res)) { $body.html(`<tr><td colspan="5" style="text-align:center;">${res.message}</td></tr>`); return; }
+                    if (!isOk(res)) { $body.html(`<tr><td colspan="5" style="text-align:center;">${escapeHtml(res.message)}</td></tr>`); return; }
                     renderRows(res.body);
                 })
                 .fail(() => $body.html('<tr><td colspan="5" style="text-align:center; color:red;">Failed to reach backend.</td></tr>'));

@@ -6,6 +6,7 @@
     <title>Branches Management | CODLink Logistics Platform</title>
     <link rel="stylesheet" href="../css/normalize.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="/js/text.js"></script>
 </head>
 <body>
 
@@ -266,7 +267,7 @@
                     const $sel = $('#zoneId').empty().append('<option value="">— select zone —</option>');
                     res.body.forEach(z => {
                         zoneCache[z.zoneId] = z.name;
-                        $sel.append(`<option value="${z.zoneId}">${z.name} (#${z.zoneId})</option>`);
+                        $sel.append(`<option value="${escapeHtml(z.zoneId)}">${escapeHtml(z.name)} (#${escapeHtml(z.zoneId)})</option>`);
                     });
                 })
                 .fail(xhr => {
@@ -305,8 +306,8 @@
                 $tr.append($('<td>').text(zoneLabel));
 
                 const $actions = $('<td>').html(`
-                <button type="button" class="btn-action btn-ghost btn-edit" data-id="${b.branchId}">Edit</button>
-                <button type="button" class="btn-action btn-ghost btn-delete" data-id="${b.branchId}">Delete</button>
+                <button type="button" class="btn-action btn-ghost btn-edit" data-id="${escapeHtml(b.branchId)}">Edit</button>
+                <button type="button" class="btn-action btn-ghost btn-delete" data-id="${escapeHtml(b.branchId)}">Delete</button>
             `);
                 $tr.append($actions);
                 $body.append($tr);
@@ -320,7 +321,7 @@
             $.ajax({ url: BASE_URL + '/api/branches', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
 
-                    if (!isOk(res)) { $body.html(`<tr><td colspan="6" style="text-align:center;">${res.message}</td></tr>`); return; }
+                    if (!isOk(res)) { $body.html(`<tr><td colspan="6" style="text-align:center;">${escapeHtml(res.message)}</td></tr>`); return; }
                     renderRows(res.body);
                 })
                 .fail(xhr => {

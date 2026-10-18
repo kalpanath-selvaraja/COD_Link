@@ -6,6 +6,7 @@
     <title>Pricing Rules | CODLink Logistics Platform</title>
     <link rel="stylesheet" href="../css/normalize.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="/js/text.js"></script>
 </head>
 <body>
 
@@ -255,7 +256,7 @@
             return $.ajax({ url: BASE_URL + '/api/service-zones', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
                     if (!isOk(res)) return;
-                    const options = res.body.map(z => `<option value="${z.zoneId}">${z.name} (#${z.zoneId})</option>`).join('');
+                    const options = res.body.map(z => `<option value="${escapeHtml(z.zoneId)}">${escapeHtml(z.name)} (#${escapeHtml(z.zoneId)})</option>`).join('');
                     $('#zoneId').html('<option value="">— select zone —</option>' + options);
                     $('#viewZoneId').html('<option value="">— select zone to view —</option>' + options);
                 })
@@ -317,7 +318,7 @@
             $body.html('<tr><td colspan="5" style="text-align:center;">Loading…</td></tr>');
             $.ajax({ url: BASE_URL + '/api/pricing-rules/zone/' + zoneId, method: 'GET', headers: ajaxHeaders })
                 .done(res => {
-                    if (!isOk(res)) { $body.html(`<tr><td colspan="5" style="text-align:center;">${res.message}</td></tr>`); return; }
+                    if (!isOk(res)) { $body.html(`<tr><td colspan="5" style="text-align:center;">${escapeHtml(res.message)}</td></tr>`); return; }
                     renderRows(res.body);
                 })
                 .fail(xhr => {

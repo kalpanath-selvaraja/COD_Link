@@ -6,6 +6,7 @@
     <title>Customers Directory | CODLink Logistics Platform</title>
     <link rel="stylesheet" href="../css/normalize.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="/js/text.js"></script>
 </head>
 <body>
 
@@ -244,13 +245,13 @@
             customers.forEach(c => {
 
                 $body.append(`
-                <tr data-id="${c.customerId}">
-                    <td>#${c.customerId}</td>
-                    <td><strong>${c.name || '—'}</strong></td>
-                    <td>${c.phoneNumber || '—'}</td>
-                    <td>${c.userId != null ? 'User Customer - user Id ' + c.userId : '<span class="helper-text">Walk-in (no login)</span>'}</td>
+                <tr data-id="${escapeHtml(c.customerId)}">
+                    <td>#${escapeHtml(c.customerId)}</td>
+                    <td><strong>${escapeHtml(c.name || '—')}</strong></td>
+                    <td>${escapeHtml(c.phoneNumber || '—')}</td>
+                    <td>${escapeHtml(c.userId != null ? 'User Customer - user Id ' + c.userId : '<span class="helper-text">Walk-in (no login)</span>')}</td>
                     <td>
-                        <button type="button" class="btn-action btn-ghost btn-delete" data-id="${c.customerId}">Delete</button>
+                        <button type="button" class="btn-action btn-ghost btn-delete" data-id="${escapeHtml(c.customerId)}">Delete</button>
                     </td>
                 </tr>
             `);
@@ -272,7 +273,7 @@
             $body.html('<tr><td colspan="5" style="text-align:center;">Loading…</td></tr>');
             $.ajax({ url: BASE_URL + '/api/customers', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
-                    if (!isOk(res)) { $body.html(`<tr><td colspan="5" style="text-align:center;">${res.message}</td></tr>`); return; }
+                    if (!isOk(res)) { $body.html(`<tr><td colspan="5" style="text-align:center;">${escapeHtml(res.message)}</td></tr>`); return; }
                     customerCache = res.body;
                     applyFilter();
                 }).fail(xhr => {

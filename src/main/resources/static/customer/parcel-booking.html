@@ -38,6 +38,7 @@
             padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 18px;
         }
     </style>
+    <script src="/js/text.js"></script>
 </head>
 <body>
 
@@ -338,7 +339,7 @@
                 .done(res => {
                     if (!isOk(res)) { alert(res.message); return; }
                     const $sel = $('#originBranchId').empty().append('<option value="">— select branch —</option>');
-                    res.body.forEach(b => $sel.append(`<option value="${b.branchId}">${b.branchName}</option>`));
+                    res.body.forEach(b => $sel.append(`<option value="${escapeHtml(b.branchId)}">${escapeHtml(b.branchName)}</option>`));
                 })
                 .fail(() => $('#originBranchId').html('<option value="">Failed to load branches</option>'));
         }
@@ -349,7 +350,7 @@
                 .done(res => {
                     if (!isOk(res)) { alert(res.message); return; }
                     zoneCache = res.body;
-                    const options = res.body.map(z => `<option value="${z.zoneId}">${z.name} (#${z.zoneId})</option>`).join('');
+                    const options = res.body.map(z => `<option value="${escapeHtml(z.zoneId)}">${escapeHtml(z.name)} (#${escapeHtml(z.zoneId)})</option>`).join('');
                     $('#deliveryZone').html('<option value="">— select delivery zone —</option>' + options);
                     $('#pickupZone').html('<option value="">— select pickup zone —</option>' + options);
                 })
@@ -439,12 +440,12 @@
                 const zoneName = (zoneCache.find(z => String(z.zoneId) === String(line.deliveryAddress.zoneId)) || {}).name || ('#' + line.deliveryAddress.zoneId);
                 $body.append(`
                 <tr>
-                    <td>${i + 1}</td>
-                    <td>${line.weight} kg</td>
-                    <td>$${Number(line.codAmount).toFixed(2)}</td>
-                    <td>${zoneName}</td>
-                    <td>${line._estFee != null ? '$' + line._estFee.toFixed(2) : '—'}</td>
-                    <td><button type="button" class="btn-remove-line" data-idx="${i}">Remove</button></td>
+                    <td>${escapeHtml(i + 1)}</td>
+                    <td>${escapeHtml(line.weight)} kg</td>
+                    <td>$${escapeHtml(Number(line.codAmount).toFixed(2))}</td>
+                    <td>${escapeHtml(zoneName)}</td>
+                    <td>${escapeHtml(line._estFee != null ? '$' + line._estFee.toFixed(2) : '—')}</td>
+                    <td><button type="button" class="btn-remove-line" data-idx="${escapeHtml(i)}">Remove</button></td>
                 </tr>
             `);
             });
@@ -571,7 +572,7 @@
                 return $.ajax({ url: BASE_URL + '/api/parcels/customer/' + customerId, method: 'GET', headers: ajaxHeaders });
             }).then(res => {
                 if (handleAuthFailure(res)) return;
-                if (!isOk(res)) { $body.html(`<tr><td colspan="5" style="text-align:center;">${res.message}</td></tr>`); return; }
+                if (!isOk(res)) { $body.html(`<tr><td colspan="5" style="text-align:center;">${escapeHtml(res.message)}</td></tr>`); return; }
 
                 const statusClass = {
                     BOOKED: 'status-pending', IN_TRANSIT: 'status-in-transit',
@@ -599,7 +600,7 @@
 
             }).catch(err => {
                 if (err && err.status && handleAuthFailure(err)) return; // err is the xhr object here
-                $body.html(`<tr><td colspan="5" style="text-align:center; color:red;">${err.message || err.statusText || 'Failed to load your parcels.'}</td></tr>`);
+                $body.html(`<tr><td colspan="5" style="text-align:center; color:red;">${escapeHtml(err.message || err.statusText || 'Failed to load your parcels.')}</td></tr>`);
             });
         }
 

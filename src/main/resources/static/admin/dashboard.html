@@ -6,6 +6,7 @@
     <title>Admin Dashboard | CODLink Logistics Platform</title>
     <link rel="stylesheet" href="../css/normalize.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="/js/text.js"></script>
 </head>
 <body>
 
@@ -281,7 +282,7 @@
                 headers: ajaxHeaders,
                 success: function(response) {
                     if (!isOk(response)) {
-                        $tbody.html(`<tr><td colspan="6" style="text-align:center; color:red;">${response.message}</td></tr>`);
+                        $tbody.html(`<tr><td colspan="6" style="text-align:center; color:red;">${escapeHtml(response.message)}</td></tr>`);
                         return;
                     }
                     const parcels = [...response.body].sort((a, b) => b.parcelId - a.parcelId).slice(0, 5);
@@ -315,7 +316,7 @@
                 },
                 error: function(xhr) {
                     if (handleAuthFailure(xhr)) return;
-                    $tbody.html(`<tr><td colspan="6" style="text-align: center; color: red;">Failed to load parcels. Server responded with status: ${xhr.status}</td></tr>`);
+                    $tbody.html(`<tr><td colspan="6" style="text-align: center; color: red;">Failed to load parcels. Server responded with status: ${escapeHtml(xhr.status)}</td></tr>`);
                 }
             });
         }

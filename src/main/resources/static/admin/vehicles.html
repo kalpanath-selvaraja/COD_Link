@@ -6,6 +6,7 @@
     <title>Fleet Vehicles | CODLink Logistics Platform</title>
     <link rel="stylesheet" href="../css/normalize.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="/js/text.js"></script>
 </head>
 <body>
 
@@ -266,7 +267,7 @@
                     const options = res.body.map(c => {
                         const label = 'Courier #' + c.courierId + ' — ' + (c.licenseNumber || 'no license on file');
                         courierLabelCache[c.courierId] = label;
-                        return `<option value="${c.courierId}">${label}</option>`;
+                        return `<option value="${escapeHtml(c.courierId)}">${escapeHtml(label)}</option>`;
                     }).join('');
                     $('#courierId').html('<option value="">— select courier —</option>' + options);
                 })
@@ -300,7 +301,7 @@
                 $body.append('<tr><td colspan="6" style="text-align:center;">No vehicles match.</td></tr>');
                 return;
             }
-            const statusOptions = VALID_STATUSES.map(s => `<option value="${s}">${s}</option>`).join('');
+            const statusOptions = VALID_STATUSES.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
 
             vehicles.forEach(v => {
                 const $tr = $('<tr>').attr('data-id', v.vehicleId);
@@ -359,7 +360,7 @@
             $.ajax({ url: BASE_URL + '/api/vehicles', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
                     if (handleAuthFailure(res)) return;
-                    if (!isOk(res)) { $body.html(`<tr><td colspan="6" style="text-align:center;">${res.message}</td></tr>`); return; }
+                    if (!isOk(res)) { $body.html(`<tr><td colspan="6" style="text-align:center;">${escapeHtml(res.message)}</td></tr>`); return; }
                     vehicleCache = res.body;
                     applySearch();
                 })

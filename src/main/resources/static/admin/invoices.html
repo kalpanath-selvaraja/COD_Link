@@ -6,6 +6,7 @@
     <title>Invoices | CODLink Logistics Platform</title>
     <link rel="stylesheet" href="../css/normalize.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="/js/text.js"></script>
 </head>
 <body>
 
@@ -238,7 +239,7 @@
             $body.html('<tr><td colspan="3" style="text-align:center;">Loading…</td></tr>');
             $.ajax({ url: BASE_URL + '/api/invoices', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
-                    if (!isOk(res)) { $body.html(`<tr><td colspan="3" style="text-align:center;">${res.message}</td></tr>`); return; }
+                    if (!isOk(res)) { $body.html(`<tr><td colspan="3" style="text-align:center;">${escapeHtml(res.message)}</td></tr>`); return; }
                     $body.empty();
                     if (!res.body.length) { $body.append('<tr><td colspan="3" style="text-align:center;">No invoices yet.</td></tr>'); return; }
                     res.body.forEach(inv => {
