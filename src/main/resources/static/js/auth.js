@@ -1,9 +1,13 @@
 $(document).ready(function () {
+    $('#btn-toggle-password').on('click', function () {
+        const password = $('#password');
+        password.attr('type', password.attr('type') === 'password' ? 'text' : 'password');
+    });
     $('#login-form').on('submit', function (e) {
         e.preventDefault();
 
         let username = $('#username').val().trim();
-        let password = $('#password').val().trim();
+        let password = $('#password').val();
 
         if (!username || !password) {
             alert("Please enter both username and password.");
@@ -16,12 +20,14 @@ $(document).ready(function () {
         });
 
         $.ajax({
-            url: 'http://localhost:8080/api/auth/login',
+            url: '/api/auth/login',
             type: 'POST',
             contentType: 'application/json',
             data: loginData,
             success: function (response) {
                 if (response.body && response.body.token) {
+                    localStorage.clear();
+                    sessionStorage.clear();
                     localStorage.setItem("JWT", response.body.token);
                     localStorage.setItem("UserId", response.body.userId);
                     localStorage.setItem("username",response.body.username)

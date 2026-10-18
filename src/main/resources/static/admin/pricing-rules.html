@@ -207,7 +207,7 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     $(document).ready(function () {
-        const BASE_URL = 'http://localhost:8080';
+        const BASE_URL = '';
         const BRACKET_PATTERN = /^\d+(\.\d+)?(-\d+(\.\d+)?|\+)$/; // "0-2", "2-5", "70+"
 
         function getToken() {
@@ -224,7 +224,7 @@
         const token = getToken();
         if (!token) { window.location.href = '../login.html'; return; }
         const claims = decodeJwt(token);
-        if (!claims) { localStorage.clear(); window.location.href = '../login.html'; return; }
+        if (!claims) { localStorage.clear(); sessionStorage.clear(); window.location.href = '../login.html'; return; }
 
         const session = { token, username: claims.username || claims.sub || 'Unknown', role: (claims.role || '').toUpperCase() };
         const ajaxHeaders = { 'Authorization': 'Bearer ' + session.token, 'Content-Type': 'application/json' };
@@ -234,7 +234,7 @@
         function handleAuthFailure(xhr) {
             if (xhr && (xhr.status === 401 || xhr.status === 403)) {
                 alert('Session expired or not authorized.');
-                localStorage.clear();
+                localStorage.clear(); sessionStorage.clear();
                 window.location.href = '../login.html';
                 return true;
             }
@@ -245,7 +245,7 @@
         // but rule authoring is admin-only work, so gate the page.
         if (session.role !== 'ADMIN') {
             alert('This page is admin-only.');
-            window.location.href = '../dashboard.html';
+            window.location.href = '/login.html';
             return;
         }
 
@@ -408,7 +408,7 @@
 
         loadZonesIntoSelects();
 
-        $('#btn-logout').on('click', function () { localStorage.clear(); window.location.href = '../login.html'; });
+        $('#btn-logout').on('click', function () { localStorage.clear(); sessionStorage.clear(); window.location.href = '../login.html'; });
 
     });
 </script>

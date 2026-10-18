@@ -79,7 +79,7 @@
 <script>
     $(document).ready(function () {
 
-        const BASE_URL = 'http://localhost:8080';
+        const BASE_URL = '';
 
         function getToken() {
             return localStorage.getItem('codlink_jwt_token') || localStorage.getItem('JWT');
@@ -103,7 +103,7 @@
         function handleAuthFailure(xhr) {
             if (xhr && (xhr.status === 401 || xhr.status === 403)) {
                 alert('Session expired or not authorized.');
-                localStorage.clear();
+                localStorage.clear(); sessionStorage.clear();
                 window.location.href = '../login.html';
                 return true;
             }

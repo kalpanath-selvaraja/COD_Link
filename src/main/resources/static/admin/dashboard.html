@@ -186,7 +186,7 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     $(document).ready(function() {
-        const BASE_URL = 'http://localhost:8080';
+        const BASE_URL = '';
 
         const token = localStorage.getItem('JWT');
         if (!token) {
@@ -198,7 +198,6 @@
         const userId = localStorage.getItem('UserId')
 
         if(role == 'RECEPTIONIST'){
-
 
             $('.couriers').hide();
             $('.branches').hide();
@@ -216,7 +215,6 @@
         if(role == 'RECEPTIONIST'){
              isReceptionist = true;
         }
-
 
         const ajaxHeaders = {
             'Authorization': 'Bearer ' + token,
@@ -238,7 +236,7 @@
         function handleAuthFailure(xhr) {
             if (xhr && (xhr.status === 401 || xhr.status === 403)) {
                 alert('Session expired or not authorized.');
-                localStorage.clear();
+                localStorage.clear(); sessionStorage.clear();
                 window.location.href = '../login.html';
                 return true;
             }
@@ -272,7 +270,6 @@
                     $('#total-branches').text('N/A');
                 });
         }
-
 
         function loadRecentParcels() {
             const $tbody = $('#parcels-table-body');
@@ -338,7 +335,7 @@
         });
 
         $('#btn-logout').on('click', function() {
-            localStorage.clear();
+            localStorage.clear(); sessionStorage.clear();
             window.location.href = '../login.html';
         });
     });

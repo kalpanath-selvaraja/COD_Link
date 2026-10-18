@@ -207,7 +207,7 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     $(document).ready(function () {
-        const BASE_URL = 'http://localhost:8080';
+        const BASE_URL = '';
         const VALID_STATUSES = ['ACTIVE', 'IN_TRANSIT', 'OUT_OF_SERVICE', 'REMOVED']; // must match VehicleStatus.java exactly
 
         function getToken() {
@@ -219,7 +219,6 @@
         const userId = localStorage.getItem('UserId')
 
         if(role == 'RECEPTIONIST'){
-
 
             $('.couriers').hide();
             $('.branches').hide();
@@ -235,14 +234,11 @@
         const token = getToken();
         if (!token) { window.location.href = '../login.html'; return; }
 
-
-
-
         const ajaxHeaders = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
 
         if (role !== 'ADMIN' && role !== 'RECEPTIONIST'){
             alert('This page is admin-only.');
-            window.location.href = '../dashboard.html';
+            window.location.href = '/login.html';
             return;
         }
 
@@ -251,14 +247,12 @@
         function handleAuthFailure(xhr) {
             if (xhr && (xhr.status === 401 || xhr.status === 403)) {
                 alert('Session expired or not authorized.');
-                localStorage.clear();
+                localStorage.clear(); sessionStorage.clear();
                 window.location.href = '../login.html';
                 return true;
             }
             return false;
         }
-
-
 
         let editingVehicleId = null;
         let vehicleCache = [];          // full unfiltered list from the last successful load
