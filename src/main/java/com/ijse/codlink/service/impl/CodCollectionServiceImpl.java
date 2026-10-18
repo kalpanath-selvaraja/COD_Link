@@ -27,6 +27,7 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class CodCollectionServiceImpl implements CodCollectionService {
+    private final com.ijse.codlink.security.RecordAccess recordAccess;
 
     private final CodCollectionRepository codCollectionRepository;
     private final ParcelRepository parcelRepository;
@@ -106,6 +107,7 @@ public class CodCollectionServiceImpl implements CodCollectionService {
 
     @Override
     public List<CodCollectionDTO> getByCourierId(Long courierId) {
+        recordAccess.courier(courierId);
         log.info("Execute method getByCourierId()");
         Optional<Courier> optionalCourier = courierRepository.findById(courierId);
         if (optionalCourier.isEmpty()) {
@@ -122,7 +124,9 @@ public class CodCollectionServiceImpl implements CodCollectionService {
     public List<CodCollectionDTO> getAll() {
         log.info("Execute method getAll()");
         List<CodCollectionDTO> list = new ArrayList<>();
-        for (CodCollection c : codCollectionRepository.findAll()) list.add(toDto(c));
+        for (CodCollection c : codCollectionRepository.findAll()) {
+            if (recordAccess.hasRole("ADMIN") || recordAccess.owns(c.getCourier())) list.add(toDto(c));
+        }
         return list;
     }
 

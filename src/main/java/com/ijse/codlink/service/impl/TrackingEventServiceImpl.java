@@ -20,6 +20,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class TrackingEventServiceImpl implements TrackingEventService {
+    private final com.ijse.codlink.security.RecordAccess recordAccess;
 
     private final TrackingEventRepository trackingEventRepository;
     private final ParcelRepository parcelRepository;
@@ -51,6 +52,7 @@ public class TrackingEventServiceImpl implements TrackingEventService {
 
     @Override
     public List<TrackingEventDTO> getByParcelId(Long parcelId) {
+        recordAccess.parcel(parcelId);
         Optional<Parcel> optionalParcel = parcelRepository.findById(parcelId);
         if (optionalParcel.isEmpty()) {
             throw new CustomException(404, "Parcel not found");
@@ -66,7 +68,7 @@ public class TrackingEventServiceImpl implements TrackingEventService {
     public List<TrackingEventDTO> getAll() {
         List<TrackingEventDTO> list = new ArrayList<>();
         for (TrackingEvent e : trackingEventRepository.findAllByOrderByEventTimeDesc()){
-            list.add(toDto(e));
+            if (recordAccess.canRead(e.getParcel())) list.add(toDto(e));
         }
         return list;
     }

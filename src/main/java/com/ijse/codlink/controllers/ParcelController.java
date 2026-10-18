@@ -19,6 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ParcelController {
 
+    private final com.ijse.codlink.security.RecordAccess recordAccess;
     private final ParcelService parcelService;
 
     @PostMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -60,11 +61,13 @@ public class ParcelController {
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> getById(@PathVariable Long id) {
+        recordAccess.parcel(id);
         return ResponseEntity.ok(new CommonResponse(0, parcelService.getById(id), "Parcel found"));
     }
 
     @GetMapping(value = "/customer/{customerId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> getByCustomerId(@PathVariable Long customerId) {
+        recordAccess.customer(customerId);
         List<ParcelDTO> parcelDTOList = parcelService.getByCustomerId(customerId);
         return ResponseEntity.ok(new CommonResponse(0, parcelDTOList, "Parcel found"));
     }

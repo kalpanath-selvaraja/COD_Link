@@ -30,6 +30,7 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
+    private final com.ijse.codlink.security.RecordAccess recordAccess;
 
     private final DeliveryAttemptRepository deliveryAttemptRepository;
     private final ParcelRepository parcelRepository;
@@ -123,6 +124,7 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
 
     @Override
     public List<DeliveryAttemptDTO> getByParcelId(Long parcelId) {
+        recordAccess.parcel(parcelId);
         Optional<Parcel> optionalParcel = parcelRepository.findById(parcelId);
         if (optionalParcel.isEmpty()) {
             throw new CustomException(404, "Parcel not found");
@@ -137,7 +139,9 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
     @Override
     public List<DeliveryAttemptDTO> getAll() {
         List<DeliveryAttemptDTO> list = new ArrayList<>();
-        for (DeliveryAttempt a : deliveryAttemptRepository.findAllByOrderByAttemptedAtDesc()) list.add(toDto(a));
+        for (DeliveryAttempt a : deliveryAttemptRepository.findAllByOrderByAttemptedAtDesc()) {
+            if (recordAccess.hasRole("ADMIN") || recordAccess.owns(a.getCourier())) list.add(toDto(a));
+        }
         return list;
     }
 

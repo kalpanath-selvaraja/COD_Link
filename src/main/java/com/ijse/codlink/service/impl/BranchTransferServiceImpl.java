@@ -24,6 +24,7 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class BranchTransferServiceImpl implements BranchTransferService {
+    private final com.ijse.codlink.security.RecordAccess recordAccess;
 
     private final BranchTransferRepository branchTransferRepository;
     private final ParcelRepository parcelRepository;
@@ -102,6 +103,7 @@ public class BranchTransferServiceImpl implements BranchTransferService {
 
     @Override
     public List<BranchTransferDTO> getByParcelId(Long parcelId) {
+        recordAccess.parcel(parcelId);
         log.info("Execute method getByParcelId()");
         Optional<Parcel> optionalParcel = parcelRepository.findById(parcelId);
         if (optionalParcel.isEmpty()) {
@@ -121,7 +123,7 @@ public class BranchTransferServiceImpl implements BranchTransferService {
         List<BranchTransferDTO> list = new ArrayList<>();
 
         for(BranchTransfer b :branchTransferRepository.findAll()){
-            list.add(toDto(b));
+            if (recordAccess.canRead(b.getParcel())) list.add(toDto(b));
         }
 
         return list;

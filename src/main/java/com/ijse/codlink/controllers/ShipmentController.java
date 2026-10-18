@@ -15,6 +15,7 @@ import java.util.List;
 @RequestMapping(value = "api/shipments")
 @RequiredArgsConstructor
 public class ShipmentController {
+    private final com.ijse.codlink.security.RecordAccess recordAccess;
     private final ShipmentService shipmentService;
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -26,6 +27,7 @@ public class ShipmentController {
 
     @GetMapping(value = "/customer/{customerId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> getShipmentByCustomer(@PathVariable Long customerId) {
+        recordAccess.customer(customerId);
         List<ShipmentDTO> shipmentDTOList = shipmentService.getByCustomerId(customerId);
         CommonResponse response = new CommonResponse(0, shipmentDTOList, "Shipment fetched successfully");
         return ResponseEntity.ok(response);
@@ -33,6 +35,7 @@ public class ShipmentController {
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> getById(@PathVariable Long id) {
+        recordAccess.shipment(id);
         CommonResponse response = new CommonResponse(0, shipmentService.getById(id), "Shipment fetched");
         return ResponseEntity.ok(response);
     }
