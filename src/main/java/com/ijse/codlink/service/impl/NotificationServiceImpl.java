@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@org.springframework.transaction.annotation.Transactional
 @Slf4j
 public class NotificationServiceImpl implements NotificationService {
 

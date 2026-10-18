@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@org.springframework.transaction.annotation.Transactional
 @Slf4j
 @RequiredArgsConstructor
 public class CustomerServiceImpl implements CustomerService {

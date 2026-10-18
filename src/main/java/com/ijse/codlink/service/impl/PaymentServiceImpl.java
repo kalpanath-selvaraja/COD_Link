@@ -15,6 +15,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 @Service
+@org.springframework.transaction.annotation.Transactional
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;

@@ -22,6 +22,7 @@ import java.math.RoundingMode;
 import java.util.*;
 
 @Service
+@org.springframework.transaction.annotation.Transactional
 @Slf4j
 @RequiredArgsConstructor
 public class ParcelServiceImpl implements ParcelService {
