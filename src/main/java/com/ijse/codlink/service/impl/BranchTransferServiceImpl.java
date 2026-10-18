@@ -26,6 +26,7 @@ import java.util.Optional;
 public class BranchTransferServiceImpl implements BranchTransferService {
     private final com.ijse.codlink.security.RecordAccess recordAccess;
 
+    private final com.ijse.codlink.repository.TrackingEventRepository trackingEventRepository;
     private final BranchTransferRepository branchTransferRepository;
     private final ParcelRepository parcelRepository;
     private final BranchRepository branchRepository;
@@ -99,6 +100,11 @@ public class BranchTransferServiceImpl implements BranchTransferService {
         parcel.setCurrentBranch(toBranch);
         parcel.setAssignedCourier(null);
         parcelRepository.save(parcel);
+        com.ijse.codlink.entity.TrackingEvent event = new com.ijse.codlink.entity.TrackingEvent();
+        event.setParcel(parcel);
+        event.setStatus("TRANSFERRED: " + fromBranch.getBranchName() + " to " + toBranch.getBranchName());
+        event.setEventTime(LocalDateTime.now());
+        trackingEventRepository.save(event);
 
         return toDto(branchTransferRepository.save(transfer));
     }

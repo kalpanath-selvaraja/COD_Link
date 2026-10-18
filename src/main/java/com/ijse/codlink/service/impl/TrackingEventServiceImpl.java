@@ -42,7 +42,7 @@ public class TrackingEventServiceImpl implements TrackingEventService {
         recordAccess.assigned(optionalParcel.get());
         TrackingEvent trackingEvent = new TrackingEvent();
 
-        trackingEvent.setStatus(dto.getStatus());
+        trackingEvent.setStatus("NOTE: " + dto.getStatus());
         trackingEvent.setEventTime(LocalDateTime.now());
         trackingEvent.setParcel(optionalParcel.get());
 

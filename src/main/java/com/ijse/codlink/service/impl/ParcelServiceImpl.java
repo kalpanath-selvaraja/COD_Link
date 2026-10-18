@@ -26,6 +26,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class ParcelServiceImpl implements ParcelService {
 
+    private final com.ijse.codlink.service.ParcelLifecycle parcelLifecycle;
     private final ParcelRepository parcelRepository;
     private final CourierRepository courierRepository;
     private final com.ijse.codlink.security.RecordAccess recordAccess;
@@ -38,19 +39,9 @@ public class ParcelServiceImpl implements ParcelService {
     private final PricingRuleService pricingRuleService;
     private final InvoiceRepository invoiceRepository;
 
-    private static final BigDecimal RETURN_SURCHARGE_MULTIPLIER = new BigDecimal("1.10");
     private static final BigDecimal CROSS_ZONE_PICKUP_SURCHARGE_MULTIPLIER = new BigDecimal("1.15");
-    private static final Map<ParcelStatus, Set<ParcelStatus>> ALLOWED_TRANSITIONS = new EnumMap<>(ParcelStatus.class);
     private static final int MAX_PARCELS_PER_CART = 20;
     private static final double MAX_PARCEL_WEIGHT_KG = 70.0;
-
-    static {
-        ALLOWED_TRANSITIONS.put(ParcelStatus.BOOKED, EnumSet.of(ParcelStatus.IN_TRANSIT));
-        ALLOWED_TRANSITIONS.put(ParcelStatus.IN_TRANSIT, EnumSet.of(ParcelStatus.DELIVERED, ParcelStatus.FAILED));
-        ALLOWED_TRANSITIONS.put(ParcelStatus.FAILED, EnumSet.of(ParcelStatus.RETURNED, ParcelStatus.IN_TRANSIT));
-        ALLOWED_TRANSITIONS.put(ParcelStatus.DELIVERED, EnumSet.noneOf(ParcelStatus.class));
-        ALLOWED_TRANSITIONS.put(ParcelStatus.RETURNED, EnumSet.noneOf(ParcelStatus.class));
-    }
 
     @Override
     @Transactional
@@ -360,39 +351,13 @@ public class ParcelServiceImpl implements ParcelService {
 
         Parcel parcel = optionalParcel.get();
         recordAccess.assigned(parcel);
-        ParcelStatus currentStatus = parcel.getStatus();
-        ParcelStatus targetStatus = statusDto.getStatus();
-
-        Set<ParcelStatus> allowedNext = ALLOWED_TRANSITIONS.get(currentStatus);
-        if (allowedNext == null || !allowedNext.contains(targetStatus)) {
-            log.error("Cannot transition parcel from {} to {}", currentStatus, targetStatus);
-            throw new CustomException(409,
-                    "Cannot transition parcel from " + currentStatus + " to " + targetStatus);
-        }
-
-        if (targetStatus == ParcelStatus.RETURNED) {
-            if (parcel.getDeliveryAddress() == null || parcel.getDeliveryAddress().getServiceZone() == null) {
-                throw new CustomException(400, "Cannot calculate return fee — parcel has no delivery zone on record");
-            }
-            boolean isCod = parcel.getIsCod() != null ? parcel.getIsCod()
-                    : (parcel.getCodAmount() != null && parcel.getCodAmount().compareTo(BigDecimal.ZERO) > 0);
-            BigDecimal baseFee = pricingRuleService.calculateShippingFee(
-                    parcel.getDeliveryAddress().getServiceZone().getZoneId(), parcel.getWeight(), isCod);
-            BigDecimal returnFee = baseFee.multiply(RETURN_SURCHARGE_MULTIPLIER).setScale(2, RoundingMode.HALF_UP);
-            parcel.setReturnFee(returnFee);
-        }
-
-        parcel.setStatus(targetStatus);
-        Parcel saved = parcelRepository.save(parcel);
-
-        if (targetStatus == ParcelStatus.RETURNED && saved.getShipment() != null) {
-            shipmentService.resolveShipmentIfComplete(saved.getShipment().getShipmentId());
-        }
+        Parcel saved = parcelLifecycle.transition(parcel, statusDto.getStatus());
 
         return toDto(saved);
     }
 
     @Override
+    @Transactional
     public void delete(Long parcelId) {
         log.info("Execute method delete()");
         Optional<Parcel> optionalParcel = parcelRepository.findById(parcelId);
@@ -403,6 +368,10 @@ public class ParcelServiceImpl implements ParcelService {
         if (optionalParcel.get().getStatus() != ParcelStatus.BOOKED) {
             log.error("Cannot delete parcel with ID: {} because it is not in BOOKED status", parcelId);
             throw new CustomException(409, "Only parcels still in BOOKED status can be deleted");
+        }
+        Parcel parcel = optionalParcel.get();
+        if (parcel.getShipment() != null && invoiceRepository.existsByShipment_ShipmentId(parcel.getShipment().getShipmentId())) {
+            throw new CustomException(409, "Cannot delete an invoiced parcel");
         }
         parcelRepository.delete(optionalParcel.get());
     }
@@ -426,7 +395,7 @@ public class ParcelServiceImpl implements ParcelService {
         recordAccess.assigned(parcel);
         Shipment shipment = optionalShipment.get();
             if (shipment.getStatus() != ShipmentStatus.ACTIVE
-                    || !shipment.getCustomer().getCustomerId().equals(customer.getCustomerId())
+                    || !shipment.getCustomer().getCustomerId().equals(parcel.getCustomer().getCustomerId())
                     || invoiceRepository.existsByShipment_ShipmentId(shipment.getShipmentId())) {
                 throw new CustomException(409, "Shipment must be active, uninvoiced and owned by this customer");
             }
