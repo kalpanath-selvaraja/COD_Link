@@ -130,7 +130,7 @@
         <main class="content-body">
             <div class="role-note" style="background: var(--color-info-bg); border: 1px solid var(--color-info-border); color: var(--color-info-text); padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 18px;">
                 Shipments are created and finalized automatically when parcels are booked (see Parcels → cart booking).
-                This page is for oversight — cancelling, deleting, or checking the invoice on a shipment — not manual creation.
+                This page is for oversight - cancelling, deleting, or checking the invoice on a shipment - not manual creation.
             </div>
 
             <!-- Shipments List -->
@@ -255,7 +255,7 @@
             }
             shipments.forEach(s => {
                 const statusClass = STATUS_CLASS[s.status] || 'status-neutral';
-                const created = s.createdAt ? new Date(s.createdAt).toLocaleString() : '—';
+                const created = s.createdAt ? new Date(s.createdAt).toLocaleString() : '-';
                 const isTerminal = TERMINAL.includes(s.status);
 
                 const $tr = $('<tr>').attr('data-id', s.shipmentId);

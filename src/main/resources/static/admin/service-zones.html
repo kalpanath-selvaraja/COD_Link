@@ -321,7 +321,7 @@
                 .fail(xhr => {
                     if (handleAuthFailure(xhr)) return;
                     const msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : (xhr.responseText || xhr.status);
-                    alert('Request failed: ' + msg + ' — likely a foreign key constraint (zone still in use).');
+                    alert('Request failed: ' + msg + ' - likely a foreign key constraint (zone still in use).');
                 });
         });
 

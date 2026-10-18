@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@org.springframework.transaction.annotation.Transactional
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @Slf4j
 @RequiredArgsConstructor
 public class InvoiceServiceImpl implements InvoiceService {
@@ -32,7 +32,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final ParcelRepository parcelRepository;
 
     @Override
-    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public InvoiceDTO create(InvoiceDTO dto) {
         if (dto.getShipmentId() == null) throw new CustomException(400, "Shipment ID is required");
         log.info("Execute method create()");
@@ -69,7 +69,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         for (Parcel parcel : parcels) {
             if (parcel.getShippingFee() == null) {
                 throw new CustomException(409, "Parcel " + parcel.getParcelId()
-                        + " (tracking " + parcel.getTrackingNumber() + ") has no shippingFee — "
+                        + " (tracking " + parcel.getTrackingNumber() + ") has no shippingFee - "
                         + "it was booked before pricing was wired in. Backfill it before invoicing this shipment.");
             }
             amount = amount.add(parcel.getShippingFee());

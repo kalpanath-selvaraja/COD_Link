@@ -13,7 +13,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReconciliationBatchDTO {
+    @jakarta.validation.constraints.Positive
     private Long batchId;
+    @jakarta.validation.constraints.Positive
     private Long branchId;
     private BigDecimal total;
     private LocalDateTime reconciledAt;

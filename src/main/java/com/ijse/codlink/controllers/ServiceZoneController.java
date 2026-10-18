@@ -17,7 +17,7 @@ public class ServiceZoneController {
     private final ServiceZoneService serviceZoneService;
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> create(@RequestBody ServiceZoneDTO dto) {
+    public ResponseEntity<CommonResponse> create(@jakarta.validation.Valid @RequestBody ServiceZoneDTO dto) {
         CommonResponse response = new CommonResponse(0, serviceZoneService.create(dto), "Service zone created");
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -29,7 +29,7 @@ public class ServiceZoneController {
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> update(@PathVariable Long id, @RequestBody ServiceZoneDTO dto) {
+    public ResponseEntity<CommonResponse> update(@PathVariable Long id, @jakarta.validation.Valid @RequestBody ServiceZoneDTO dto) {
         CommonResponse response = new CommonResponse(0, serviceZoneService.update(id, dto), "Service zone updated");
         return ResponseEntity.ok(response);
     }

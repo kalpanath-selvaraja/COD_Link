@@ -97,7 +97,7 @@
         <main class="content-body">
 
             <div class="cod-note">
-                All online bookings are Cash-on-Delivery — the recipient pays the COD amount you set below when
+                All online bookings are Cash-on-Delivery - the recipient pays the COD amount you set below when
                 the parcel is delivered. If you need a prepaid shipment, that's booked in person at a branch counter.
             </div>
 
@@ -134,19 +134,19 @@
                     <div class="form-grid grid-4">
                         <div class="form-group">
                             <label for="pickupStreet">Pickup Street</label>
-                            <input type="text" id="pickupStreet" class="form-control" placeholder="Street">
+                            <input type="text" id="pickupStreet" required class="form-control" placeholder="Street">
                         </div>
                         <div class="form-group">
                             <label for="pickupCity">Pickup City</label>
-                            <input type="text" id="pickupCity" class="form-control" placeholder="City">
+                            <input type="text" id="pickupCity" required class="form-control" placeholder="City">
                         </div>
                         <div class="form-group">
                             <label for="pickupPostal">Pickup Postal Code</label>
-                            <input type="text" id="pickupPostal" class="form-control" placeholder="Postal code">
+                            <input type="text" id="pickupPostal" required class="form-control" placeholder="Postal code">
                         </div>
                         <div class="form-group">
                             <label for="pickupZone">Pickup Service Zone <span style="color:var(--color-error-text); font-weight:700;">*required</span></label>
-                            <select id="pickupZone" class="form-control">
+                            <select id="pickupZone" required class="form-control">
                                 <option value="">Loading zones…</option>
                             </select>
                         </div>
@@ -155,19 +155,19 @@
                     <div class="form-grid grid-4">
                         <div class="form-group">
                             <label for="deliveryStreet">Delivery Street</label>
-                            <input type="text" id="deliveryStreet" class="form-control" placeholder="Street">
+                            <input type="text" id="deliveryStreet" required class="form-control" placeholder="Street">
                         </div>
                         <div class="form-group">
                             <label for="deliveryCity">Delivery City</label>
-                            <input type="text" id="deliveryCity" class="form-control" placeholder="City">
+                            <input type="text" id="deliveryCity" required class="form-control" placeholder="City">
                         </div>
                         <div class="form-group">
                             <label for="deliveryPostal">Delivery Postal Code</label>
-                            <input type="text" id="deliveryPostal" class="form-control" placeholder="Postal code">
+                            <input type="text" id="deliveryPostal" required class="form-control" placeholder="Postal code">
                         </div>
                         <div class="form-group">
                             <label for="deliveryZone">Delivery Service Zone <span style="color:var(--color-error-text); font-weight:700;">*required</span></label>
-                            <select id="deliveryZone" class="form-control">
+                            <select id="deliveryZone" required class="form-control">
                                 <option value="">Loading zones…</option>
                             </select>
                         </div>
@@ -207,7 +207,7 @@
                         </tr>
                         </thead>
                         <tbody id="cart-table-body">
-                        <tr><td colspan="6" style="text-align:center;">Cart is empty — add a parcel above.</td></tr>
+                        <tr><td colspan="6" style="text-align:center;">Cart is empty - add a parcel above.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -323,7 +323,7 @@
             const cached = getCachedCustomerId();
             if (cached) return $.Deferred().resolve(cached).promise();
 
-            // Fallback only — normal case never reaches here since
+            // Fallback only - normal case never reaches here since
             // customer-setup.html caches this at creation/link time.
             return $.ajax({ url: BASE_URL + '/api/customers/me', method: 'GET', headers: ajaxHeaders })
                 .then(res => {
@@ -338,7 +338,7 @@
             $.ajax({ url: BASE_URL + '/api/branches', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
                     if (!isOk(res)) { alert(res.message); return; }
-                    const $sel = $('#originBranchId').empty().append('<option value="">— select branch —</option>');
+                    const $sel = $('#originBranchId').empty().append('<option value="">- select branch -</option>');
                     res.body.forEach(b => $sel.append(`<option value="${escapeHtml(b.branchId)}">${escapeHtml(b.branchName)}</option>`));
                 })
                 .fail(() => $('#originBranchId').html('<option value="">Failed to load branches</option>'));
@@ -351,8 +351,8 @@
                     if (!isOk(res)) { alert(res.message); return; }
                     zoneCache = res.body;
                     const options = res.body.map(z => `<option value="${escapeHtml(z.zoneId)}">${escapeHtml(z.name)} (#${escapeHtml(z.zoneId)})</option>`).join('');
-                    $('#deliveryZone').html('<option value="">— select delivery zone —</option>' + options);
-                    $('#pickupZone').html('<option value="">— select pickup zone —</option>' + options);
+                    $('#deliveryZone').html('<option value="">- select delivery zone -</option>' + options);
+                    $('#pickupZone').html('<option value="">- select pickup zone -</option>' + options);
                 })
                 .fail(() => {
                     $('#deliveryZone').html('<option value="">Failed to load zones</option>');
@@ -409,7 +409,7 @@
                 const match = candidates.find(r => weightInBracket(weight, r.weightBracket));
                 if (!match) {
                     $preview.attr('class', 'fee-preview warn')
-                        .text(`No COD pricing rule covers zone #${deliveryZoneId} at ${weight}kg — booking will be rejected until one exists.`);
+                        .text(`No COD pricing rule covers zone #${deliveryZoneId} at ${weight}kg - booking will be rejected until one exists.`);
                     return;
                 }
                 let fee = parseFloat(match.rate);
@@ -418,7 +418,7 @@
                     fee = Math.round(fee * 1.15 * 100) / 100;
                     note = ' (includes 1.15× cross-zone pickup surcharge)';
                 }
-                $preview.attr('class', 'fee-preview ok').text(`Estimated fee: $${fee.toFixed(2)}${note} — confirmed at booking.`);
+                $preview.attr('class', 'fee-preview ok').text(`Estimated fee: $${fee.toFixed(2)}${note} - confirmed at booking.`);
             });
         }
 
@@ -433,7 +433,7 @@
             $('#btn-submit-cart').prop('disabled', cart.length === 0);
 
             if (!cart.length) {
-                $body.append('<tr><td colspan="6" style="text-align:center;">Cart is empty — add a parcel above.</td></tr>');
+                $body.append('<tr><td colspan="6" style="text-align:center;">Cart is empty - add a parcel above.</td></tr>');
                 return;
             }
             cart.forEach((line, i) => {
@@ -444,7 +444,7 @@
                     <td>${escapeHtml(line.weight)} kg</td>
                     <td>$${escapeHtml(Number(line.codAmount).toFixed(2))}</td>
                     <td>${escapeHtml(zoneName)}</td>
-                    <td>${escapeHtml(line._estFee != null ? '$' + line._estFee.toFixed(2) : '—')}</td>
+                    <td>${escapeHtml(line._estFee != null ? '$' + line._estFee.toFixed(2) : '-')}</td>
                     <td><button type="button" class="btn-remove-line" data-idx="${escapeHtml(i)}">Remove</button></td>
                 </tr>
             `);
@@ -466,7 +466,7 @@
 
             if (!originBranchId) { alert('Select an origin branch.'); return; }
             if (!weight || weight <= 0 || weight > 70) { alert('Weight must be greater than 0 and no more than 70kg.'); return; }
-            if (!codAmount || codAmount <= 0) { alert('COD Amount is required — all online bookings are cash-on-delivery.'); return; }
+            if (!codAmount || codAmount <= 0) { alert('COD Amount is required - all online bookings are cash-on-delivery.'); return; }
             if (!pickupZoneId) { alert('Pickup service zone is required.'); return; }
             if (!deliveryZoneId) { alert('Delivery service zone is required.'); return; }
             if (!$('#deliveryStreet').val() || !$('#deliveryCity').val()) { alert('Delivery street and city are required.'); return; }
@@ -555,7 +555,7 @@
                 $groupDiv.append($('<div class="shipment-group-title">').text('Shipment #' + shipmentId));
 
                 parcels.forEach(p => {
-                    const lineText = `• ${p.trackingNumber} — ${p.weight}kg — fee $${p.shippingFee} — COD $${p.codAmount} — status ${p.status}`;
+                    const lineText = `• ${p.trackingNumber} - ${p.weight}kg - fee $${p.shippingFee} - COD $${p.codAmount} - status ${p.status}`;
                     $groupDiv.append($('<div>').text(lineText));
                 });
                 $resultDiv.append($groupDiv);

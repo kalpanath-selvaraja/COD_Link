@@ -12,7 +12,10 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class InvoiceDTO {
+    @jakarta.validation.constraints.Positive
     private Long invoiceId;
+    @jakarta.validation.constraints.Positive
+    @jakarta.validation.constraints.NotNull
     private Long shipmentId;
     private BigDecimal amount;
     private BigDecimal paidAmount;

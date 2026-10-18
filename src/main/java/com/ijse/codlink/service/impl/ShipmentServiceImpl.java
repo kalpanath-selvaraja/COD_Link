@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@org.springframework.transaction.annotation.Transactional
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @Slf4j
 @RequiredArgsConstructor
 public class ShipmentServiceImpl implements ShipmentService {
@@ -96,7 +96,7 @@ public class ShipmentServiceImpl implements ShipmentService {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public void delete(Long shipmentId) {
         Optional<Shipment> optionalShipment = shipmentRepository.findLockedById(shipmentId);
         if (optionalShipment.isEmpty()) {
@@ -112,7 +112,7 @@ public class ShipmentServiceImpl implements ShipmentService {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public ShipmentDTO cancel(Long shipmentId) {
         Optional<Shipment> optionalShipment = shipmentRepository.findLockedById(shipmentId);
         if (optionalShipment.isEmpty()) {
@@ -152,7 +152,7 @@ public class ShipmentServiceImpl implements ShipmentService {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public ShipmentDTO finalizeShipment(Long shipmentId) {
         Optional<Shipment> optionalShipment = shipmentRepository.findLockedById(shipmentId);
         if (optionalShipment.isEmpty()) {
@@ -164,7 +164,7 @@ public class ShipmentServiceImpl implements ShipmentService {
             throw new CustomException(409, "Cannot finalize a cancelled shipment");
         }
         if (invoiceRepository.existsByShipment_ShipmentId(shipmentId)) {
-            throw new CustomException(409, "Shipment already finalized — invoice already exists");
+            throw new CustomException(409, "Shipment already finalized - invoice already exists");
         }
 
         List<Parcel> parcels = parcelRepository.findByShipment_ShipmentId(shipmentId);
@@ -175,7 +175,7 @@ public class ShipmentServiceImpl implements ShipmentService {
         Boolean isCod = parcels.get(0).getIsCod();
         for (Parcel p : parcels) {
             if (isCod == null || p.getIsCod() == null || !isCod.equals(p.getIsCod())) {
-                throw new CustomException(409, "Shipment has a mix of prepaid and COD parcels — this should not be possible, check assignToShipment validation");
+                throw new CustomException(409, "Shipment has a mix of prepaid and COD parcels - this should not be possible, check assignToShipment validation");
             }
         }
 
@@ -190,7 +190,7 @@ public class ShipmentServiceImpl implements ShipmentService {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public void resolveShipmentIfComplete(Long shipmentId) {
         Optional<Shipment> optionalShipment = shipmentRepository.findLockedById(shipmentId);
         if (optionalShipment.isEmpty()) {

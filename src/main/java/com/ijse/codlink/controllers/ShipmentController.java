@@ -19,7 +19,7 @@ public class ShipmentController {
     private final ShipmentService shipmentService;
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> createShipment(@RequestBody ShipmentDTO shipmentDTO) {
+    public ResponseEntity<CommonResponse> createShipment(@jakarta.validation.Valid @RequestBody ShipmentDTO shipmentDTO) {
         ShipmentDTO dto = shipmentService.create(shipmentDTO);
         CommonResponse response = new CommonResponse(0, dto, "Shipment created successfully");
         return new ResponseEntity<>(response, HttpStatus.CREATED);

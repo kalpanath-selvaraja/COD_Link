@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@org.springframework.transaction.annotation.Transactional
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @Slf4j
 @RequiredArgsConstructor
 public class BranchTransferServiceImpl implements BranchTransferService {
@@ -33,7 +33,7 @@ public class BranchTransferServiceImpl implements BranchTransferService {
     private final BranchRepository branchRepository;
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public BranchTransferDTO create(BranchTransferDTO dto) {
         log.info("Execute method create()");
         if (dto.getParcelId() == null) {
@@ -76,9 +76,9 @@ public class BranchTransferServiceImpl implements BranchTransferService {
 
         if (parcel.getStatus() == ParcelStatus.DELIVERED
                 || parcel.getStatus() == ParcelStatus.RETURNED) {
-            log.error("Cannot transfer a parcel — parcel status is {}", parcel.getStatus());
+            log.error("Cannot transfer a parcel - parcel status is {}", parcel.getStatus());
             throw new CustomException(409,
-                    "Cannot transfer a parcel — parcel status is " + parcel.getStatus());
+                    "Cannot transfer a parcel - parcel status is " + parcel.getStatus());
         }
 
         Branch actualCurrentBranch = parcel.getCurrentBranch() != null

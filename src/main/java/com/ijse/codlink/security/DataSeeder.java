@@ -40,12 +40,12 @@ public class DataSeeder implements CommandLineRunner {
             admin.setActive(true);
             userRepository.save(admin);
 
-            log.warn("Seeded default admin account — username: '{}'. " +
+            log.warn("Seeded default admin account - username: '{}'. " +
                             "This uses a hardcoded default password from application.properties. " +
                             "Change it after first login if this is going anywhere beyond coursework evaluation.",
                     defaultAdminUsername);
         } else {
-            log.info("Admin seeding skipped — username '{}' already exists (role: {})",
+            log.info("Admin seeding skipped - username '{}' already exists (role: {})",
                     defaultAdminUsername, optionalAdmin.get().getRole());
 
 

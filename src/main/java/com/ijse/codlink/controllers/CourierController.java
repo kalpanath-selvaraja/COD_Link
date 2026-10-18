@@ -28,7 +28,7 @@ public class CourierController {
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> create(@RequestBody CourierDTO dto) {
+    public ResponseEntity<CommonResponse> create(@jakarta.validation.Valid @RequestBody CourierDTO dto) {
         CommonResponse response = new CommonResponse(0, courierService.createCourierAccount(dto), "Courier account created");
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -46,7 +46,7 @@ public class CourierController {
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> update(@PathVariable Long id, @RequestBody CourierDTO dto) {
+    public ResponseEntity<CommonResponse> update(@PathVariable Long id, @jakarta.validation.Valid @RequestBody CourierDTO dto) {
         CommonResponse response = new CommonResponse(0, courierService.updateCourierAccount(id, dto), "Courier updated");
         return ResponseEntity.ok(response);
     }

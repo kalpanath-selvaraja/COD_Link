@@ -22,7 +22,7 @@ import java.math.RoundingMode;
 import java.util.*;
 
 @Service
-@org.springframework.transaction.annotation.Transactional
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @Slf4j
 @RequiredArgsConstructor
 public class ParcelServiceImpl implements ParcelService {
@@ -46,7 +46,7 @@ public class ParcelServiceImpl implements ParcelService {
     private static final double MAX_PARCEL_WEIGHT_KG = 70.0;
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public ParcelDTO createForCustomer(Long customerId, ParcelDTO parcelDTO) {
         log.info("Execute method createForCustomer()");
         Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
@@ -58,7 +58,7 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public List<ParcelDTO> bookCartForCustomer(String username, List<ParcelDTO> parcelDtos) {
         log.info("Execute method bookCartForCustomer()");
         Optional<User> optionalUser = userRepository.findByUsername(username);
@@ -69,7 +69,7 @@ public class ParcelServiceImpl implements ParcelService {
         Optional<Customer> optionalCustomer = customerRepository.findByUser_UserId(optionalUser.get().getUserId());
         if (optionalCustomer.isEmpty()) {
             log.error("No customer profile linked to user ID: {}", optionalUser.get().getUserId());
-            throw new CustomException(404, "No customer profile linked to this account — create one at POST /api/customers/me first");
+            throw new CustomException(404, "No customer profile linked to this account - create one at POST /api/customers/me first");
         }
 
         if (parcelDtos != null) {
@@ -79,7 +79,7 @@ public class ParcelServiceImpl implements ParcelService {
                 if (dto == null || dto.getCodAmount() == null || dto.getCodAmount().compareTo(BigDecimal.ZERO) <= 0) {
                     log.error("Parcel at position {} is missing a COD amount", (i + 1));
                     throw new CustomException(400, "Parcel at position " + (i + 1)
-                            + " is missing a COD amount — online bookings are cash-on-delivery only");
+                            + " is missing a COD amount - online bookings are cash-on-delivery only");
                 }
             }
         }
@@ -88,7 +88,7 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public List<ParcelDTO> bookCartForWalkIn(Long customerId, List<ParcelDTO> parcelDtos) {
         log.info("Execute method bookCartForWalkIn()");
         Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
@@ -101,7 +101,7 @@ public class ParcelServiceImpl implements ParcelService {
 
     private List<ParcelDTO> processCartBooking(Customer customer, List<ParcelDTO> parcelDtos) {
         if (parcelDtos == null || parcelDtos.isEmpty()) {
-            throw new CustomException(400, "Cart is empty — add at least one parcel before booking");
+            throw new CustomException(400, "Cart is empty - add at least one parcel before booking");
         }
         if (parcelDtos.size() > MAX_PARCELS_PER_CART) {
             throw new CustomException(400, "Cannot book more than " + MAX_PARCELS_PER_CART + " parcels in one request");
@@ -117,7 +117,7 @@ public class ParcelServiceImpl implements ParcelService {
             }
             if (dto.getWeight() > MAX_PARCEL_WEIGHT_KG) {
                 throw new CustomException(400, "Parcel at position " + (i + 1) + " exceeds the maximum weight of "
-                        + MAX_PARCEL_WEIGHT_KG + "kg for cart booking — process oversized items individually");
+                        + MAX_PARCEL_WEIGHT_KG + "kg");
             }
             if (dto.getCodAmount() != null && dto.getCodAmount().compareTo(BigDecimal.ZERO) < 0) {
                 throw new CustomException(400, "Parcel at position " + (i + 1) + " has a negative COD amount");
@@ -170,7 +170,7 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public ParcelDTO createMine(String username, ParcelDTO parcelDTO) {
         log.info("Execute method createMine()");
         Optional<User> optionalUser = userRepository.findByUsername(username);
@@ -181,7 +181,7 @@ public class ParcelServiceImpl implements ParcelService {
         Optional<Customer> optionalCustomer = customerRepository.findByUser_UserId(optionalUser.get().getUserId());
         if (optionalCustomer.isEmpty()) {
             log.error("No customer profile linked to user ID: {}", optionalUser.get().getUserId());
-            throw new CustomException(404, "No customer profile linked to this account — create one at POST /api/customers/me first");
+            throw new CustomException(404, "No customer profile linked to this account - create one at POST /api/customers/me first");
         }
         com.ijse.codlink.service.BookingValidation.validate(optionalCustomer.get(), parcelDTO, true);
         return toDto(buildAndSaveParcel(optionalCustomer.get(), parcelDTO));
@@ -268,13 +268,13 @@ public class ParcelServiceImpl implements ParcelService {
 
         if (firstZoneId == null || !firstZoneId.equals(incomingZoneId)) {
             throw new CustomException(409, "This shipment's delivery zone is #" + firstZoneId
-                    + " — parcels for a different zone need a separate shipment");
+                    + " - parcels for a different zone need a separate shipment");
         }
 
         Boolean firstIsCod = first.getIsCod();
         if (firstIsCod == null || !firstIsCod.equals(incomingIsCod)) {
             throw new CustomException(409, "This shipment is " + (firstIsCod == null ? "unknown" : (firstIsCod ? "COD" : "prepaid"))
-                    + " — mixing prepaid and COD parcels on one shipment is not allowed");
+                    + " - mixing prepaid and COD parcels on one shipment is not allowed");
         }
     }
 
@@ -335,7 +335,7 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public ParcelDTO updateStatus(Long parcelId, ParcelDTO statusDto) {
         log.info("Execute method updateStatus()");
         if (parcelId == null) {
@@ -361,7 +361,7 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public void delete(Long parcelId) {
         log.info("Execute method delete()");
         Optional<Parcel> optionalParcel = parcelRepository.findById(parcelId);
@@ -381,7 +381,7 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public ParcelDTO assignToShipment(Long parcelId, Long shipmentId) {
         log.info("Execute method assignToShipment()");
         Optional<Parcel> optionalParcel = parcelRepository.findLockedById(parcelId);
@@ -398,11 +398,6 @@ public class ParcelServiceImpl implements ParcelService {
         Parcel parcel = optionalParcel.get();
         recordAccess.assigned(parcel);
         Shipment shipment = optionalShipment.get();
-            if (shipment.getStatus() != ShipmentStatus.ACTIVE
-                    || !shipment.getCustomer().getCustomerId().equals(parcel.getCustomer().getCustomerId())
-                    || invoiceRepository.existsByShipment_ShipmentId(shipment.getShipmentId())) {
-                throw new CustomException(409, "Shipment must be active, uninvoiced and owned by this customer");
-            }
 
         if (shipment.getStatus() != ShipmentStatus.ACTIVE) {
             log.error("Cannot attach parcel with ID: {} to cancelled shipment {}", parcelId, shipmentId);
@@ -410,7 +405,7 @@ public class ParcelServiceImpl implements ParcelService {
         }
         if (invoiceRepository.existsByShipment_ShipmentId(shipmentId)) {
             log.error("Cannot assign parcel with ID: {} to shipment {} because shipment already has an invoice", parcelId, shipmentId);
-            throw new CustomException(409, "Shipment already has an invoice — attaching more parcels would make it stale. No reissue endpoint exists yet.");
+            throw new CustomException(409, "Shipment already has an invoice - attaching more parcels would make it stale. No reissue endpoint exists yet.");
         }
         if (parcel.getShipment() != null) {
             log.error("Parcel with ID: {} is already attached to shipment {}", parcelId, parcel.getShipment().getShipmentId());
@@ -418,7 +413,7 @@ public class ParcelServiceImpl implements ParcelService {
         }
         if (parcel.getStatus() != ParcelStatus.BOOKED) {
             log.error("Cannot assign parcel with ID: {} to shipment because its status is {} (expected BOOKED)", parcelId, parcel.getStatus());
-            throw new CustomException(409, "Only BOOKED parcels can be assigned to a shipment — current status is " + parcel.getStatus());
+            throw new CustomException(409, "Only BOOKED parcels can be assigned to a shipment - current status is " + parcel.getStatus());
         }
         if (!parcel.getCustomer().getCustomerId().equals(shipment.getCustomer().getCustomerId())) {
             log.error("Parcel with ID: {} customer ID does not match shipment with ID: {} customer ID", parcelId, shipmentId);
@@ -455,7 +450,7 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public ParcelDTO claim(Long parcelId) {
         Courier courier = recordAccess.courier();
         Parcel parcel = parcelRepository.findLockedById(parcelId)
@@ -471,7 +466,7 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public ParcelDTO reassign(Long parcelId, Long courierId) {
         if (!recordAccess.hasRole("ADMIN")) throw new CustomException(403, "Admin access required");
         Parcel parcel = parcelRepository.findLockedById(parcelId)

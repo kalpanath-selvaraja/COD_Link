@@ -16,7 +16,10 @@ import java.util.Locale;
 @NoArgsConstructor
 public class ShipmentDTO {
 
+    @jakarta.validation.constraints.Positive
     private Long shipmentId;
+    @jakarta.validation.constraints.Positive
+    @jakarta.validation.constraints.NotNull
     private Long customerId;
     private LocalDateTime createdAt;
     private ShipmentStatus status;

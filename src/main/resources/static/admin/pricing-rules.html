@@ -181,7 +181,7 @@
                     </div>
                 </div>
                 <p class="helper-text" style="margin-bottom:14px;">
-                    There is no "all rules" endpoint — <code>GET /api/pricing-rules/zone/{id}</code> is the only read route,
+                    There is no "all rules" endpoint - <code>GET /api/pricing-rules/zone/{id}</code> is the only read route,
                     so pick a zone above to see its rules.
                 </p>
                 <div class="table-responsive">
@@ -259,8 +259,8 @@
                 .done(res => {
                     if (!isOk(res)) return;
                     const options = res.body.map(z => `<option value="${escapeHtml(z.zoneId)}">${escapeHtml(z.name)} (#${escapeHtml(z.zoneId)})</option>`).join('');
-                    $('#zoneId').html('<option value="">— select zone —</option>' + options);
-                    $('#viewZoneId').html('<option value="">— select zone to view —</option>' + options);
+                    $('#zoneId').html('<option value="">- select zone -</option>' + options);
+                    $('#viewZoneId').html('<option value="">- select zone to view -</option>' + options);
                 })
                 .fail(() => {
                     $('#zoneId').html('<option value="">Failed to load zones</option>');
@@ -341,7 +341,7 @@
             const isCod = $('#isCod').val() === 'true';
 
             if (!weightBracket || !BRACKET_PATTERN.test(weightBracket)) {
-                alert('Weight bracket must look like "0-2", "2-5", or "70+" — this is parsed literally by PricingRuleServiceImpl.weightInBracket, anything else silently never matches at booking time.');
+                alert('Weight bracket must look like "0-2", "2-5", or "70+" - this is parsed literally by PricingRuleServiceImpl.weightInBracket, anything else silently never matches at booking time.');
                 return;
             }
             if (isNaN(rate) || rate < 0) { alert('Rate must be a non-negative number.'); return; }
@@ -350,7 +350,7 @@
             let payload;
 
             if (isEdit) {
-                // Update: zoneId is not part of the update contract — a rule can't be
+                // Update: zoneId is not part of the update contract - a rule can't be
                 // moved to a different zone, only its rate/bracket/isCod change.
                 payload = { rate, weightBracket, isCod };
             } else {
@@ -367,7 +367,7 @@
 
                     if (!isOk(res)) { alert('Save failed: ' + res.message); return; }
                     // Create returns no body (PricingRuleController discards the created
-                    // DTO) — re-fetch is the only way to see the result either way.
+                    // DTO) - re-fetch is the only way to see the result either way.
                     const zoneToRefresh = isEdit ? $('#viewZoneId').val() : $('#zoneId').val();
                     resetForm();
                     if (zoneToRefresh) {

@@ -26,7 +26,7 @@ public class NotificationController {
 
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> createNotification(@RequestBody NotificationDTO notificationDTO) {
+    public ResponseEntity<CommonResponse> createNotification(@jakarta.validation.Valid @RequestBody NotificationDTO notificationDTO) {
         NotificationDTO notification = notificationService.createNotification(notificationDTO);
         CommonResponse response = new CommonResponse(0, notification, "Notification created successfully");
         return new ResponseEntity<>(response, HttpStatus.CREATED);

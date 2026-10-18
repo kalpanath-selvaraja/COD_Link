@@ -13,10 +13,15 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaymentDTO {
+    @jakarta.validation.constraints.Size(max = 250)
     private String requestReference;
+    @jakarta.validation.constraints.Positive
     private Long collectionId;
+    @jakarta.validation.constraints.Positive
     private Long paymentId;
+    @jakarta.validation.constraints.Positive
     private Long invoiceId;
+    @jakarta.validation.constraints.Size(max = 250)
     private String method;
     private BigDecimal amount;
 

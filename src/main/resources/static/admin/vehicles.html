@@ -158,7 +158,7 @@
                         </div>
                     </div>
                     <p class="helper-text" style="margin-bottom:12px;">
-                        New vehicles start as <strong>ACTIVE</strong> — status is changed afterward from the table below.
+                        New vehicles start as <strong>ACTIVE</strong> - status is changed afterward from the table below.
                     </p>
                     <button type="submit" class="btn-action">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
@@ -259,7 +259,7 @@
 
         let editingVehicleId = null;
         let vehicleCache = [];          // full unfiltered list from the last successful load
-        let courierLabelCache = {};     // courierId -> "Courier #N — LICENSE"
+        let courierLabelCache = {};     // courierId -> "Courier #N - LICENSE"
 
         function loadCouriers() {
             return $.ajax({ url: BASE_URL + '/api/couriers', method: 'GET', headers: ajaxHeaders })
@@ -267,11 +267,11 @@
                     if (!isOk(res)) return;
                     courierLabelCache = {};
                     const options = res.body.map(c => {
-                        const label = 'Courier #' + c.courierId + ' — ' + (c.licenseNumber || 'no license on file');
+                        const label = 'Courier #' + c.courierId + ' - ' + (c.licenseNumber || 'no license on file');
                         courierLabelCache[c.courierId] = label;
                         return `<option value="${escapeHtml(c.courierId)}">${escapeHtml(label)}</option>`;
                     }).join('');
-                    $('#courierId').html('<option value="">— select courier —</option>' + options);
+                    $('#courierId').html('<option value="">- select courier -</option>' + options);
                 })
                 .fail(xhr => {
                     if (handleAuthFailure(xhr)) return;
@@ -309,7 +309,7 @@
                 const $tr = $('<tr>').attr('data-id', v.vehicleId);
                 $tr.append($('<td>').text('#' + v.vehicleId));
                 $tr.append($('<td>').append($('<strong>').text(v.plateNumber)));
-                $tr.append($('<td>').text(v.type || '—'));
+                $tr.append($('<td>').text(v.type || '-'));
                 $tr.append($('<td>').text(courierLabel(v.courierId)));
 
                 const $statusSpan = $('<span>').addClass('status-pill ' + statusPillClass(v.status)).text(v.status);
@@ -387,7 +387,7 @@
             let payload;
 
             if (isEdit) {
-                // VehicleServiceImpl.update() only reads type/plateNumber — courier
+                // VehicleServiceImpl.update() only reads type/plateNumber - courier
                 // reassignment is not supported by the backend, so never sent on edit.
                 payload = { type, plateNumber };
             } else {

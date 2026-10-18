@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@org.springframework.transaction.annotation.Transactional
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @Slf4j
 @RequiredArgsConstructor
 public class CodCollectionServiceImpl implements CodCollectionService {
@@ -38,7 +38,7 @@ public class CodCollectionServiceImpl implements CodCollectionService {
     private final com.ijse.codlink.service.PaymentService paymentService;
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public CodCollectionDTO create(String username, CodCollectionDTO dto) {
         log.info("Execute method create()");
         Optional<Parcel> optionalParcel = parcelRepository.findLockedById(dto.getParcelId());
@@ -61,11 +61,11 @@ public class CodCollectionServiceImpl implements CodCollectionService {
 
         if (!Boolean.TRUE.equals(parcel.getIsCod()) || parcel.getCodAmount() == null || parcel.getCodAmount().signum() <= 0) {
             log.error("Parcel has no COD amount on record for parcel ID: {}", dto.getParcelId());
-            throw new CustomException(409, "This parcel has no COD amount on record — it cannot be a cash-on-delivery collection.");
+            throw new CustomException(409, "This parcel has no COD amount on record - it cannot be a cash-on-delivery collection.");
         }
         if (parcel.getShippingFee() == null) {
             log.error("Parcel has no shipping fee on record for parcel ID: {}", dto.getParcelId());
-            throw new CustomException(409, "This parcel has no shipping fee on record — cannot verify the collected amount.");
+            throw new CustomException(409, "This parcel has no shipping fee on record - cannot verify the collected amount.");
         }
 
         BigDecimal expectedTotal = parcel.getCodAmount().add(parcel.getShippingFee());

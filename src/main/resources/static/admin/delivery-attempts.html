@@ -143,10 +143,6 @@
                             <input type="number" id="parcelId" class="form-control" placeholder="e.g. 101">
                         </div>
                         <div class="form-group">
-                            <label for="courierId">Courier ID</label>
-                            <input type="number" id="courierId" class="form-control" placeholder="e.g. 1">
-                        </div>
-                        <div class="form-group">
                             <label for="outcome">Outcome</label>
                             <select id="outcome" class="form-control">
                                 <option value="DELIVERED">DELIVERED</option>
@@ -265,7 +261,7 @@
                         const $statusSpan = $('<span>').addClass('status-pill status-failed').text(a.outcomeCode || '');
                         $tr.append($('<td>').append($statusSpan));
 
-                        $tr.append($('<td>').text(a.outcome || '—'));
+                        $tr.append($('<td>').text(a.outcome || '-'));
                         $body.append($tr);
                     });
                 }).fail(xhr => {

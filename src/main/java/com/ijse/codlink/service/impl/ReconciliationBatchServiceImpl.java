@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@org.springframework.transaction.annotation.Transactional
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @Slf4j
 @RequiredArgsConstructor
 public class ReconciliationBatchServiceImpl implements ReconciliationBatchService {
@@ -31,7 +31,7 @@ public class ReconciliationBatchServiceImpl implements ReconciliationBatchServic
     private final CodCollectionRepository codCollectionRepository;
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public ReconciliationBatchDTO createForBranch(Long branchId) {
         Optional<Branch> optionalBranch = branchRepository.findLockedById(branchId);
         if (optionalBranch.isEmpty()) {

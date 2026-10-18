@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@org.springframework.transaction.annotation.Transactional
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @RequiredArgsConstructor
 @Slf4j
 public class TrackingEventServiceImpl implements TrackingEventService {
@@ -27,7 +27,7 @@ public class TrackingEventServiceImpl implements TrackingEventService {
     private final ParcelRepository parcelRepository;
 
     @Override
-    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public TrackingEventDTO create(TrackingEventDTO dto) {
 
         Optional<Parcel> optionalParcel = parcelRepository.findLockedById(dto.getParcelId());
@@ -64,7 +64,7 @@ public class TrackingEventServiceImpl implements TrackingEventService {
         List<TrackingEvent> events = trackingEventRepository.findByParcel_ParcelId(parcelId);
         List<TrackingEventDTO> list = new ArrayList<>();
         for (TrackingEvent e : events) list.add(toDto(e));
-        return list; // [] if none — never 404 on an empty list
+        return list; // [] if none - never 404 on an empty list
     }
 
     @Override

@@ -65,17 +65,17 @@
             <div class="cards-row">
                 <div class="card">
                     <h3>Actions Logged</h3>
-                    <div id="stat-actions" class="card-value">—</div>
+                    <div id="stat-actions" class="card-value">-</div>
                     <div class="card-subtext">Total delivery attempts recorded</div>
                 </div>
                 <div class="card card--success">
                     <h3>Parcels Delivered</h3>
-                    <div id="stat-delivered" class="card-value">—</div>
+                    <div id="stat-delivered" class="card-value">-</div>
                     <div class="card-subtext">Successful DELIVERED outcomes</div>
                 </div>
                 <div class="card card--accent">
                     <h3>Cash Collected</h3>
-                    <div id="stat-collected" class="card-value">—</div>
+                    <div id="stat-collected" class="card-value">-</div>
                     <div class="card-subtext">Total COD amount recorded by you</div>
                 </div>
             </div>
@@ -175,7 +175,7 @@
                 }
 
                 const type = p.isCod ? 'COD' : 'PREPAID';
-                const amount = p.isCod ? '$' + Number(p.codAmount || 0).toFixed(2) : '—';
+                const amount = p.isCod ? '$' + Number(p.codAmount || 0).toFixed(2) : '-';
 
                 $tr.append($('<td>').text('#' + p.parcelId));
                 $tr.append($('<td>').append($('<strong>').text(p.trackingNumber)));
@@ -246,7 +246,7 @@
                 })
                 .fail(xhr => {
                     if (handleAuthFailure(xhr)) return;
-                    alert('Failed to load your courier profile — check backend is running.');
+                    alert('Failed to load your courier profile - check backend is running.');
                 });
         }
 

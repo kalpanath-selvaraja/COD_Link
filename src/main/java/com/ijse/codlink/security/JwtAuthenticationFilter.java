@@ -44,20 +44,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String token = authHeader.substring(7);
             String username = jwtUtil.extractUsername(token);
+            if (username == null || username.isBlank()) {
+                handleJwtException(response, 401, "Invalid token subject");
+                return;
+            }
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
                 if (jwtUtil.validateToken(token, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-//
-
                             userDetails, null, userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }else {
-                    log.warn("JWT failed validation for user '{}' on {} {} from {} — request will proceed unauthenticated",
-                            username, request.getMethod(), request.getRequestURI(), request.getRemoteAddr());
+                    handleJwtException(response, 401, "Invalid token");
+                    return;
                 }
             }
 
@@ -66,7 +68,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             handleJwtException(response, 401, "Token expired");
             return;
         } catch (SignatureException ex) {
-            log.warn("Invalid JWT signature on {} {} from {} — possible tampering: {}", request.getMethod(), request.getRequestURI(), request.getRemoteAddr(), ex.getMessage());
+            log.warn("Invalid JWT signature on {} {} from {} - possible tampering: {}", request.getMethod(), request.getRequestURI(), request.getRemoteAddr(), ex.getMessage());
             handleJwtException(response, 401, "Invalid token signature");
             return;
         } catch (MalformedJwtException ex) {

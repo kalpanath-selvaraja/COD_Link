@@ -8,8 +8,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuditLogDTO {
+    @jakarta.validation.constraints.Positive
     private Long logId;
+    @jakarta.validation.constraints.Positive
+    @jakarta.validation.constraints.NotNull
     private Long userId;
+    @jakarta.validation.constraints.Size(max = 250)
+    @jakarta.validation.constraints.NotBlank
     private String action;
     private LocalDateTime logTime;
 

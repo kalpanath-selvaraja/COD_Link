@@ -22,7 +22,7 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @PostMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> createMyProfile(@RequestBody CustomerDTO dto) {
+    public ResponseEntity<CommonResponse> createMyProfile(@jakarta.validation.Valid @RequestBody CustomerDTO dto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails principal = (UserDetails) authentication.getPrincipal();
         CustomerDTO created = customerService.createMyProfile(principal.getUsername(), dto);
@@ -30,7 +30,7 @@ public class CustomerController {
     }
 
     @PostMapping(value = "/walk-in", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> createWalkIn(@RequestBody CustomerDTO dto) {
+    public ResponseEntity<CommonResponse> createWalkIn(@jakarta.validation.Valid @RequestBody CustomerDTO dto) {
         CustomerDTO created = customerService.createWalkIn(dto);
         return new ResponseEntity<>(new CommonResponse(0, created, "Walk-in customer created"), HttpStatus.CREATED);
     }
@@ -51,7 +51,7 @@ public class CustomerController {
     }
 
     @PutMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> updateMyProfile(@RequestBody CustomerDTO dto) {
+    public ResponseEntity<CommonResponse> updateMyProfile(@jakarta.validation.Valid @RequestBody CustomerDTO dto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails principal = (UserDetails) authentication.getPrincipal();
         return ResponseEntity.ok(new CommonResponse(0, customerService.updateMyProfile(principal.getUsername(), dto), "Profile updated"));

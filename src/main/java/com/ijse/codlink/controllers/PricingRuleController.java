@@ -17,7 +17,7 @@ public class PricingRuleController {
     private final PricingRuleService pricingRuleService;
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> create(@RequestBody PricingRuleDTO dto) {
+    public ResponseEntity<CommonResponse> create(@jakarta.validation.Valid @RequestBody PricingRuleDTO dto) {
         pricingRuleService.create(dto);
         CommonResponse response = new CommonResponse(0, "Pricing rule created");
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -30,7 +30,7 @@ public class PricingRuleController {
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> update(@PathVariable Long id, @RequestBody PricingRuleDTO dto) {
+    public ResponseEntity<CommonResponse> update(@PathVariable Long id, @jakarta.validation.Valid @RequestBody PricingRuleDTO dto) {
         CommonResponse response = new CommonResponse(0, pricingRuleService.update(id, dto), "Pricing rule updated");
         return ResponseEntity.ok(response);
     }

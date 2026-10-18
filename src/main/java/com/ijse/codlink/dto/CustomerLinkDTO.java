@@ -13,8 +13,10 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CustomerLinkDTO {
     @NotNull(message = "customerId is required")
+    @jakarta.validation.constraints.Positive
     private Long customerId;
 
     @NotBlank(message = "phoneNumber is required")
+    @jakarta.validation.constraints.Size(max = 250)
     private String phoneNumber;
 }

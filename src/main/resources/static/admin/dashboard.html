@@ -132,22 +132,22 @@
             <div class="cards-row">
                 <div class="card">
                     <h3>Total Parcels</h3>
-                    <div id="total-parcels" class="card-value">—</div>
+                    <div id="total-parcels" class="card-value">-</div>
                     <div class="card-subtext">All time system volume</div>
                 </div>
                 <div class="card card--accent">
                     <h3>In Transit</h3>
-                    <div id="in-transit-parcels" class="card-value">—</div>
+                    <div id="in-transit-parcels" class="card-value">-</div>
                     <div class="card-subtext">Currently on the road</div>
                 </div>
                 <div class="card card--success">
                     <h3>Total Couriers</h3>
-                    <div id="active-couriers" class="card-value">—</div>
+                    <div id="active-couriers" class="card-value">-</div>
                     <div class="card-subtext">Registered field agents</div>
                 </div>
                 <div class="card card--info">
                     <h3>Branches</h3>
-                    <div id="total-branches" class="card-value">—</div>
+                    <div id="total-branches" class="card-value">-</div>
                     <div class="card-subtext">Operational hubs</div>
                 </div>
             </div>
@@ -248,7 +248,7 @@
         function loadSummaryCards() {
             $.ajax({ url: BASE_URL + '/api/parcels', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
-                    if (!isOk(res)) { $('#total-parcels, #in-transit-parcels').text('—'); return; }
+                    if (!isOk(res)) { $('#total-parcels, #in-transit-parcels').text('-'); return; }
                     const parcels = res.body || [];
                     $('#total-parcels').text(parcels.length);
                     $('#in-transit-parcels').text(parcels.filter(p => p.status === 'IN_TRANSIT').length);
@@ -259,14 +259,14 @@
                 });
 
             $.ajax({ url: BASE_URL + '/api/couriers', method: 'GET', headers: ajaxHeaders })
-                .done(res => $('#active-couriers').text(isOk(res) ? res.body.length : '—'))
+                .done(res => $('#active-couriers').text(isOk(res) ? res.body.length : '-'))
                 .fail(xhr => {
                     if (handleAuthFailure(xhr)) return;
                     $('#active-couriers').text('N/A');
                 });
 
             $.ajax({ url: BASE_URL + '/api/branches', method: 'GET', headers: ajaxHeaders })
-                .done(res => $('#total-branches').text(isOk(res) ? res.body.length : '—'))
+                .done(res => $('#total-branches').text(isOk(res) ? res.body.length : '-'))
                 .fail(xhr => {
                     if (handleAuthFailure(xhr)) return;
                     $('#total-branches').text('N/A');

@@ -121,7 +121,7 @@
 
         <main class="content-body">
             <div class="role-note" style="background: var(--color-info-bg); border: 1px solid var(--color-info-border); color: var(--color-info-text); padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 18px;">
-                Invoice amount is computed automatically as the sum of the shipment's parcel shipping fees and return fees —
+                Invoice amount is computed automatically as the sum of the shipment's parcel shipping fees and return fees -
                 there is no manual amount or status field. A shipment must already have parcels attached, not be cancelled,
                 and not already have an invoice.
             </div>
@@ -249,7 +249,7 @@
                         $tr.append($('<td>').text('#' + inv.invoiceId));
                         $tr.append($('<td>').text('#' + inv.shipmentId));
 
-                        const amountText = '$' + Number(inv.amount).toFixed(2);
+                        const amountText = 'LKR ' + Number(inv.amount).toFixed(2) + ' | Paid ' + Number(inv.paidAmount).toFixed(2) + ' | Balance ' + Number(inv.balance).toFixed(2);
                         $tr.append($('<td>').append($('<strong>').text(amountText)));
 
                         $body.append($tr);

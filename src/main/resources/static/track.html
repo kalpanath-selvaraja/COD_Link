@@ -129,32 +129,24 @@
         <div id="track-result" class="track-result">
           <div class="track-row">
             <span class="label">Tracking Number</span>
-            <span class="value" id="result-tracking">—</span>
+            <span class="value" id="result-tracking">-</span>
           </div>
           <div class="track-row">
             <span class="label">Status</span>
-            <span class="value" id="result-status">—</span>
-          </div>
-          <div class="track-row">
-            <span class="label">Weight</span>
-            <span class="value" id="result-weight">—</span>
-          </div>
-          <div class="track-row" id="result-cod-row">
-            <span class="label">Amount Due on Delivery</span>
-            <span class="value" id="result-cod">—</span>
+            <span class="value" id="result-status">-</span>
           </div>
           <div class="track-row">
             <span class="label">Origin Branch</span>
-            <span class="value" id="result-origin">—</span>
+            <span class="value" id="result-origin">-</span>
           </div>
           <div class="track-row">
             <span class="label">Current Location</span>
-            <span class="value" id="result-current">—</span>
+            <span class="value" id="result-current">-</span>
           </div>
         </div>
 
         <p class="track-note">
-          For privacy, this page shows shipment status only — sender/recipient names and addresses
+          For privacy, this page shows shipment status only - sender/recipient names and addresses
           are never displayed here.
         </p>
 
@@ -215,7 +207,7 @@
 
         setLoading(true);
 
-        // Public endpoint — GET /api/parcels/track/{trackingNumber} is permitAll()
+        // Public endpoint - GET /api/parcels/track/{trackingNumber} is permitAll()
         // in SecurityConfig. No Authorization header sent or needed here.
         $.ajax({
           url: BASE_URL + '/api/parcels/track/' + encodeURIComponent(trackingNumber),
@@ -229,7 +221,7 @@
           const parcel = response.body;
 
           // Deliberately not rendering parcel.customerName, parcel.pickupAddress,
-          // or parcel.deliveryAddress even though the backend returns them —
+          // or parcel.deliveryAddress even though the backend returns them -
           // this is an unauthenticated endpoint and those fields are PII.
           $('#result-tracking').text(parcel.trackingNumber || trackingNumber);
 
@@ -237,12 +229,10 @@
             const $statusSpan = $('<span>').addClass('status-pill ' + statusClass).text(parcel.status || 'UNKNOWN');
             $('#result-status').empty().append($statusSpan);
 
-          $('#result-weight').text(parcel.weight != null ? parcel.weight + ' kg' : '—');
 
-          $('#result-cod-row').hide();
 
-          $('#result-origin').text(parcel.originBranchName || (parcel.originBranchId ? 'Branch #' + parcel.originBranchId : '—'));
-          $('#result-current').text(parcel.currentBranchName || (parcel.currentBranchId ? 'Branch #' + parcel.currentBranchId : '—'));
+          $('#result-origin').text(parcel.originBranchName || (parcel.originBranchId ? 'Branch #' + parcel.originBranchId : '-'));
+          $('#result-current').text(parcel.currentBranchName || (parcel.currentBranchId ? 'Branch #' + parcel.currentBranchId : '-'));
 
           $result.addClass('is-visible');
         }).fail(function (xhr) {

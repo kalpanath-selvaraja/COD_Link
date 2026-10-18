@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@org.springframework.transaction.annotation.Transactional
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @Slf4j
 @RequiredArgsConstructor
 public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
@@ -42,7 +42,7 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
     private final ShipmentService shipmentService;
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public DeliveryAttemptDTO create(String username, DeliveryAttemptDTO dto) {
         log.info("Execute method create()");
         Optional<Parcel> optionalParcel = parcelRepository.findLockedById(dto.getParcelId());

@@ -12,9 +12,12 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PricingRuleDTO {
+    @jakarta.validation.constraints.Positive
     private Long ruleId;
+    @jakarta.validation.constraints.Positive
     private Long zoneId;
     private BigDecimal rate;
+    @jakarta.validation.constraints.Size(max = 250)
     private String weightBracket;
     private Boolean isCod;
 

@@ -249,9 +249,9 @@
                 $body.append(`
                 <tr data-id="${escapeHtml(c.customerId)}">
                     <td>#${escapeHtml(c.customerId)}</td>
-                    <td><strong>${escapeHtml(c.name || '—')}</strong></td>
-                    <td>${escapeHtml(c.phoneNumber || '—')}</td>
-                    <td>${escapeHtml(c.userId != null ? 'User Customer - user Id ' + c.userId : '<span class="helper-text">Walk-in (no login)</span>')}</td>
+                    <td><strong>${escapeHtml(c.name || '-')}</strong></td>
+                    <td>${escapeHtml(c.phoneNumber || '-')}</td>
+                    <td>${escapeHtml(c.userId != null ? 'User Customer - user Id ' + c.userId : 'Walk-in (no login)')}</td>
                     <td>
                         <button type="button" class="btn-action btn-ghost btn-delete" data-id="${escapeHtml(c.customerId)}">Delete</button>
                     </td>
@@ -299,7 +299,7 @@
                 .done(res => {
                     if (!isOk(res)) { alert('Delete rejected: ' + res.message); return; }
                     loadCustomers();
-                }).fail(xhr => alert('Request failed: ' + (xhr.responseText || xhr.status) + ' — if this is a foreign key error, the customer likely still has parcels or shipments attached.'));
+                }).fail(xhr => alert('Request failed: ' + (xhr.responseText || xhr.status) + ' - if this is a foreign key error, the customer likely still has parcels or shipments attached.'));
         });
 
         loadCustomers();

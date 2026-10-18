@@ -56,7 +56,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/parcels/track/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/pricing-rules/**").permitAll()
 
-                        // ---- Reference data — read-only (Public GET, Admin for modifications) ----
+                        // ---- Reference data - read-only (Public GET, Admin for modifications) ----
                         .requestMatchers(HttpMethod.GET, "/api/branches", "/api/branches/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/service-zones", "/api/service-zones/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/branches", "/api/branches/**").hasRole("ADMIN")
@@ -72,7 +72,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/customers/me").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/parcels/me").authenticated()
 
-                        // ---- Courier self-service — must precede the /api/couriers/** ADMIN
+                        // ---- Courier self-service - must precede the /api/couriers/** ADMIN
                         // rules below, since Spring Security uses first-match-wins ordering.
                         .requestMatchers(HttpMethod.GET, "/api/couriers/me").hasRole("COURIER")
 

@@ -12,9 +12,13 @@ import lombok.Setter;
 @NoArgsConstructor
 
 public class VehicleDTO {
+    @jakarta.validation.constraints.Positive
     private Long vehicleId;
+    @jakarta.validation.constraints.Size(max = 250)
     private String type;
+    @jakarta.validation.constraints.Size(max = 250)
     private String plateNumber;
+    @jakarta.validation.constraints.Positive
     private Long courierId;
     private VehicleStatus status;
 }

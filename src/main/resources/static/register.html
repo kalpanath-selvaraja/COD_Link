@@ -179,7 +179,7 @@
           contentType: 'application/json',
           data: JSON.stringify({ username: username, password: password })
         }).done(function (response) {
-          // Backend always returns HTTP 200 — the real result is response.status.
+          // Backend always returns HTTP 200 - the real result is response.status.
           if (!response || response.status !== 0) {
             showAlert((response && response.message) || 'Registration failed.');
             return;

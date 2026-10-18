@@ -143,16 +143,8 @@
                             <input type="number" id="parcelId" class="form-control" placeholder="e.g. 101">
                         </div>
                         <div class="form-group">
-                            <label for="courierId">Courier ID</label>
-                            <input type="number" id="courierId" class="form-control" placeholder="e.g. 1">
-                        </div>
-                        <div class="form-group">
                             <label for="amount">Amount Collected ($)</label>
                             <input type="number" step="0.01" id="amount" class="form-control" placeholder="e.g. 45.00">
-                        </div>
-                        <div class="form-group">
-                            <label for="batchId">Reconciliation Batch ID</label>
-                            <input type="number" id="batchId" class="form-control" placeholder="Optional Batch ID">
                         </div>
                     </div>
                     <button type="submit" class="btn-action">
@@ -284,7 +276,7 @@
                         const amountText = '$' + Number(c.amount).toFixed(2);
                         $tr.append($('<td>').append($('<strong>').text(amountText)));
 
-                        $tr.append($('<td>').text(c.batchId ? 'Batch #' + c.batchId : '—'));
+                        $tr.append($('<td>').text(c.batchId ? 'Batch #' + c.batchId : '-'));
                         $body.append($tr);
                     });
                 }).fail(xhr => {

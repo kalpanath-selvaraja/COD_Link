@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@org.springframework.transaction.annotation.Transactional
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @Slf4j
 @RequiredArgsConstructor
 public class CourierServiceImpl implements CourierService {
@@ -34,8 +34,12 @@ public class CourierServiceImpl implements CourierService {
 
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public CourierDTO createCourierAccount(CourierDTO courierDTO) {
+        if (courierDTO.getBranchId() == null || courierDTO.getUserName() == null || courierDTO.getUserName().isBlank()
+                || courierDTO.getPassword() == null || courierDTO.getPassword().length() < 6) {
+            throw new CustomException(400, "Username, password of at least six characters and branch are required");
+        }
         log.info("Execute method createCourierAccount()");
         Optional<User> optionalUser = userRepository.findByUsername(courierDTO.getUserName());
 
@@ -205,7 +209,7 @@ public class CourierServiceImpl implements CourierService {
             courierRepository.delete(optionalCourier.get());
         } catch (DataIntegrityViolationException e) {
             log.error("Data integrity violation while deleting courier: {}", e.getMessage());
-            throw new CustomException(409, "Cannot delete — this courier is still referenced by delivery attempts, COD collections, or vehicles. Remove or reassign those first.");
+            throw new CustomException(409, "Cannot delete - this courier is still referenced by delivery attempts, COD collections, or vehicles. Remove or reassign those first.");
         }
     }
 

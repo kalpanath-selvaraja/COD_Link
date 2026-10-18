@@ -15,7 +15,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 @Service
-@org.springframework.transaction.annotation.Transactional
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
     private final BusinessNotifications notifications;
@@ -27,7 +27,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final ShipmentService shipmentService;
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public PaymentDTO create(PaymentDTO dto) {
         if (dto.getInvoiceId() == null || dto.getAmount() == null || dto.getAmount().signum() <= 0
                 || dto.getAmount().scale() > 2 || dto.getMethod() == null
@@ -61,7 +61,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public PaymentDTO createFromCollection(CodCollection collection) {
         Parcel parcel = collection.getParcel();
         if (parcel.getShipment() == null) throw new CustomException(409, "Invoice the parcel before collecting COD");

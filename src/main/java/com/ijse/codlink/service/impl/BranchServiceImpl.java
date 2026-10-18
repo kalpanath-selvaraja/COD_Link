@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@org.springframework.transaction.annotation.Transactional
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @Slf4j
 @RequiredArgsConstructor
 public class BranchServiceImpl implements BranchService {
@@ -126,7 +126,7 @@ public class BranchServiceImpl implements BranchService {
             branchRepository.delete(optionalBranch.get());
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
             log.info("Data integrity exception: trying to delete while the other tables are referencing it.");
-            throw new CustomException(409, "Cannot delete — this branch is still referenced by couriers, parcels, or other records.");
+            throw new CustomException(409, "Cannot delete - this branch is still referenced by couriers, parcels, or other records.");
         }
 
     }

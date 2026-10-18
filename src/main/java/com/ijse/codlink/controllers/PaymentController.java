@@ -17,7 +17,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> create(@RequestBody PaymentDTO dto) {
+    public ResponseEntity<CommonResponse> create(@jakarta.validation.Valid @RequestBody PaymentDTO dto) {
         CommonResponse response = new CommonResponse(0, paymentService.create(dto), "Payment recorded");
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }

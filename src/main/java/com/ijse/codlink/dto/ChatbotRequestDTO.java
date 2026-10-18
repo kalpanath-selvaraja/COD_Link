@@ -12,5 +12,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ChatbotRequestDTO {
     @NotBlank(message = "message is required")
+    @jakarta.validation.constraints.Size(max = 250)
     private String message;
 }

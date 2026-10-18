@@ -143,16 +143,8 @@
                             <input type="number" id="parcelId" class="form-control" placeholder="e.g. 101">
                         </div>
                         <div class="form-group">
-                            <label for="location">Current Location</label>
-                            <input type="text" id="location" class="form-control" placeholder="e.g. Colombo Sorting Facility">
-                        </div>
-                        <div class="form-group">
                             <label for="eventStatus">Milestone Status</label>
                             <input type="text" id="eventStatus" class="form-control" placeholder="e.g. SORTING_COMPLETED">
-                        </div>
-                        <div class="form-group">
-                            <label for="description">Event Description</label>
-                            <input type="text" id="description" class="form-control" placeholder="Optional details">
                         </div>
                     </div>
                     <button type="submit" class="btn-action">
@@ -182,7 +174,7 @@
                             <tr>
                                 <th>Event ID</th>
                                 <th>Parcel ID</th>
-                                <th>Location</th>
+
                                 <th>Status</th>
                                 <th>Timestamp</th>
                             </tr>
@@ -247,22 +239,22 @@
 
         function loadEvents() {
             const $body = $('#tracking-table-body');
-            $body.html('<tr><td colspan="5" style="text-align:center;">Loading…</td></tr>');
+            $body.html('<tr><td colspan="4" style="text-align:center;">Loading…</td></tr>');
             $.ajax({ url: BASE_URL + '/api/tracking-events', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
-                    if (!isOk(res)) { $body.html(`<tr><td colspan="5" style="text-align:center;">${escapeHtml(res.message)}</td></tr>`); return; }
+                    if (!isOk(res)) { $body.html(`<tr><td colspan="4" style="text-align:center;">${escapeHtml(res.message)}</td></tr>`); return; }
                     $body.empty();
-                    if (!res.body.length) { $body.append('<tr><td colspan="5" style="text-align:center;">No tracking events yet.</td></tr>'); return; }
+                    if (!res.body.length) { $body.append('<tr><td colspan="4" style="text-align:center;">No tracking events yet.</td></tr>'); return; }
                     res.body.forEach(e => {
                         const $tr = $('<tr>');
                         $tr.append($('<td>').text('#' + e.eventId));
                         $tr.append($('<td>').text('#' + e.parcelId));
-                        $tr.append($('<td>').text('—'));
+
 
                         const $statusSpan = $('<span>').addClass('status-pill status-milestone').text(e.status);
                         $tr.append($('<td>').append($statusSpan));
 
-                        const timeText = e.eventTime ? new Date(e.eventTime).toLocaleString() : '—';
+                        const timeText = e.eventTime ? new Date(e.eventTime).toLocaleString() : '-';
                         $tr.append($('<td>').text(timeText));
 
                         $body.append($tr);
@@ -270,7 +262,7 @@
                 })
                 .fail(xhr => {
                     if (handleAuthFailure(xhr)) return;
-                    $body.html('<tr><td colspan="5" style="text-align:center; color:red;">Failed to reach backend.</td></tr>');
+                    $body.html('<tr><td colspan="4" style="text-align:center; color:red;">Failed to reach backend.</td></tr>');
                 });
         }
 

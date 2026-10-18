@@ -44,7 +44,7 @@ public class ParcelLifecycle {
 
         if (targetStatus == ParcelStatus.RETURNED) {
             if (parcel.getDeliveryAddress() == null || parcel.getDeliveryAddress().getServiceZone() == null) {
-                throw new CustomException(400, "Cannot calculate return fee — parcel has no delivery zone on record");
+                throw new CustomException(400, "Cannot calculate return fee - parcel has no delivery zone on record");
             }
             boolean isCod = parcel.getIsCod() != null ? parcel.getIsCod()
                     : (parcel.getCodAmount() != null && parcel.getCodAmount().compareTo(BigDecimal.ZERO) > 0);
