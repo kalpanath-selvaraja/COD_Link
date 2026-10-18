@@ -137,6 +137,10 @@
                             <input type="number" id="invoiceId" class="form-control" placeholder="e.g. 301" min="1">
                         </div>
                         <div class="form-group">
+                            <label for="amount">Amount received (LKR)</label>
+                            <input type="number" id="amount" class="form-control" min="0.01" step="0.01" required>
+                        </div>
+                        <div class="form-group">
                             <label for="method">Payment Method</label>
                             <select id="method" class="form-control">
                                 <option value="CASH">CASH</option>
@@ -262,15 +266,24 @@
             e.preventDefault();
             const invoiceId = $('#invoiceId').val();
             const method = $('#method').val();
+            const amount = Number($('#amount').val());
+            if (!Number.isFinite(amount) || amount <= 0) { alert('Enter the amount received.'); return; }
+            const fingerprint = JSON.stringify({ invoiceId, method, amount });
+            let receipt = JSON.parse(sessionStorage.getItem('pendingReceipt') || 'null');
+            if (!receipt || receipt.fingerprint !== fingerprint) {
+                receipt = { fingerprint, reference: crypto.randomUUID() };
+                sessionStorage.setItem('pendingReceipt', JSON.stringify(receipt));
+            }
             if (!invoiceId) { alert('Invoice ID is required.'); return; }
 
             $.ajax({
                 url: BASE_URL + '/api/payments',
                 method: 'POST',
                 headers: ajaxHeaders,
-                data: JSON.stringify({ invoiceId: parseInt(invoiceId, 10), method })
+                data: JSON.stringify({ invoiceId: parseInt(invoiceId, 10), method, amount, requestReference: receipt.reference })
             }).done(res => {
                 if (!isOk(res)) { alert('Could not record payment: ' + res.message); return; }
+                sessionStorage.removeItem('pendingReceipt');
                 $('#payment-form')[0].reset();
                 loadPayments();
             }).fail(xhr => {

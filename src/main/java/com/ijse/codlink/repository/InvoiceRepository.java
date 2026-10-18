@@ -12,6 +12,14 @@ import java.util.List;
 import java.util.Optional;
 
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select i from Invoice i where i.invoiceId = :id")
+    Optional<Invoice> findLockedById(@Param("id") Long id);
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select i from Invoice i where i.shipment.shipmentId = :id")
+    Optional<Invoice> findLockedByShipmentId(@Param("id") Long id);
+
     Optional<Invoice> findByShipment_ShipmentId(Long shipmentId);
     boolean existsByShipment_ShipmentId(Long shipmentId);
 

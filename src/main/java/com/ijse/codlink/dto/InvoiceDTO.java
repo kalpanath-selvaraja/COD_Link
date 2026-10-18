@@ -15,4 +15,6 @@ public class InvoiceDTO {
     private Long invoiceId;
     private Long shipmentId;
     private BigDecimal amount;
+    private BigDecimal paidAmount;
+    private BigDecimal balance;
 }

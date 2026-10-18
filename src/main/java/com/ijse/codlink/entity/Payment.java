@@ -18,6 +18,14 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long paymentId;
 
+    @Column(unique = true, length = 100)
+    private String requestReference;
+
+    @OneToOne
+    @JoinColumn(name = "collection_id", unique = true)
+    @ToString.Exclude
+    private CodCollection collection;
+
     private String method;
     private LocalDateTime paidAt;
     private BigDecimal amount;

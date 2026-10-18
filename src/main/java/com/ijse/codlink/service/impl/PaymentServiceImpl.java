@@ -1,99 +1,119 @@
 package com.ijse.codlink.service.impl;
 
 import com.ijse.codlink.dto.PaymentDTO;
-import com.ijse.codlink.entity.Invoice;
-import com.ijse.codlink.entity.Payment;
+import com.ijse.codlink.entity.*;
+import com.ijse.codlink.enumeration.ParcelStatus;
 import com.ijse.codlink.exception.CustomException;
-import com.ijse.codlink.repository.InvoiceRepository;
-import com.ijse.codlink.repository.PaymentRepository;
-import com.ijse.codlink.service.PaymentService;
+import com.ijse.codlink.repository.*;
+import com.ijse.codlink.service.*;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.time.ZoneId;
 import java.util.List;
-import java.util.Optional;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
-
     private final PaymentRepository paymentRepository;
     private final InvoiceRepository invoiceRepository;
+    private final ShipmentRepository shipmentRepository;
+    private final ParcelRepository parcelRepository;
+    private final CodCollectionRepository codCollectionRepository;
+    private final ShipmentService shipmentService;
 
     @Override
+    @Transactional
     public PaymentDTO create(PaymentDTO dto) {
-        log.info("Execute method create()");
-        if (dto.getInvoiceId() == null) {
-            log.error("invoiceId is required");
-            throw new CustomException(400, "invoiceId is required");
+        if (dto.getInvoiceId() == null || dto.getAmount() == null || dto.getAmount().signum() <= 0
+                || dto.getAmount().scale() > 2 || dto.getMethod() == null
+                || !List.of("CASH", "BANK_TRANSFER", "CREDIT_CARD").contains(dto.getMethod())
+                || dto.getRequestReference() == null || !dto.getRequestReference().matches("[A-Za-z0-9_-]{8,100}")) {
+            throw new CustomException(400, "Invoice, positive amount, payment method and request reference are required");
         }
-        if (dto.getMethod() == null || dto.getMethod().isBlank()) {
-            log.error("Payment method is required");
-            throw new CustomException(400, "Payment method is required");
+        Invoice invoice = lockInvoice(dto.getInvoiceId());
+        var previous = paymentRepository.findByRequestReference(dto.getRequestReference());
+        if (previous.isPresent()) {
+            Payment receipt = previous.get();
+            if (!receipt.getInvoice().getInvoiceId().equals(dto.getInvoiceId())
+                    || receipt.getAmount().compareTo(dto.getAmount()) != 0 || !receipt.getMethod().equals(dto.getMethod())) {
+                throw new CustomException(409, "Request reference already used for another receipt");
+            }
+            return toDto(receipt);
         }
-        return recordPayment(dto.getInvoiceId(), dto.getMethod());
+        BigDecimal available = outstanding(invoice);
+        for (Parcel parcel : parcelRepository.findByShipment_ShipmentId(invoice.getShipment().getShipmentId())) {
+            if (Boolean.TRUE.equals(parcel.getIsCod()) && parcel.getStatus() != ParcelStatus.RETURNED
+                    && !codCollectionRepository.existsByParcel_ParcelId(parcel.getParcelId())) {
+                available = available.subtract(parcel.getShippingFee());
+            }
+        }
+        if (dto.getAmount().compareTo(available) > 0) {
+            throw new CustomException(409, "Amount exceeds the balance available for a manual receipt");
+        }
+        Payment payment = save(invoice, dto.getAmount(), dto.getMethod(), dto.getRequestReference(), null);
+        shipmentService.resolveShipmentIfComplete(invoice.getShipment().getShipmentId());
+        return toDto(payment);
     }
 
     @Override
-    public PaymentDTO createAuto(Long invoiceId, String method) {
-        log.info("Execute method createAuto()");
-        List<PaymentDTO> existing = getByInvoiceId(invoiceId);
-        if (!existing.isEmpty()) {
-            log.info("Auto-payment skipped — invoice {} already has a payment recorded", invoiceId);
-            return existing.get(0);
+    @Transactional
+    public PaymentDTO createFromCollection(CodCollection collection) {
+        Parcel parcel = collection.getParcel();
+        if (parcel.getShipment() == null) throw new CustomException(409, "Invoice the parcel before collecting COD");
+        shipmentRepository.findLockedById(parcel.getShipment().getShipmentId())
+                .orElseThrow(() -> new CustomException(404, "Shipment not found"));
+        Invoice invoice = invoiceRepository.findLockedByShipmentId(parcel.getShipment().getShipmentId())
+                .orElseThrow(() -> new CustomException(409, "Invoice the shipment before collecting COD"));
+        var previous = paymentRepository.findByCollection_CollectionId(collection.getCollectionId());
+        if (previous.isPresent()) return toDto(previous.get());
+        if (parcel.getShippingFee().compareTo(outstanding(invoice)) > 0) {
+            throw new CustomException(409, "Shipping receipt exceeds the invoice balance");
         }
-        return recordPayment(invoiceId, method);
+        return toDto(save(invoice, parcel.getShippingFee(), "COD", "COD_" + collection.getCollectionId(), collection));
+    }
+
+    private Invoice lockInvoice(Long invoiceId) {
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new CustomException(404, "Invoice not found"));
+        shipmentRepository.findLockedById(invoice.getShipment().getShipmentId())
+                .orElseThrow(() -> new CustomException(404, "Shipment not found"));
+        return invoiceRepository.findLockedById(invoiceId).orElseThrow();
+    }
+
+    private BigDecimal outstanding(Invoice invoice) {
+        if (paymentRepository.existsByInvoice_InvoiceIdAndRequestReferenceIsNull(invoice.getInvoiceId())) {
+            throw new CustomException(409, "Historical payments need review before adding receipts");
+        }
+        return invoice.getAmount().subtract(paymentRepository.sumForInvoice(invoice.getInvoiceId()));
+    }
+
+    private Payment save(Invoice invoice, BigDecimal amount, String method, String reference, CodCollection collection) {
+        Payment payment = new Payment();
+        payment.setInvoice(invoice);
+        payment.setAmount(amount);
+        payment.setMethod(method);
+        payment.setRequestReference(reference);
+        payment.setCollection(collection);
+        payment.setPaidAt(LocalDateTime.now(ZoneId.of("Asia/Colombo")));
+        return paymentRepository.save(payment);
     }
 
     @Override
     public List<PaymentDTO> getAll() {
-        log.info("Execute method getAll()");
-        List<PaymentDTO> list = new ArrayList<>();
-        for (Payment p : paymentRepository.findAll()) list.add(toDto(p));
-        return list;
-    }
-
-    private PaymentDTO recordPayment(Long invoiceId, String method) {
-        Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceId);
-        if (optionalInvoice.isEmpty()) {
-            log.error("Invoice not found with ID: {}", invoiceId);
-            throw new CustomException(404, "Invoice not found");
-        }
-        if (paymentRepository.existsByInvoice_InvoiceId(invoiceId)) {
-            throw new CustomException(409, "Payment already recorded for this invoice");
-        }
-        Invoice invoice = optionalInvoice.get();
-
-        Payment payment = new Payment();
-        payment.setInvoice(invoice);
-        payment.setMethod(method);
-        payment.setAmount(invoice.getAmount());
-        payment.setPaidAt(LocalDateTime.now());
-        return toDto(paymentRepository.save(payment));
+        return paymentRepository.findAll().stream().map(this::toDto).toList();
     }
 
     @Override
     public List<PaymentDTO> getByInvoiceId(Long invoiceId) {
-        log.info("Execute method getByInvoiceId()");
-        Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceId);
-        if (optionalInvoice.isEmpty()) {
-            log.error("Invoice not found with ID: {}", invoiceId);
-            throw new CustomException(404, "Invoice not found");
-        }
-        List<PaymentDTO> list = new ArrayList<>();
-        for (Payment p : paymentRepository.findByInvoice_InvoiceId(invoiceId)) {
-            list.add(toDto(p));
-        }
-        return list;
+        if (!invoiceRepository.existsById(invoiceId)) throw new CustomException(404, "Invoice not found");
+        return paymentRepository.findByInvoice_InvoiceId(invoiceId).stream().map(this::toDto).toList();
     }
 
-
-
-    private PaymentDTO toDto(Payment p) {
-        return new PaymentDTO(p.getPaymentId(), p.getInvoice().getInvoiceId(), p.getMethod(), p.getAmount(), p.getPaidAt());
+    private PaymentDTO toDto(Payment payment) {
+        return new PaymentDTO(payment.getRequestReference(), payment.getCollection() == null ? null : payment.getCollection().getCollectionId(),
+                payment.getPaymentId(), payment.getInvoice().getInvoiceId(), payment.getMethod(), payment.getAmount(), payment.getPaidAt());
     }
 }

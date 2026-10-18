@@ -39,7 +39,6 @@ public class ShipmentServiceImpl implements ShipmentService {
     private final InvoiceRepository invoiceRepository;
     private final PaymentRepository paymentRepository;
     private final InvoiceService invoiceService;
-    private final PaymentService paymentService;
     private final CodCollectionRepository codCollectionRepository;
 
     @Override
@@ -96,8 +95,9 @@ public class ShipmentServiceImpl implements ShipmentService {
     }
 
     @Override
+    @Transactional
     public void delete(Long shipmentId) {
-        Optional<Shipment> optionalShipment = shipmentRepository.findById(shipmentId);
+        Optional<Shipment> optionalShipment = shipmentRepository.findLockedById(shipmentId);
         if (optionalShipment.isEmpty()) {
             throw new CustomException(404, "Shipment not found");
         }
@@ -113,7 +113,7 @@ public class ShipmentServiceImpl implements ShipmentService {
     @Override
     @Transactional
     public ShipmentDTO cancel(Long shipmentId) {
-        Optional<Shipment> optionalShipment = shipmentRepository.findById(shipmentId);
+        Optional<Shipment> optionalShipment = shipmentRepository.findLockedById(shipmentId);
         if (optionalShipment.isEmpty()) {
             throw new CustomException(404, "Shipment not found");
         }
@@ -153,7 +153,7 @@ public class ShipmentServiceImpl implements ShipmentService {
     @Override
     @Transactional
     public ShipmentDTO finalizeShipment(Long shipmentId) {
-        Optional<Shipment> optionalShipment = shipmentRepository.findById(shipmentId);
+        Optional<Shipment> optionalShipment = shipmentRepository.findLockedById(shipmentId);
         if (optionalShipment.isEmpty()) {
             throw new CustomException(404, "Shipment not found");
         }
@@ -182,9 +182,6 @@ public class ShipmentServiceImpl implements ShipmentService {
         invoiceDto.setShipmentId(shipmentId);
         InvoiceDTO createdInvoice = invoiceService.create(invoiceDto);
 
-        if (Boolean.FALSE.equals(isCod)) {
-            paymentService.createAuto(createdInvoice.getInvoiceId(), "PREPAID");
-        }
 
         resolveShipmentIfComplete(shipmentId);
 
@@ -194,7 +191,7 @@ public class ShipmentServiceImpl implements ShipmentService {
     @Override
     @Transactional
     public void resolveShipmentIfComplete(Long shipmentId) {
-        Optional<Shipment> optionalShipment = shipmentRepository.findById(shipmentId);
+        Optional<Shipment> optionalShipment = shipmentRepository.findLockedById(shipmentId);
         if (optionalShipment.isEmpty()) {
             return;
         }
@@ -208,48 +205,25 @@ public class ShipmentServiceImpl implements ShipmentService {
             return;
         }
 
+        Optional<Invoice> optionalInvoice = invoiceRepository.findLockedByShipmentId(shipmentId);
+        if (optionalInvoice.isEmpty()) return;
+        Invoice invoice = optionalInvoice.get();
+        if (paymentRepository.existsByInvoice_InvoiceIdAndRequestReferenceIsNull(invoice.getInvoiceId())) {
+            throw new CustomException(409, "Historical payments need review before changing this shipment");
+        }
+        invoice.setAmount(invoiceService.calculateAmount(parcels));
+        invoiceRepository.save(invoice);
+
         boolean allFinished = parcels.stream().allMatch(p ->
                 p.getStatus() == ParcelStatus.DELIVERED || p.getStatus() == ParcelStatus.RETURNED);
-        if (!allFinished) {
-            return;
+        boolean collected = parcels.stream()
+                .filter(p -> Boolean.TRUE.equals(p.getIsCod()) && p.getStatus() == ParcelStatus.DELIVERED)
+                .allMatch(p -> codCollectionRepository.existsByParcel_ParcelId(p.getParcelId()));
+        BigDecimal balance = invoice.getAmount().subtract(paymentRepository.sumForInvoice(invoice.getInvoiceId()));
+        if (allFinished && collected && balance.signum() == 0) {
+            shipment.setStatus(ShipmentStatus.COMPLETED);
+            shipmentRepository.save(shipment);
         }
 
-        boolean isCodShipment = parcels.stream().anyMatch(p -> Boolean.TRUE.equals(p.getIsCod()));
-        if (isCodShipment) {
-            boolean allDeliveredParcelsCollected = parcels.stream()
-                    .filter(p -> p.getStatus() == ParcelStatus.DELIVERED)
-                    .allMatch(p -> codCollectionRepository.existsByParcel_ParcelId(p.getParcelId()));
-
-            if (!allDeliveredParcelsCollected) {
-                log.info("Shipment {} has all parcels delivered/returned but is COD and at least one " +
-                        "delivered parcel has no recorded cash collection yet — deferring completion", shipmentId);
-                return;
-            }
-        }
-
-        Optional<Invoice> optionalInvoice = invoiceRepository.findByShipment_ShipmentId(shipmentId);
-        if (optionalInvoice.isEmpty()) {
-            log.warn("Shipment {} has all parcels resolved but was never finalized — no invoice exists to update or pay", shipmentId);
-            return;
-        }
-        Invoice invoice = optionalInvoice.get();
-
-        boolean alreadyPaid = paymentRepository.existsByInvoice_InvoiceId(invoice.getInvoiceId());
-
-        if (!alreadyPaid) {
-            BigDecimal amount = invoiceService.calculateAmount(parcels);
-            invoice.setAmount(amount);
-            invoiceRepository.save(invoice);
-        } else {
-            log.warn("Shipment {} resolved after its invoice was already paid — amount was NOT updated. "
-                    + "This happens on prepaid shipments, since payment is taken at booking, before any return can occur.", shipmentId);
-        }
-
-        shipment.setStatus(ShipmentStatus.COMPLETED);
-        shipmentRepository.save(shipment);
-
-        if (!alreadyPaid) {
-            paymentService.createAuto(invoice.getInvoiceId(), "COD");
-        }
     }
 }

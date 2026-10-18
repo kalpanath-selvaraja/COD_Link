@@ -34,6 +34,7 @@ public class CodCollectionServiceImpl implements CodCollectionService {
     private final CourierRepository courierRepository;
     private final UserRepository userRepository;
     private final ShipmentService shipmentService;
+    private final com.ijse.codlink.service.PaymentService paymentService;
 
     @Override
     @Transactional
@@ -57,7 +58,7 @@ public class CodCollectionServiceImpl implements CodCollectionService {
             throw new CustomException(400, "Amount must be greater than zero");
         }
 
-        if (parcel.getCodAmount() == null) {
+        if (!Boolean.TRUE.equals(parcel.getIsCod()) || parcel.getCodAmount() == null || parcel.getCodAmount().signum() <= 0) {
             log.error("Parcel has no COD amount on record for parcel ID: {}", dto.getParcelId());
             throw new CustomException(409, "This parcel has no COD amount on record — it cannot be a cash-on-delivery collection.");
         }
@@ -100,6 +101,7 @@ public class CodCollectionServiceImpl implements CodCollectionService {
         collection.setAmount(dto.getAmount());
         collection.setReconciliationBatch(null);
         CodCollection saved = codCollectionRepository.save(collection);
+        paymentService.createFromCollection(saved);
 
 
         if (parcel.getShipment() != null) {

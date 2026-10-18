@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaymentDTO {
+    private String requestReference;
+    private Long collectionId;
     private Long paymentId;
     private Long invoiceId;
     private String method;

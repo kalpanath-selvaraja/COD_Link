@@ -26,13 +26,16 @@ import java.util.Optional;
 public class InvoiceServiceImpl implements InvoiceService {
 
     private final InvoiceRepository invoiceRepository;
+    private final com.ijse.codlink.repository.PaymentRepository paymentRepository;
     private final ShipmentRepository shipmentRepository;
     private final ParcelRepository parcelRepository;
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public InvoiceDTO create(InvoiceDTO dto) {
+        if (dto.getShipmentId() == null) throw new CustomException(400, "Shipment ID is required");
         log.info("Execute method create()");
-        Optional<Shipment> optionalShipment = shipmentRepository.findById(dto.getShipmentId());
+        Optional<Shipment> optionalShipment = shipmentRepository.findLockedById(dto.getShipmentId());
         if (optionalShipment.isEmpty()) {
             throw new CustomException(404, "Shipment not found");
         }
@@ -96,6 +99,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 
     private InvoiceDTO toDto(Invoice i) {
-        return new InvoiceDTO(i.getInvoiceId(), i.getShipment().getShipmentId(), i.getAmount());
+        BigDecimal paid = paymentRepository.sumForInvoice(i.getInvoiceId());
+        return new InvoiceDTO(i.getInvoiceId(), i.getShipment().getShipmentId(), i.getAmount(), paid, i.getAmount().subtract(paid));
     }
 }
