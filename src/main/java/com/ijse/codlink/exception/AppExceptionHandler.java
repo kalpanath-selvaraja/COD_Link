@@ -27,6 +27,12 @@ public class AppExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(new CommonResponse(exception.getStatus() ,exception.getMessage()));
     }
 
+    @ExceptionHandler({org.springframework.dao.DataIntegrityViolationException.class,
+            org.springframework.dao.ConcurrencyFailureException.class})
+    public ResponseEntity<CommonResponse> handleConflict(Exception exception) {
+        return ResponseEntity.status(409).body(new CommonResponse(409, "Record changed or already exists. Refresh and retry."));
+    }
+
     @ExceptionHandler(value = {Exception.class})
     public ResponseEntity<CommonResponse> handlerServerException(Exception exception , WebRequest webRequest){
         log.error("Unhandled exception: {}",exception.getMessage() );

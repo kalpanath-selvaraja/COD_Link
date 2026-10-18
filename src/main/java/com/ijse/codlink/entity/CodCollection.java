@@ -20,6 +20,11 @@ public class CodCollection {
     private BigDecimal amount;
 
     @ManyToOne
+    @JoinColumn(name = "collection_branch_id")
+    @ToString.Exclude
+    private Branch collectionBranch;
+
+    @ManyToOne
     @JoinColumn(name = "parcel_id", nullable = false, unique = true)
     @ToString.Exclude
     private Parcel parcel;

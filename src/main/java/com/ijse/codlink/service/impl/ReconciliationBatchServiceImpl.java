@@ -32,13 +32,16 @@ public class ReconciliationBatchServiceImpl implements ReconciliationBatchServic
     @Override
     @Transactional
     public ReconciliationBatchDTO createForBranch(Long branchId) {
-        Optional<Branch> optionalBranch = branchRepository.findById(branchId);
+        Optional<Branch> optionalBranch = branchRepository.findLockedById(branchId);
         if (optionalBranch.isEmpty()) {
             throw new CustomException(404, "Branch not found");
         }
 
+        if (codCollectionRepository.existsByCollectionBranchIsNullAndReconciliationBatchIsNull()) {
+            throw new CustomException(409, "Historical collections need their original branches reviewed before reconciliation");
+        }
         List<CodCollection> unbatched = codCollectionRepository
-                .findByCourier_Branch_BranchIdAndReconciliationBatchIsNull(branchId);
+                .findUnbatchedForUpdate(branchId);
 
         if (unbatched.isEmpty()) {
             throw new CustomException(400, "No unbatched COD collections for this branch");

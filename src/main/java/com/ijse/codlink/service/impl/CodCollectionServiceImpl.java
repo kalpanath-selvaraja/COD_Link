@@ -98,6 +98,7 @@ public class CodCollectionServiceImpl implements CodCollectionService {
         CodCollection collection = new CodCollection();
         collection.setParcel(parcel);
         collection.setCourier(courier);
+        collection.setCollectionBranch(courier.getBranch());
         collection.setAmount(dto.getAmount());
         collection.setReconciliationBatch(null);
         CodCollection saved = codCollectionRepository.save(collection);
