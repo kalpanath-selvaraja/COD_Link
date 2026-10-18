@@ -43,6 +43,8 @@ $(document).ready(function () {
                         window.location.href = '../customer/customer-setup.html'
                     } else if (response.body.role === 'COURIER') {
                         window.location.href = 'courier-dashboard.html';
+                    } else if (response.body.isReceptionist === true) {
+                        window.location.href = '/admin/shipments.html';
                     } else {
                         window.location.href = '/admin/dashboard.html';
                     }

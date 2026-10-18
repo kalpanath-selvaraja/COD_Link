@@ -21,6 +21,7 @@
         .assistant-suggestion-chip { background: var(--color-accent-light); color: var(--color-accent-hover); border: 1px solid rgba(255,98,0,0.2); padding: 6px 14px; border-radius: var(--radius-full); font-size: 12.5px; font-weight: 600; cursor: pointer; }
         .assistant-suggestion-chip:hover { background: var(--color-accent); color: #fff; }
     </style>
+    <script src="/js/roles.js"></script>
 </head>
 <body>
 
@@ -113,6 +114,7 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     $(document).ready(function () {
+        if (localStorage.getItem('Role') === 'RECEPTIONIST') { location.replace('/admin/shipments.html'); return; }
         const BASE_URL = '';
 
         function getToken() {
