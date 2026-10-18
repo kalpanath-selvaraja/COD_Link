@@ -51,7 +51,7 @@ git clone https://github.com/kalpanath-selvaraja/COD_Link.git
 cd COD_Link
 ```
 
-Create a `.env` (or `.env.properties`) file in the project root — it's picked up automatically via `spring.config.import` and is already covered by `.gitignore`:
+Copy `.env.example` to `.env` in the project root and replace its placeholders locally. Spring imports `.env` as a properties file. Keep real credentials out of Git:
 
 ```properties
 spring.datasource.url=jdbc:mysql://localhost:3306/codlink
