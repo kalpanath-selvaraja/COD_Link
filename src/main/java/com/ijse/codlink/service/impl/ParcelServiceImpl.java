@@ -28,6 +28,7 @@ import java.util.*;
 public class ParcelServiceImpl implements ParcelService {
 
     private final com.ijse.codlink.service.ParcelLifecycle parcelLifecycle;
+    private final com.ijse.codlink.service.BusinessNotifications notifications;
     private final ParcelRepository parcelRepository;
     private final CourierRepository courierRepository;
     private final com.ijse.codlink.security.RecordAccess recordAccess;
@@ -248,7 +249,9 @@ public class ParcelServiceImpl implements ParcelService {
         parcel.setPickupAddress(pickupAddress);
         parcel.setDeliveryAddress(deliveryAddress);
 
-        return parcelRepository.save(parcel);
+        Parcel saved = parcelRepository.save(parcel);
+        notifications.customer(customer, "Parcel " + saved.getTrackingNumber() + " booked.");
+        return saved;
     }
 
     private void validateShipmentCompatibility(Shipment shipment, Address incomingDeliveryAddress, boolean incomingIsCod) {
@@ -463,6 +466,7 @@ public class ParcelServiceImpl implements ParcelService {
         }
         validateAssignment(parcel, courier);
         parcel.setAssignedCourier(courier);
+        notifications.send(courier.getUser(), "Parcel " + parcel.getTrackingNumber() + " assigned to you.");
         return toDto(parcelRepository.save(parcel));
     }
 
@@ -476,6 +480,7 @@ public class ParcelServiceImpl implements ParcelService {
                 .orElseThrow(() -> new CustomException(404, "Courier not found"));
         validateAssignment(parcel, courier);
         parcel.setAssignedCourier(courier);
+        notifications.send(courier.getUser(), "Parcel " + parcel.getTrackingNumber() + " assigned to you.");
         return toDto(parcelRepository.save(parcel));
     }
 

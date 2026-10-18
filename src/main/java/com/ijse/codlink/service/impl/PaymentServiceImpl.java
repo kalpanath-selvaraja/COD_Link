@@ -18,6 +18,7 @@ import java.util.List;
 @org.springframework.transaction.annotation.Transactional
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
+    private final BusinessNotifications notifications;
     private final PaymentRepository paymentRepository;
     private final InvoiceRepository invoiceRepository;
     private final ShipmentRepository shipmentRepository;
@@ -99,7 +100,9 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setRequestReference(reference);
         payment.setCollection(collection);
         payment.setPaidAt(LocalDateTime.now(ZoneId.of("Asia/Colombo")));
-        return paymentRepository.save(payment);
+        Payment saved = paymentRepository.save(payment);
+        notifications.customer(invoice.getShipment().getCustomer(), "Received LKR " + amount + " for invoice #" + invoice.getInvoiceId() + ".");
+        return saved;
     }
 
     @Override

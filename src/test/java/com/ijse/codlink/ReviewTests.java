@@ -58,7 +58,7 @@ class ReviewTests {
         ParcelRepository parcels = mock(ParcelRepository.class);
         TrackingEventRepository events = mock(TrackingEventRepository.class);
         ShipmentService shipments = mock(ShipmentService.class);
-        ParcelLifecycle lifecycle = new ParcelLifecycle(parcels, events, shipments, mock(PricingRuleService.class));
+        ParcelLifecycle lifecycle = new ParcelLifecycle(mock(BusinessNotifications.class), parcels, events, shipments, mock(PricingRuleService.class));
         Parcel parcel = new Parcel();
         parcel.setStatus(ParcelStatus.IN_TRANSIT);
         assertThrows(CustomException.class, () -> lifecycle.transition(parcel, ParcelStatus.DELIVERED));

@@ -21,8 +21,10 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final com.ijse.codlink.security.RecordAccess recordAccess;
 
-    public NotificationServiceImpl(NotificationRepository notificationRepository, UserRepository userRepository) {
+    public NotificationServiceImpl(NotificationRepository notificationRepository, UserRepository userRepository, com.ijse.codlink.security.RecordAccess recordAccess) {
+        this.recordAccess = recordAccess;
         this.notificationRepository = notificationRepository;
         this.userRepository = userRepository;
     }
@@ -48,6 +50,9 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public List<NotificationDTO> getByUserId(Long userId) {
+        if (!recordAccess.hasRole("ADMIN") && !recordAccess.user().getUserId().equals(userId)) {
+            throw new CustomException(403, "Notification access denied");
+        }
 
 
         log.info("Execute method getByUserId()");
@@ -57,7 +62,7 @@ public class NotificationServiceImpl implements NotificationService {
             throw new CustomException(404, "User not found");
         }
 
-        List<Notification> notifications = notificationRepository.findByUser_UserId(optionalUser.get().getUserId());
+        List<Notification> notifications = notificationRepository.findTop50ByUser_UserIdOrderByNotificationIdDesc(optionalUser.get().getUserId());
 
 
 

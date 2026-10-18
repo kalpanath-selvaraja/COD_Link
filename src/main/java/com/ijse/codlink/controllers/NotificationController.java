@@ -17,6 +17,13 @@ import java.util.List;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final com.ijse.codlink.security.RecordAccess recordAccess;
+
+    @GetMapping("/me")
+    public ResponseEntity<CommonResponse> mine() {
+        return ResponseEntity.ok(new CommonResponse(0, notificationService.getByUserId(recordAccess.user().getUserId()), "Notifications fetched"));
+    }
+
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> createNotification(@RequestBody NotificationDTO notificationDTO) {

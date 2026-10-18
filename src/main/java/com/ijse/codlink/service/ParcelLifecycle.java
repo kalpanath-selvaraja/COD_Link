@@ -14,6 +14,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class ParcelLifecycle {
+    private final BusinessNotifications notifications;
     private final ParcelRepository parcelRepository;
     private final TrackingEventRepository trackingEventRepository;
     private final ShipmentService shipmentService;
@@ -64,6 +65,7 @@ public class ParcelLifecycle {
         event.setStatus(targetStatus.name());
         event.setEventTime(java.time.LocalDateTime.now());
         trackingEventRepository.save(event);
+        notifications.customer(saved.getCustomer(), "Parcel " + saved.getTrackingNumber() + ": " + targetStatus.name() + ".");
 
         if (saved.getShipment() != null) {
             shipmentService.resolveShipmentIfComplete(saved.getShipment().getShipmentId());
