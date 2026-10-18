@@ -239,12 +239,7 @@
 
           $('#result-weight').text(parcel.weight != null ? parcel.weight + ' kg' : '—');
 
-          if (parcel.isCod && parcel.codAmount != null) {
-            $('#result-cod-row').show();
-            $('#result-cod').text('LKR ' + Number(parcel.codAmount).toLocaleString());
-          } else {
-            $('#result-cod-row').hide();
-          }
+          $('#result-cod-row').hide();
 
           $('#result-origin').text(parcel.originBranchName || (parcel.originBranchId ? 'Branch #' + parcel.originBranchId : '—'));
           $('#result-current').text(parcel.currentBranchName || (parcel.currentBranchId ? 'Branch #' + parcel.currentBranchId : '—'));

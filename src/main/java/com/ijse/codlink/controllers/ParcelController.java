@@ -56,7 +56,10 @@ public class ParcelController {
 
     @GetMapping(value = "/track/{trackingNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> track(@PathVariable String trackingNumber) {
-        return ResponseEntity.ok(new CommonResponse(0, parcelService.getByTrackingNumber(trackingNumber), "Parcel found"));
+        ParcelDTO parcel = parcelService.getByTrackingNumber(trackingNumber);
+        var tracking = new com.ijse.codlink.dto.PublicTrackingDTO(parcel.getTrackingNumber(),
+                parcel.getStatus(), parcel.getOriginBranchName(), parcel.getCurrentBranchName());
+        return ResponseEntity.ok(new CommonResponse(0, tracking, "Parcel found"));
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
