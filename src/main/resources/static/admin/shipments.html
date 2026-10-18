@@ -340,7 +340,7 @@
 
                     if (!isOk(res)) { alert('Cancel rejected: ' + res.message); return; }
                     loadAllShipments();
-                .fail(xhr => {
+                }).fail(xhr => {
                         if (handleAuthFailure(xhr)) return;
                         const msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : (xhr.responseText || xhr.status);
                         alert('Request failed: ' + msg);
