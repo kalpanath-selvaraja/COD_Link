@@ -43,7 +43,7 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
     @Transactional
     public DeliveryAttemptDTO create(String username, DeliveryAttemptDTO dto) {
         log.info("Execute method create()");
-        Optional<Parcel> optionalParcel = parcelRepository.findById(dto.getParcelId());
+        Optional<Parcel> optionalParcel = parcelRepository.findLockedById(dto.getParcelId());
         if (optionalParcel.isEmpty()) {
             log.error("Parcel not found with ID: {}", dto.getParcelId());
             throw new CustomException(404, "Parcel not found");
@@ -66,6 +66,7 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
         }
 
         Parcel parcel = optionalParcel.get();
+        recordAccess.assigned(parcel);
 
         if (parcel.getStatus() == ParcelStatus.DELIVERED
                 || parcel.getStatus() == ParcelStatus.FAILED
@@ -112,6 +113,7 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
             trackingEventRepository.save(deliveredEvent);
 
             parcel.setStatus(ParcelStatus.DELIVERED);
+            parcel.setDeliveredBy(courier);
             parcelRepository.save(parcel);
 
             if (parcel.getShipment() != null) {

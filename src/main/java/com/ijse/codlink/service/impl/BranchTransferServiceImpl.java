@@ -47,7 +47,7 @@ public class BranchTransferServiceImpl implements BranchTransferService {
             throw new CustomException(400, "toBranchId is required");
         }
 
-        Optional<Parcel> optionalParcel = parcelRepository.findById(dto.getParcelId());
+        Optional<Parcel> optionalParcel = parcelRepository.findLockedById(dto.getParcelId());
         if (optionalParcel.isEmpty()) {
             log.error("Parcel not found with ID: {}", dto.getParcelId());
             throw new CustomException(404, "Parcel not found");
@@ -68,6 +68,7 @@ public class BranchTransferServiceImpl implements BranchTransferService {
         }
 
         Parcel parcel = optionalParcel.get();
+        recordAccess.assigned(parcel);
         Branch fromBranch = optionalFrom.get();
         Branch toBranch = optionalTo.get();
 
@@ -96,6 +97,7 @@ public class BranchTransferServiceImpl implements BranchTransferService {
         transfer.setDispatchedAt(LocalDateTime.now());
 
         parcel.setCurrentBranch(toBranch);
+        parcel.setAssignedCourier(null);
         parcelRepository.save(parcel);
 
         return toDto(branchTransferRepository.save(transfer));

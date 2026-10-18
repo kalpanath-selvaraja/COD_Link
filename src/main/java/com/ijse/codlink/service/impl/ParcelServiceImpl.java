@@ -27,6 +27,8 @@ import java.util.*;
 public class ParcelServiceImpl implements ParcelService {
 
     private final ParcelRepository parcelRepository;
+    private final CourierRepository courierRepository;
+    private final com.ijse.codlink.security.RecordAccess recordAccess;
     private final CustomerRepository customerRepository;
     private final BranchRepository branchRepository;
     private final ShipmentRepository shipmentRepository;
@@ -338,6 +340,7 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
+    @Transactional
     public ParcelDTO updateStatus(Long parcelId, ParcelDTO statusDto) {
         log.info("Execute method updateStatus()");
         if (parcelId == null) {
@@ -349,13 +352,14 @@ public class ParcelServiceImpl implements ParcelService {
             throw new CustomException(400, "Status is required");
         }
 
-        Optional<Parcel> optionalParcel = parcelRepository.findById(parcelId);
+        Optional<Parcel> optionalParcel = parcelRepository.findLockedById(parcelId);
         if (optionalParcel.isEmpty()) {
             log.error("Parcel not found with ID: {}", parcelId);
             throw new CustomException(404, "Parcel not found");
         }
 
         Parcel parcel = optionalParcel.get();
+        recordAccess.assigned(parcel);
         ParcelStatus currentStatus = parcel.getStatus();
         ParcelStatus targetStatus = statusDto.getStatus();
 
@@ -407,7 +411,7 @@ public class ParcelServiceImpl implements ParcelService {
     @Transactional
     public ParcelDTO assignToShipment(Long parcelId, Long shipmentId) {
         log.info("Execute method assignToShipment()");
-        Optional<Parcel> optionalParcel = parcelRepository.findById(parcelId);
+        Optional<Parcel> optionalParcel = parcelRepository.findLockedById(parcelId);
         if (optionalParcel.isEmpty()) {
             log.error("Parcel not found with ID: {}", parcelId);
             throw new CustomException(404, "Parcel not found");
@@ -419,6 +423,7 @@ public class ParcelServiceImpl implements ParcelService {
         }
 
         Parcel parcel = optionalParcel.get();
+        recordAccess.assigned(parcel);
         Shipment shipment = optionalShipment.get();
             if (shipment.getStatus() != ShipmentStatus.ACTIVE
                     || !shipment.getCustomer().getCustomerId().equals(customer.getCustomerId())
@@ -464,9 +469,61 @@ public class ParcelServiceImpl implements ParcelService {
         return list;
     }
 
+    @Override
+    public List<ParcelDTO> getAvailable() {
+        Courier courier = recordAccess.courier();
+        return parcelRepository.findAvailable(courier.getBranch().getBranchId()).stream().map(this::toDto).toList();
+    }
+
+    @Override
+    public List<ParcelDTO> getAssigned() {
+        return parcelRepository.findByAssignedCourier_CourierId(recordAccess.courier().getCourierId())
+                .stream().map(this::toDto).toList();
+    }
+
+    @Override
+    @Transactional
+    public ParcelDTO claim(Long parcelId) {
+        Courier courier = recordAccess.courier();
+        Parcel parcel = parcelRepository.findLockedById(parcelId)
+                .orElseThrow(() -> new CustomException(404, "Parcel not found"));
+        if (parcel.getAssignedCourier() != null) {
+            if (parcel.getAssignedCourier().getCourierId().equals(courier.getCourierId())) return toDto(parcel);
+            throw new CustomException(409, "Parcel has already been claimed");
+        }
+        validateAssignment(parcel, courier);
+        parcel.setAssignedCourier(courier);
+        return toDto(parcelRepository.save(parcel));
+    }
+
+    @Override
+    @Transactional
+    public ParcelDTO reassign(Long parcelId, Long courierId) {
+        if (!recordAccess.hasRole("ADMIN")) throw new CustomException(403, "Admin access required");
+        Parcel parcel = parcelRepository.findLockedById(parcelId)
+                .orElseThrow(() -> new CustomException(404, "Parcel not found"));
+        Courier courier = courierRepository.findById(courierId)
+                .orElseThrow(() -> new CustomException(404, "Courier not found"));
+        validateAssignment(parcel, courier);
+        parcel.setAssignedCourier(courier);
+        return toDto(parcelRepository.save(parcel));
+    }
+
+    private void validateAssignment(Parcel parcel, Courier courier) {
+        Branch current = parcel.getCurrentBranch() != null ? parcel.getCurrentBranch() : parcel.getOriginBranch();
+        if (!Boolean.TRUE.equals(courier.getUser().getActive()) || current == null
+                || !current.getBranchId().equals(courier.getBranch().getBranchId())) {
+            throw new CustomException(409, "Courier must be active and belong to the current branch");
+        }
+        if (parcel.getStatus() == ParcelStatus.DELIVERED || parcel.getStatus() == ParcelStatus.RETURNED) {
+            throw new CustomException(409, "Resolved parcels cannot be reassigned");
+        }
+    }
+
     private ParcelDTO toDto(Parcel parcel) {
         ParcelDTO dto = new ParcelDTO();
         dto.setParcelId(parcel.getParcelId());
+        dto.setAssignedCourierId(parcel.getAssignedCourier() == null ? null : parcel.getAssignedCourier().getCourierId());
         dto.setTrackingNumber(parcel.getTrackingNumber());
         dto.setCustomerName(parcel.getCustomer() != null ? parcel.getCustomer().getName() : null);
         dto.setOriginBranchName(parcel.getOriginBranch() != null ? parcel.getOriginBranch().getBranchName() : null);

@@ -22,6 +22,26 @@ public class ParcelController {
     private final com.ijse.codlink.security.RecordAccess recordAccess;
     private final ParcelService parcelService;
 
+    @GetMapping("/available")
+    public ResponseEntity<CommonResponse> available() {
+        return ResponseEntity.ok(new CommonResponse(0, parcelService.getAvailable(), "Available parcels"));
+    }
+
+    @GetMapping("/assigned")
+    public ResponseEntity<CommonResponse> assigned() {
+        return ResponseEntity.ok(new CommonResponse(0, parcelService.getAssigned(), "Assigned parcels"));
+    }
+
+    @PatchMapping("/{id}/claim")
+    public ResponseEntity<CommonResponse> claim(@PathVariable Long id) {
+        return ResponseEntity.ok(new CommonResponse(0, parcelService.claim(id), "Parcel claimed"));
+    }
+
+    @PatchMapping("/{id}/courier/{courierId}")
+    public ResponseEntity<CommonResponse> reassign(@PathVariable Long id, @PathVariable Long courierId) {
+        return ResponseEntity.ok(new CommonResponse(0, parcelService.reassign(id, courierId), "Courier assigned"));
+    }
+
     @PostMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> createMine(@RequestBody ParcelDTO parcelDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

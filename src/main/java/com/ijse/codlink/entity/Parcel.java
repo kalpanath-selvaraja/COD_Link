@@ -24,6 +24,19 @@ public class Parcel {
 
     private Double weight;
 
+    @Version
+    private Long version;
+
+    @ManyToOne
+    @JoinColumn(name = "assigned_courier_id")
+    @ToString.Exclude
+    private Courier assignedCourier;
+
+    @ManyToOne
+    @JoinColumn(name = "delivered_by_id")
+    @ToString.Exclude
+    private Courier deliveredBy;
+
     private BigDecimal codAmount;
 
     private BigDecimal shippingFee;

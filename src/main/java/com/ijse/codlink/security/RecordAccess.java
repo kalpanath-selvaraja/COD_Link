@@ -61,7 +61,13 @@ public class RecordAccess {
     }
 
     public boolean canRead(Parcel parcel) {
-        return hasRole("ADMIN") || owns(parcel.getCustomer());
+        return hasRole("ADMIN") || owns(parcel.getCustomer()) || owns(parcel.getAssignedCourier());
+    }
+
+    public void assigned(Parcel parcel) {
+        if (!hasRole("ADMIN") && !owns(parcel.getAssignedCourier())) {
+            throw new CustomException(403, "Claim this parcel before changing it");
+        }
     }
 
     public void parcel(Long id) {

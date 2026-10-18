@@ -26,9 +26,10 @@ public class TrackingEventServiceImpl implements TrackingEventService {
     private final ParcelRepository parcelRepository;
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public TrackingEventDTO create(TrackingEventDTO dto) {
 
-        Optional<Parcel> optionalParcel = parcelRepository.findById(dto.getParcelId());
+        Optional<Parcel> optionalParcel = parcelRepository.findLockedById(dto.getParcelId());
 
         if(optionalParcel.isEmpty()){
             throw new CustomException(404, "parcel not found");
@@ -38,6 +39,7 @@ public class TrackingEventServiceImpl implements TrackingEventService {
             throw new CustomException(404, "status is required");
         }
 
+        recordAccess.assigned(optionalParcel.get());
         TrackingEvent trackingEvent = new TrackingEvent();
 
         trackingEvent.setStatus(dto.getStatus());

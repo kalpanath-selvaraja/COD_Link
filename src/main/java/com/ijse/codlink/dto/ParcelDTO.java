@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class ParcelDTO {
     private Long parcelId;
+    private Long assignedCourierId;
     private String trackingNumber;
     private String customerName;
     private String originBranchName;

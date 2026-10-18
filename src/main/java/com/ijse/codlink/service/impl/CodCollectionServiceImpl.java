@@ -39,12 +39,13 @@ public class CodCollectionServiceImpl implements CodCollectionService {
     @Transactional
     public CodCollectionDTO create(String username, CodCollectionDTO dto) {
         log.info("Execute method create()");
-        Optional<Parcel> optionalParcel = parcelRepository.findById(dto.getParcelId());
+        Optional<Parcel> optionalParcel = parcelRepository.findLockedById(dto.getParcelId());
         if (optionalParcel.isEmpty()) {
             log.error("Parcel not found with ID: {}", dto.getParcelId());
             throw new CustomException(404, "Parcel not found");
         }
         Parcel parcel = optionalParcel.get();
+        recordAccess.assigned(parcel);
 
         if (parcel.getStatus() != ParcelStatus.DELIVERED) {
             log.error("Parcel status is not DELIVERED for parcel ID: {}", dto.getParcelId());
@@ -84,6 +85,9 @@ public class CodCollectionServiceImpl implements CodCollectionService {
             throw new CustomException(404, "No courier profile linked to this account");
         }
         Courier courier = optionalCourier.get();
+        if (parcel.getDeliveredBy() == null || !parcel.getDeliveredBy().getCourierId().equals(courier.getCourierId())) {
+            throw new CustomException(409, "Collection must be recorded by the courier who delivered this parcel");
+        }
 
         if (codCollectionRepository.existsByParcel_ParcelId(dto.getParcelId())) {
             log.error("COD already collected for parcel ID: {}", dto.getParcelId());
