@@ -16,5 +16,10 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     java.math.BigDecimal sumForInvoice(@org.springframework.data.repository.query.Param("id") Long id);
 
     boolean existsByInvoice_InvoiceIdAndRequestReferenceIsNull(Long invoiceId);
+    @org.springframework.data.jpa.repository.Query("select coalesce(sum(p.amount), 0) from Payment p "
+            + "where p.requestReference is not null and p.paidAt >= :start and p.paidAt < :end")
+    java.math.BigDecimal sumReceiptsBetween(@org.springframework.data.repository.query.Param("start") java.time.LocalDateTime start,
+            @org.springframework.data.repository.query.Param("end") java.time.LocalDateTime end);
+
     List<Payment> findAll();
 }

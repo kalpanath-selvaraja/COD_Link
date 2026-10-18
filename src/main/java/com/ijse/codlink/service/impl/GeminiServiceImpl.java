@@ -22,7 +22,14 @@ public class GeminiServiceImpl implements GeminiService {
     private String model;
 
     private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/";
-    private final RestClient restClient = RestClient.create();
+    private final RestClient restClient;
+
+    public GeminiServiceImpl() {
+        var factory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(java.time.Duration.ofSeconds(5));
+        factory.setReadTimeout(java.time.Duration.ofSeconds(20));
+        restClient = RestClient.builder().requestFactory(factory).build();
+    }
 
     @Override
     public String generateReply(String prompt) {
@@ -57,9 +64,11 @@ public class GeminiServiceImpl implements GeminiService {
             List<Map<String, Object>> candidates = (List<Map<String, Object>>) response.get("candidates");
             Map<String, Object> content = (Map<String, Object>) candidates.get(0).get("content");
             List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
-            return (String) parts.get(0).get("text");
+            Object text = parts.get(0).get("text");
+            if (!(text instanceof String reply) || reply.isBlank()) throw new CustomException(502, "AI service returned no answer");
+            return reply;
         } catch (Exception e) {
-            log.error("Failed to parse Gemini response: {}", response);
+            log.warn("AI service returned an invalid response");
             throw new CustomException(502, "AI service unavailable");
         }
     }
