@@ -51,6 +51,7 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
+    @Transactional
     public ParcelDTO createForCustomer(Long customerId, ParcelDTO parcelDTO) {
         log.info("Execute method createForCustomer()");
         Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
@@ -77,6 +78,7 @@ public class ParcelServiceImpl implements ParcelService {
         }
 
         if (parcelDtos != null) {
+            for (ParcelDTO dto : parcelDtos) com.ijse.codlink.service.BookingValidation.validate(optionalCustomer.get(), dto, true);
             for (int i = 0; i < parcelDtos.size(); i++) {
                 ParcelDTO dto = parcelDtos.get(i);
                 if (dto == null || dto.getCodAmount() == null || dto.getCodAmount().compareTo(BigDecimal.ZERO) <= 0) {
@@ -173,6 +175,7 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
+    @Transactional
     public ParcelDTO createMine(String username, ParcelDTO parcelDTO) {
         log.info("Execute method createMine()");
         Optional<User> optionalUser = userRepository.findByUsername(username);
@@ -185,10 +188,12 @@ public class ParcelServiceImpl implements ParcelService {
             log.error("No customer profile linked to user ID: {}", optionalUser.get().getUserId());
             throw new CustomException(404, "No customer profile linked to this account — create one at POST /api/customers/me first");
         }
+        com.ijse.codlink.service.BookingValidation.validate(optionalCustomer.get(), parcelDTO, true);
         return toDto(buildAndSaveParcel(optionalCustomer.get(), parcelDTO));
     }
 
     private Parcel buildAndSaveParcel(Customer customer, ParcelDTO parcelDTO) {
+        com.ijse.codlink.service.BookingValidation.validate(customer, parcelDTO, false);
         Optional<Branch> optionalBranch = branchRepository.findById(parcelDTO.getOriginBranchId());
         if (optionalBranch.isEmpty()) {
             throw new CustomException(404, "Origin Branch not found");
@@ -196,12 +201,17 @@ public class ParcelServiceImpl implements ParcelService {
 
         Shipment shipment = null;
         if (parcelDTO.getShipmentId() != null) {
-            Optional<Shipment> optionalShipment = shipmentRepository.findById(parcelDTO.getShipmentId());
+            Optional<Shipment> optionalShipment = shipmentRepository.findLockedById(parcelDTO.getShipmentId());
             if (optionalShipment.isEmpty()) {
             log.error("Shipment not found with ID: {}", parcelDTO.getShipmentId());
                 throw new CustomException(404, "Shipment not found");
             }
             shipment = optionalShipment.get();
+            if (shipment.getStatus() != ShipmentStatus.ACTIVE
+                    || !shipment.getCustomer().getCustomerId().equals(customer.getCustomerId())
+                    || invoiceRepository.existsByShipment_ShipmentId(shipment.getShipmentId())) {
+                throw new CustomException(409, "Shipment must be active, uninvoiced and owned by this customer");
+            }
         }
 
         Address pickupAddress = toAddress(parcelDTO.getPickupAddress());
@@ -394,6 +404,7 @@ public class ParcelServiceImpl implements ParcelService {
     }
 
     @Override
+    @Transactional
     public ParcelDTO assignToShipment(Long parcelId, Long shipmentId) {
         log.info("Execute method assignToShipment()");
         Optional<Parcel> optionalParcel = parcelRepository.findById(parcelId);
@@ -401,7 +412,7 @@ public class ParcelServiceImpl implements ParcelService {
             log.error("Parcel not found with ID: {}", parcelId);
             throw new CustomException(404, "Parcel not found");
         }
-        Optional<Shipment> optionalShipment = shipmentRepository.findById(shipmentId);
+        Optional<Shipment> optionalShipment = shipmentRepository.findLockedById(shipmentId);
         if (optionalShipment.isEmpty()) {
             log.error("Shipment not found with ID: {}", shipmentId);
             throw new CustomException(404, "Shipment not found");
@@ -409,8 +420,13 @@ public class ParcelServiceImpl implements ParcelService {
 
         Parcel parcel = optionalParcel.get();
         Shipment shipment = optionalShipment.get();
+            if (shipment.getStatus() != ShipmentStatus.ACTIVE
+                    || !shipment.getCustomer().getCustomerId().equals(customer.getCustomerId())
+                    || invoiceRepository.existsByShipment_ShipmentId(shipment.getShipmentId())) {
+                throw new CustomException(409, "Shipment must be active, uninvoiced and owned by this customer");
+            }
 
-        if (shipment.getStatus() == ShipmentStatus.CANCELLED) {
+        if (shipment.getStatus() != ShipmentStatus.ACTIVE) {
             log.error("Cannot attach parcel with ID: {} to cancelled shipment {}", parcelId, shipmentId);
             throw new CustomException(409, "Cannot attach a parcel to a cancelled shipment");
         }
