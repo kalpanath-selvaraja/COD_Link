@@ -10,9 +10,14 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CustomerDTO {
+    @jakarta.validation.constraints.Positive
     private Long customerId;
-    private String Name;
+    @jakarta.validation.constraints.Size(max = 250)
+    @jakarta.validation.constraints.NotBlank
+    private String name;
+    @jakarta.validation.constraints.Size(max = 250)
     private String phoneNumber;
+    @jakarta.validation.constraints.Positive
     private Long userId;
 
 

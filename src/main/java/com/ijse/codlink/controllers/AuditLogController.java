@@ -19,7 +19,7 @@ public class AuditLogController {
     private final AuditLogService auditLogService;
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> createAuditLog(@RequestBody AuditLogDTO auditLogDTO) {
+    public ResponseEntity<CommonResponse> createAuditLog(@jakarta.validation.Valid @RequestBody AuditLogDTO auditLogDTO) {
         auditLogService.createAuditLog(auditLogDTO);
         CommonResponse response = new CommonResponse(0, "audit log created successfully");
         return new ResponseEntity<>(response, HttpStatus.CREATED);

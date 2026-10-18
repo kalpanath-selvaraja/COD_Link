@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @Slf4j
 public class UserServiceImpl implements UserService {
 
@@ -90,7 +91,7 @@ public class UserServiceImpl implements UserService {
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        if(request.getIsReceptionist() == true){
+        if(Boolean.TRUE.equals(request.getIsReceptionist())){
             user.setRole(UserRole.RECEPTIONIST);
             user.setIsReceptionist(Boolean.TRUE);
         }else {

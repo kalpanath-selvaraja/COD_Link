@@ -6,6 +6,8 @@
     <title>Service Zones | CODLink Logistics Platform</title>
     <link rel="stylesheet" href="../css/normalize.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="/js/text.js"></script>
+    <script src="/js/roles.js"></script>
 </head>
 <body>
 
@@ -184,7 +186,8 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     $(document).ready(function () {
-        const BASE_URL = 'http://localhost:8080';
+        if (localStorage.getItem('Role') === 'RECEPTIONIST') { location.replace('/admin/shipments.html'); return; }
+        const BASE_URL = '';
 
         function getToken() {
             return localStorage.getItem('codlink_jwt_token') || localStorage.getItem('JWT');
@@ -201,26 +204,25 @@
         if (!token) { window.location.href = '../login.html'; return; }
 
         const claims = decodeJwt(token);
-        if (!claims) { localStorage.clear(); window.location.href = '../login.html'; return; }
+        if (!claims) { localStorage.clear(); sessionStorage.clear(); window.location.href = '../login.html'; return; }
         const session = { token, username: claims.username || claims.sub || 'Unknown', role: (claims.role || '').toUpperCase() };
         const ajaxHeaders = { 'Authorization': 'Bearer ' + session.token, 'Content-Type': 'application/json' };
 
         function isOk(res) { return res && res.status === 0; }
 
         function handleAuthFailure(xhr) {
-            if (xhr && (xhr.status === 401 || xhr.status === 403)) {
-                alert('Session expired or not authorized.');
-                localStorage.clear();
+            if (xhr && (xhr.status === 401)) {
+                alert('Session expired. Please log in again.');
+                localStorage.clear(); sessionStorage.clear();
                 window.location.href = '../login.html';
                 return true;
             }
             return false;
         }
 
-
         if (session.role !== 'ADMIN') {
             alert('This page is admin-only.');
-            window.location.href = '../dashboard.html';
+            window.location.href = '/login.html';
             return;
         }
 
@@ -265,7 +267,7 @@
             $body.html('<tr><td colspan="3" style="text-align:center;">Loading…</td></tr>');
             $.ajax({ url: BASE_URL + '/api/service-zones', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
-                    if (!isOk(res)) { $body.html(`<tr><td colspan="3" style="text-align:center;">${res.message}</td></tr>`); return; }
+                    if (!isOk(res)) { $body.html(`<tr><td colspan="3" style="text-align:center;">${escapeHtml(res.message)}</td></tr>`); return; }
                     renderRows(res.body);
                 })
                 .fail(xhr => {
@@ -319,7 +321,7 @@
                 .fail(xhr => {
                     if (handleAuthFailure(xhr)) return;
                     const msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : (xhr.responseText || xhr.status);
-                    alert('Request failed: ' + msg + ' — likely a foreign key constraint (zone still in use).');
+                    alert('Request failed: ' + msg + ' - likely a foreign key constraint (zone still in use).');
                 });
         });
 
@@ -327,7 +329,7 @@
 
         loadZones();
 
-        $('#btn-logout').on('click', function () { localStorage.clear(); window.location.href = '../login.html'; });
+        $('#btn-logout').on('click', function () { localStorage.clear(); sessionStorage.clear(); window.location.href = '../login.html'; });
 
     });
 </script>

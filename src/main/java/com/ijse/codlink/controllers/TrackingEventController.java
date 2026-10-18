@@ -19,7 +19,7 @@ public class TrackingEventController {
     private final TrackingEventService trackingEventService;
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> createTrackingEvent(@RequestBody TrackingEventDTO trackingEventDTO) {
+    public ResponseEntity<CommonResponse> createTrackingEvent(@jakarta.validation.Valid @RequestBody TrackingEventDTO trackingEventDTO) {
         CommonResponse response = new CommonResponse(0,
                 trackingEventService.create(trackingEventDTO),
                 "Tracking event recorded");

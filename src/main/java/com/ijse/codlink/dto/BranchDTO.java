@@ -10,9 +10,14 @@ import lombok.Setter;
 @NoArgsConstructor
 public class BranchDTO {
 
+    @jakarta.validation.constraints.Positive
     private Long branchId;
+    @jakarta.validation.constraints.Size(max = 250)
+    @jakarta.validation.constraints.NotBlank
     private String branchName;
+    @jakarta.validation.constraints.Size(max = 250)
     private String phone;
+    @jakarta.validation.Valid
     private AddressDTO address;
 
 

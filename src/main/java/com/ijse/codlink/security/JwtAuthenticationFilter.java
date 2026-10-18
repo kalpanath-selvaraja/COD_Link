@@ -44,48 +44,57 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String token = authHeader.substring(7);
             String username = jwtUtil.extractUsername(token);
+            if (username == null || username.isBlank()) {
+                handleJwtException(response, 401, "Invalid token subject");
+                return;
+            }
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
                 if (jwtUtil.validateToken(token, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-//
-
                             userDetails, null, userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }else {
-                    log.warn("JWT failed validation for user '{}' on {} {} from {} — request will proceed unauthenticated",
-                            username, request.getMethod(), request.getRequestURI(), request.getRemoteAddr());
+                    handleJwtException(response, 401, "Invalid token");
+                    return;
                 }
             }
-
-            filterChain.doFilter(request, response);
 
         } catch (ExpiredJwtException ex) {
             log.warn("Expired JWT on {} {} from {}: {}", request.getMethod(), request.getRequestURI(), request.getRemoteAddr(), ex.getMessage());
             handleJwtException(response, 401, "Token expired");
+            return;
         } catch (SignatureException ex) {
-            log.warn("Invalid JWT signature on {} {} from {} — possible tampering: {}", request.getMethod(), request.getRequestURI(), request.getRemoteAddr(), ex.getMessage());
+            log.warn("Invalid JWT signature on {} {} from {} - possible tampering: {}", request.getMethod(), request.getRequestURI(), request.getRemoteAddr(), ex.getMessage());
             handleJwtException(response, 401, "Invalid token signature");
+            return;
         } catch (MalformedJwtException ex) {
             log.warn("Malformed JWT on {} {} from {}: {}", request.getMethod(), request.getRequestURI(), request.getRemoteAddr(), ex.getMessage());
             handleJwtException(response, 401, "Invalid token format");
+            return;
 
         } catch (org.springframework.security.core.userdetails.UsernameNotFoundException ex) {
             log.warn("JWT referenced unknown or inactive account on {} {} from {}: {}", request.getMethod(), request.getRequestURI(), request.getRemoteAddr(), ex.getMessage());
-            handleJwtException(response, 403, "Account not found or inactive");
+            handleJwtException(response, 401, "Account not found or inactive");
+            return;
 
+        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException ex) {
+            handleJwtException(response, 401, "Invalid token");
+            return;
         } catch (Exception ex) {
             log.error("Unexpected authentication failure on {} {} from {}", request.getMethod(), request.getRequestURI(), request.getRemoteAddr(), ex);
             handleJwtException(response, 500, "Authentication failed");
+            return;
         }
 
+        filterChain.doFilter(request, response);
     }
 
     private void handleJwtException(HttpServletResponse response, int code, String message) throws IOException {
-        response.setStatus(HttpStatus.OK.value());
+        response.setStatus(code);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
         CommonResponse errorResponse = new CommonResponse(code, message);

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @Slf4j
 @RequiredArgsConstructor
 public class ReconciliationBatchServiceImpl implements ReconciliationBatchService {
@@ -30,15 +31,18 @@ public class ReconciliationBatchServiceImpl implements ReconciliationBatchServic
     private final CodCollectionRepository codCollectionRepository;
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public ReconciliationBatchDTO createForBranch(Long branchId) {
-        Optional<Branch> optionalBranch = branchRepository.findById(branchId);
+        Optional<Branch> optionalBranch = branchRepository.findLockedById(branchId);
         if (optionalBranch.isEmpty()) {
             throw new CustomException(404, "Branch not found");
         }
 
+        if (codCollectionRepository.existsByCollectionBranchIsNullAndReconciliationBatchIsNull()) {
+            throw new CustomException(409, "Historical collections need their original branches reviewed before reconciliation");
+        }
         List<CodCollection> unbatched = codCollectionRepository
-                .findByCourier_Branch_BranchIdAndReconciliationBatchIsNull(branchId);
+                .findUnbatchedForUpdate(branchId);
 
         if (unbatched.isEmpty()) {
             throw new CustomException(400, "No unbatched COD collections for this branch");

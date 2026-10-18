@@ -60,7 +60,7 @@
 <body class="auth-page">
 
   <header class="auth-topbar">
-    <a href="./index.html" class="auth-topbar__brand" title="CODLink Home">
+    <a href="/login.html" class="auth-topbar__brand" title="CODLink Home">
       <div class="brand-logo" aria-hidden="true">
         <svg viewBox="0 0 24 24">
           <path d="M20 8l-8 5-8-5V6l8 5 8-5v2zm0-4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"/>
@@ -129,32 +129,24 @@
         <div id="track-result" class="track-result">
           <div class="track-row">
             <span class="label">Tracking Number</span>
-            <span class="value" id="result-tracking">—</span>
+            <span class="value" id="result-tracking">-</span>
           </div>
           <div class="track-row">
             <span class="label">Status</span>
-            <span class="value" id="result-status">—</span>
-          </div>
-          <div class="track-row">
-            <span class="label">Weight</span>
-            <span class="value" id="result-weight">—</span>
-          </div>
-          <div class="track-row" id="result-cod-row">
-            <span class="label">Amount Due on Delivery</span>
-            <span class="value" id="result-cod">—</span>
+            <span class="value" id="result-status">-</span>
           </div>
           <div class="track-row">
             <span class="label">Origin Branch</span>
-            <span class="value" id="result-origin">—</span>
+            <span class="value" id="result-origin">-</span>
           </div>
           <div class="track-row">
             <span class="label">Current Location</span>
-            <span class="value" id="result-current">—</span>
+            <span class="value" id="result-current">-</span>
           </div>
         </div>
 
         <p class="track-note">
-          For privacy, this page shows shipment status only — sender/recipient names and addresses
+          For privacy, this page shows shipment status only - sender/recipient names and addresses
           are never displayed here.
         </p>
 
@@ -168,9 +160,7 @@
 
   <footer class="auth-footer">
     <nav class="auth-footer__links" aria-label="Legal and support links">
-      <a href="./privacy.html">Privacy Policy</a>
-      <a href="./terms.html">Terms of Service</a>
-      <a href="./support.html">Operations Support</a>
+
     </nav>
     <p>&copy; 2026 CODLink Courier & Logistics Management System. All rights reserved.</p>
   </footer>
@@ -178,7 +168,7 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script>
     $(document).ready(function () {
-      const BASE_URL = 'http://localhost:8080';
+      const BASE_URL = '';
       const $alert = $('#track-alert');
       const $alertMsg = $('#alert-message');
       const $btn = $('#btn-track-submit');
@@ -217,7 +207,7 @@
 
         setLoading(true);
 
-        // Public endpoint — GET /api/parcels/track/{trackingNumber} is permitAll()
+        // Public endpoint - GET /api/parcels/track/{trackingNumber} is permitAll()
         // in SecurityConfig. No Authorization header sent or needed here.
         $.ajax({
           url: BASE_URL + '/api/parcels/track/' + encodeURIComponent(trackingNumber),
@@ -231,7 +221,7 @@
           const parcel = response.body;
 
           // Deliberately not rendering parcel.customerName, parcel.pickupAddress,
-          // or parcel.deliveryAddress even though the backend returns them —
+          // or parcel.deliveryAddress even though the backend returns them -
           // this is an unauthenticated endpoint and those fields are PII.
           $('#result-tracking').text(parcel.trackingNumber || trackingNumber);
 
@@ -239,17 +229,10 @@
             const $statusSpan = $('<span>').addClass('status-pill ' + statusClass).text(parcel.status || 'UNKNOWN');
             $('#result-status').empty().append($statusSpan);
 
-          $('#result-weight').text(parcel.weight != null ? parcel.weight + ' kg' : '—');
 
-          if (parcel.isCod && parcel.codAmount != null) {
-            $('#result-cod-row').show();
-            $('#result-cod').text('LKR ' + Number(parcel.codAmount).toLocaleString());
-          } else {
-            $('#result-cod-row').hide();
-          }
 
-          $('#result-origin').text(parcel.originBranchName || (parcel.originBranchId ? 'Branch #' + parcel.originBranchId : '—'));
-          $('#result-current').text(parcel.currentBranchName || (parcel.currentBranchId ? 'Branch #' + parcel.currentBranchId : '—'));
+          $('#result-origin').text(parcel.originBranchName || (parcel.originBranchId ? 'Branch #' + parcel.originBranchId : '-'));
+          $('#result-current').text(parcel.currentBranchName || (parcel.currentBranchId ? 'Branch #' + parcel.currentBranchId : '-'));
 
           $result.addClass('is-visible');
         }).fail(function (xhr) {

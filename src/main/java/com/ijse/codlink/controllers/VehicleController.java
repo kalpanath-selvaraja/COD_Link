@@ -17,7 +17,7 @@ public class VehicleController {
     private final VehicleService vehicleService;
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> create(@RequestBody VehicleDTO dto) {
+    public ResponseEntity<CommonResponse> create(@jakarta.validation.Valid @RequestBody VehicleDTO dto) {
         CommonResponse response = new CommonResponse(0, vehicleService.create(dto), "Vehicle registered");
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -35,7 +35,7 @@ public class VehicleController {
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> update(@PathVariable Long id, @RequestBody VehicleDTO dto) {
+    public ResponseEntity<CommonResponse> update(@PathVariable Long id, @jakarta.validation.Valid @RequestBody VehicleDTO dto) {
         CommonResponse response = new CommonResponse(0, vehicleService.update(id, dto), "Vehicle updated");
         return ResponseEntity.ok(response);
     }
@@ -48,7 +48,7 @@ public class VehicleController {
     }
 
     @PatchMapping(value = "/{id}/status", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> updateStatus(@PathVariable Long id, @RequestBody VehicleDTO dto) {
+    public ResponseEntity<CommonResponse> updateStatus(@PathVariable Long id, @jakarta.validation.Valid @RequestBody VehicleDTO dto) {
         CommonResponse response = new CommonResponse(0, vehicleService.updateStatus(id, dto), "Vehicle status updated");
         return ResponseEntity.ok(response);
     }

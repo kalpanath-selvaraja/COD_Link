@@ -13,8 +13,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 
 public class TrackingEventDTO {
+    @jakarta.validation.constraints.Positive
     private Long eventId;
+    @jakarta.validation.constraints.Positive
+    @jakarta.validation.constraints.NotNull
     private Long parcelId;
+    @jakarta.validation.constraints.Size(max = 240)
+    @jakarta.validation.constraints.NotBlank
     private String status;
     private LocalDateTime eventTime;
 }

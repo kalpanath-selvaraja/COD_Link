@@ -6,6 +6,8 @@
     <title>Admin Dashboard | CODLink Logistics Platform</title>
     <link rel="stylesheet" href="../css/normalize.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="/js/text.js"></script>
+    <script src="/js/roles.js"></script>
 </head>
 <body>
 
@@ -130,22 +132,22 @@
             <div class="cards-row">
                 <div class="card">
                     <h3>Total Parcels</h3>
-                    <div id="total-parcels" class="card-value">—</div>
+                    <div id="total-parcels" class="card-value">-</div>
                     <div class="card-subtext">All time system volume</div>
                 </div>
                 <div class="card card--accent">
                     <h3>In Transit</h3>
-                    <div id="in-transit-parcels" class="card-value">—</div>
+                    <div id="in-transit-parcels" class="card-value">-</div>
                     <div class="card-subtext">Currently on the road</div>
                 </div>
                 <div class="card card--success">
                     <h3>Total Couriers</h3>
-                    <div id="active-couriers" class="card-value">—</div>
+                    <div id="active-couriers" class="card-value">-</div>
                     <div class="card-subtext">Registered field agents</div>
                 </div>
                 <div class="card card--info">
                     <h3>Branches</h3>
-                    <div id="total-branches" class="card-value">—</div>
+                    <div id="total-branches" class="card-value">-</div>
                     <div class="card-subtext">Operational hubs</div>
                 </div>
             </div>
@@ -186,7 +188,7 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     $(document).ready(function() {
-        const BASE_URL = 'http://localhost:8080';
+        const BASE_URL = '';
 
         const token = localStorage.getItem('JWT');
         if (!token) {
@@ -198,7 +200,6 @@
         const userId = localStorage.getItem('UserId')
 
         if(role == 'RECEPTIONIST'){
-
 
             $('.couriers').hide();
             $('.branches').hide();
@@ -216,7 +217,6 @@
         if(role == 'RECEPTIONIST'){
              isReceptionist = true;
         }
-
 
         const ajaxHeaders = {
             'Authorization': 'Bearer ' + token,
@@ -236,9 +236,9 @@
         function isOk(res) { return res && res.status === 0; }
 
         function handleAuthFailure(xhr) {
-            if (xhr && (xhr.status === 401 || xhr.status === 403)) {
-                alert('Session expired or not authorized.');
-                localStorage.clear();
+            if (xhr && (xhr.status === 401)) {
+                alert('Session expired. Please log in again.');
+                localStorage.clear(); sessionStorage.clear();
                 window.location.href = '../login.html';
                 return true;
             }
@@ -248,7 +248,7 @@
         function loadSummaryCards() {
             $.ajax({ url: BASE_URL + '/api/parcels', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
-                    if (!isOk(res)) { $('#total-parcels, #in-transit-parcels').text('—'); return; }
+                    if (!isOk(res)) { $('#total-parcels, #in-transit-parcels').text('-'); return; }
                     const parcels = res.body || [];
                     $('#total-parcels').text(parcels.length);
                     $('#in-transit-parcels').text(parcels.filter(p => p.status === 'IN_TRANSIT').length);
@@ -259,20 +259,19 @@
                 });
 
             $.ajax({ url: BASE_URL + '/api/couriers', method: 'GET', headers: ajaxHeaders })
-                .done(res => $('#active-couriers').text(isOk(res) ? res.body.length : '—'))
+                .done(res => $('#active-couriers').text(isOk(res) ? res.body.length : '-'))
                 .fail(xhr => {
                     if (handleAuthFailure(xhr)) return;
                     $('#active-couriers').text('N/A');
                 });
 
             $.ajax({ url: BASE_URL + '/api/branches', method: 'GET', headers: ajaxHeaders })
-                .done(res => $('#total-branches').text(isOk(res) ? res.body.length : '—'))
+                .done(res => $('#total-branches').text(isOk(res) ? res.body.length : '-'))
                 .fail(xhr => {
                     if (handleAuthFailure(xhr)) return;
                     $('#total-branches').text('N/A');
                 });
         }
-
 
         function loadRecentParcels() {
             const $tbody = $('#parcels-table-body');
@@ -284,7 +283,7 @@
                 headers: ajaxHeaders,
                 success: function(response) {
                     if (!isOk(response)) {
-                        $tbody.html(`<tr><td colspan="6" style="text-align:center; color:red;">${response.message}</td></tr>`);
+                        $tbody.html(`<tr><td colspan="6" style="text-align:center; color:red;">${escapeHtml(response.message)}</td></tr>`);
                         return;
                     }
                     const parcels = [...response.body].sort((a, b) => b.parcelId - a.parcelId).slice(0, 5);
@@ -318,7 +317,7 @@
                 },
                 error: function(xhr) {
                     if (handleAuthFailure(xhr)) return;
-                    $tbody.html(`<tr><td colspan="6" style="text-align: center; color: red;">Failed to load parcels. Server responded with status: ${xhr.status}</td></tr>`);
+                    $tbody.html(`<tr><td colspan="6" style="text-align: center; color: red;">Failed to load parcels. Server responded with status: ${escapeHtml(xhr.status)}</td></tr>`);
                 }
             });
         }
@@ -338,10 +337,11 @@
         });
 
         $('#btn-logout').on('click', function() {
-            localStorage.clear();
+            localStorage.clear(); sessionStorage.clear();
             window.location.href = '../login.html';
         });
     });
 </script>
+<script src="/js/notifications.js"></script>
 </body>
 </html>

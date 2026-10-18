@@ -6,6 +6,8 @@
     <title>Delivery Attempts | CODLink Logistics Platform</title>
     <link rel="stylesheet" href="../css/normalize.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="/js/text.js"></script>
+    <script src="/js/roles.js"></script>
 </head>
 <body>
 
@@ -141,10 +143,6 @@
                             <input type="number" id="parcelId" class="form-control" placeholder="e.g. 101">
                         </div>
                         <div class="form-group">
-                            <label for="courierId">Courier ID</label>
-                            <input type="number" id="courierId" class="form-control" placeholder="e.g. 1">
-                        </div>
-                        <div class="form-group">
                             <label for="outcome">Outcome</label>
                             <select id="outcome" class="form-control">
                                 <option value="DELIVERED">DELIVERED</option>
@@ -202,10 +200,9 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     $(document).ready(function () {
+        if (localStorage.getItem('Role') === 'RECEPTIONIST') { location.replace('/admin/shipments.html'); return; }
 
-
-
-        const BASE_URL = 'http://localhost:8080';
+        const BASE_URL = '';
         function getToken() { return localStorage.getItem('codlink_jwt_token') || localStorage.getItem('JWT'); }
         const token = getToken();
         if (!token) { window.location.href = '../login.html'; return; }
@@ -213,9 +210,9 @@
         function isOk(res) { return res && res.status === 0; }
 
         function handleAuthFailure(xhr) {
-            if (xhr && (xhr.status === 401 || xhr.status === 403)) {
-                alert('Session expired or not authorized.');
-                localStorage.clear();
+            if (xhr && (xhr.status === 401)) {
+                alert('Session expired. Please log in again.');
+                localStorage.clear(); sessionStorage.clear();
                 window.location.href = '../login.html';
                 return true;
             }
@@ -243,7 +240,7 @@
         }
 
         $('#btn-logout').on('click', function () {
-            localStorage.clear();
+            localStorage.clear(); sessionStorage.clear();
             window.location.href = '../login.html';
         });
 
@@ -252,7 +249,7 @@
             $body.html('<tr><td colspan="5" style="text-align:center;">Loading…</td></tr>');
             $.ajax({ url: BASE_URL + '/api/delivery-attempts', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
-                    if (!isOk(res)) { $body.html(`<tr><td colspan="5" style="text-align:center;">${res.message}</td></tr>`); return; }
+                    if (!isOk(res)) { $body.html(`<tr><td colspan="5" style="text-align:center;">${escapeHtml(res.message)}</td></tr>`); return; }
                     $body.empty();
                     if (!res.body.length) { $body.append('<tr><td colspan="5" style="text-align:center;">No delivery attempts yet.</td></tr>'); return; }
                     res.body.forEach(a => {
@@ -264,7 +261,7 @@
                         const $statusSpan = $('<span>').addClass('status-pill status-failed').text(a.outcomeCode || '');
                         $tr.append($('<td>').append($statusSpan));
 
-                        $tr.append($('<td>').text(a.outcome || '—'));
+                        $tr.append($('<td>').text(a.outcome || '-'));
                         $body.append($tr);
                     });
                 }).fail(xhr => {
@@ -289,7 +286,6 @@
                 $('#attempt-form')[0].reset();
                 loadAttempts();
 
-
                 if (outcomeCode === 'DELIVERED') {
                     $.ajax({ url: BASE_URL + '/api/parcels/' + parcelId, method: 'GET', headers: ajaxHeaders })
                         .done(pRes => {
@@ -309,7 +305,6 @@
         });
 
         loadAttempts();
-
 
     });
 </script>

@@ -21,16 +21,19 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @Slf4j
 @RequiredArgsConstructor
 public class BranchTransferServiceImpl implements BranchTransferService {
+    private final com.ijse.codlink.security.RecordAccess recordAccess;
 
+    private final com.ijse.codlink.repository.TrackingEventRepository trackingEventRepository;
     private final BranchTransferRepository branchTransferRepository;
     private final ParcelRepository parcelRepository;
     private final BranchRepository branchRepository;
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public BranchTransferDTO create(BranchTransferDTO dto) {
         log.info("Execute method create()");
         if (dto.getParcelId() == null) {
@@ -46,7 +49,7 @@ public class BranchTransferServiceImpl implements BranchTransferService {
             throw new CustomException(400, "toBranchId is required");
         }
 
-        Optional<Parcel> optionalParcel = parcelRepository.findById(dto.getParcelId());
+        Optional<Parcel> optionalParcel = parcelRepository.findLockedById(dto.getParcelId());
         if (optionalParcel.isEmpty()) {
             log.error("Parcel not found with ID: {}", dto.getParcelId());
             throw new CustomException(404, "Parcel not found");
@@ -67,14 +70,15 @@ public class BranchTransferServiceImpl implements BranchTransferService {
         }
 
         Parcel parcel = optionalParcel.get();
+        recordAccess.assigned(parcel);
         Branch fromBranch = optionalFrom.get();
         Branch toBranch = optionalTo.get();
 
         if (parcel.getStatus() == ParcelStatus.DELIVERED
                 || parcel.getStatus() == ParcelStatus.RETURNED) {
-            log.error("Cannot transfer a parcel — parcel status is {}", parcel.getStatus());
+            log.error("Cannot transfer a parcel - parcel status is {}", parcel.getStatus());
             throw new CustomException(409,
-                    "Cannot transfer a parcel — parcel status is " + parcel.getStatus());
+                    "Cannot transfer a parcel - parcel status is " + parcel.getStatus());
         }
 
         Branch actualCurrentBranch = parcel.getCurrentBranch() != null
@@ -95,13 +99,20 @@ public class BranchTransferServiceImpl implements BranchTransferService {
         transfer.setDispatchedAt(LocalDateTime.now());
 
         parcel.setCurrentBranch(toBranch);
+        parcel.setAssignedCourier(null);
         parcelRepository.save(parcel);
+        com.ijse.codlink.entity.TrackingEvent event = new com.ijse.codlink.entity.TrackingEvent();
+        event.setParcel(parcel);
+        event.setStatus("TRANSFERRED: " + fromBranch.getBranchName() + " to " + toBranch.getBranchName());
+        event.setEventTime(LocalDateTime.now());
+        trackingEventRepository.save(event);
 
         return toDto(branchTransferRepository.save(transfer));
     }
 
     @Override
     public List<BranchTransferDTO> getByParcelId(Long parcelId) {
+        recordAccess.parcel(parcelId);
         log.info("Execute method getByParcelId()");
         Optional<Parcel> optionalParcel = parcelRepository.findById(parcelId);
         if (optionalParcel.isEmpty()) {
@@ -121,7 +132,7 @@ public class BranchTransferServiceImpl implements BranchTransferService {
         List<BranchTransferDTO> list = new ArrayList<>();
 
         for(BranchTransfer b :branchTransferRepository.findAll()){
-            list.add(toDto(b));
+            if (recordAccess.canRead(b.getParcel())) list.add(toDto(b));
         }
 
         return list;

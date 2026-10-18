@@ -6,6 +6,8 @@
     <title>Reconciliation | CODLink Logistics Platform</title>
     <link rel="stylesheet" href="../css/normalize.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="/js/text.js"></script>
+    <script src="/js/roles.js"></script>
 </head>
 <body>
 
@@ -118,7 +120,7 @@
         <main class="content-body">
             <div class="role-note" style="background: var(--color-info-bg); border: 1px solid var(--color-info-border); color: var(--color-info-text); padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 18px;">
                 A batch's total is computed automatically from every unbatched COD collection for the selected branch
-                — there is no manual amount or status field. Creating a batch fails if the branch has no unbatched
+                - there is no manual amount or status field. Creating a batch fails if the branch has no unbatched
                 collections (either none exist yet, or they've already been reconciled into an earlier batch).
             </div>
 
@@ -176,7 +178,8 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     $(document).ready(function () {
-        const BASE_URL = 'http://localhost:8080';
+        if (localStorage.getItem('Role') === 'RECEPTIONIST') { location.replace('/admin/shipments.html'); return; }
+        const BASE_URL = '';
 
         function getToken() { return localStorage.getItem('codlink_jwt_token') || localStorage.getItem('JWT'); }
         function decodeJwt(token) {
@@ -190,7 +193,7 @@
         const token = getToken();
         if (!token) { window.location.href = '../login.html'; return; }
         const claims = decodeJwt(token);
-        if (!claims) { localStorage.clear(); window.location.href = '../login.html'; return; }
+        if (!claims) { localStorage.clear(); sessionStorage.clear(); window.location.href = '../login.html'; return; }
 
         const session = { token, username: claims.username || claims.sub || 'Unknown', role: (claims.role || '').toUpperCase() };
         const ajaxHeaders = { 'Authorization': 'Bearer ' + session.token, 'Content-Type': 'application/json' };
@@ -198,9 +201,9 @@
         function isOk(res) { return res && res.status === 0; }
 
         function handleAuthFailure(xhr) {
-            if (xhr && (xhr.status === 401 || xhr.status === 403)) {
-                alert('Session expired or not authorized.');
-                localStorage.clear();
+            if (xhr && (xhr.status === 401)) {
+                alert('Session expired. Please log in again.');
+                localStorage.clear(); sessionStorage.clear();
                 window.location.href = '../login.html';
                 return true;
             }
@@ -215,11 +218,11 @@
         // POST/GET /api/reconciliation-batches are both hasRole(ADMIN) server-side.
         if (session.role !== 'ADMIN') {
             alert('This page is admin-only.');
-            window.location.href = '../dashboard.html';
+            window.location.href = '/login.html';
             return;
         }
 
-        $('#btn-logout').on('click', function () { localStorage.clear(); window.location.href = '../login.html'; });
+        $('#btn-logout').on('click', function () { localStorage.clear(); sessionStorage.clear(); window.location.href = '../login.html'; });
 
         let branchCache = {}; // branchId -> branchName
 
@@ -230,9 +233,9 @@
                     branchCache = {};
                     const options = res.body.map(b => {
                         branchCache[b.branchId] = b.branchName;
-                        return `<option value="${b.branchId}">${b.branchName} (#${b.branchId})</option>`;
+                        return `<option value="${escapeHtml(b.branchId)}">${escapeHtml(b.branchName)} (#${escapeHtml(b.branchId)})</option>`;
                     }).join('');
-                    $('#branchId').html('<option value="">— select branch —</option>' + options);
+                    $('#branchId').html('<option value="">- select branch -</option>' + options);
                 })
                 .fail(xhr => {
                     if (handleAuthFailure(xhr)) return;
@@ -249,7 +252,7 @@
             $body.html('<tr><td colspan="4" style="text-align:center;">Loading…</td></tr>');
             $.ajax({ url: BASE_URL + '/api/reconciliation-batches', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
-                    if (!isOk(res)) { $body.html(`<tr><td colspan="4" style="text-align:center;">${res.message}</td></tr>`); return; }
+                    if (!isOk(res)) { $body.html(`<tr><td colspan="4" style="text-align:center;">${escapeHtml(res.message)}</td></tr>`); return; }
                     $body.empty();
                     if (!res.body.length) { $body.append('<tr><td colspan="4" style="text-align:center;">No reconciliation batches yet.</td></tr>'); return; }
                     res.body.forEach(b => {
@@ -260,7 +263,7 @@
                         const totalText = '$' + Number(b.total).toFixed(2);
                         $tr.append($('<td>').append($('<strong>').text(totalText)));
 
-                        const dateText = b.reconciledAt ? new Date(b.reconciledAt).toLocaleString() : '—';
+                        const dateText = b.reconciledAt ? new Date(b.reconciledAt).toLocaleString() : '-';
                         $tr.append($('<td>').text(dateText));
 
                         $body.append($tr);

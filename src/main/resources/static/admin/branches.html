@@ -6,6 +6,8 @@
     <title>Branches Management | CODLink Logistics Platform</title>
     <link rel="stylesheet" href="../css/normalize.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="/js/text.js"></script>
+    <script src="/js/roles.js"></script>
 </head>
 <body>
 
@@ -167,7 +169,7 @@
                     </div>
                     <p id="address-lock-note" class="helper-text" style="display:none; margin-bottom:10px;">
                         Editing an existing branch: name and phone can change, but the address is locked after creation
-                        (backend does not update it — see BranchServiceImpl.updateBranch). To relocate a branch, delete and recreate it.
+                        (backend does not update it - see BranchServiceImpl.updateBranch). To relocate a branch, delete and recreate it.
                     </p>
                     <button type="submit" class="btn-action">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
@@ -216,7 +218,8 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     $(document).ready(function () {
-        const BASE_URL = 'http://localhost:8080';
+        if (localStorage.getItem('Role') === 'RECEPTIONIST') { location.replace('/admin/shipments.html'); return; }
+        const BASE_URL = '';
 
         function getToken() {
             return localStorage.getItem('codlink_jwt_token') || localStorage.getItem('JWT');
@@ -232,7 +235,7 @@
         const token = getToken();
         if (!token) { window.location.href = '../login.html'; return; }
         const claims = decodeJwt(token);
-        if (!claims) { localStorage.clear(); window.location.href = '../login.html'; return; }
+        if (!claims) { localStorage.clear(); sessionStorage.clear(); window.location.href = '../login.html'; return; }
 
         const session = { token, username: claims.username || claims.sub || 'Unknown', role: (claims.role || '').toUpperCase() };
         const ajaxHeaders = { 'Authorization': 'Bearer ' + session.token, 'Content-Type': 'application/json' };
@@ -240,9 +243,9 @@
         function isOk(res) { return res && res.status === 0; }
 
         function handleAuthFailure(xhr) {
-            if (xhr && (xhr.status === 401 || xhr.status === 403)) {
-                alert('Session expired or not authorized.');
-                localStorage.clear();
+            if (xhr && (xhr.status === 401)) {
+                alert('Session expired. Please log in again.');
+                localStorage.clear(); sessionStorage.clear();
                 window.location.href = '../login.html';
                 return true;
             }
@@ -251,7 +254,7 @@
 
         if (session.role !== 'ADMIN') {
             alert('This page is admin-only.');
-            window.location.href = '../dashboard.html';
+            window.location.href = '/login.html';
             return;
         }
 
@@ -263,10 +266,10 @@
                 .done(res => {
                     if (!isOk(res)) { $('#zoneId').html('<option value="">Failed to load zones</option>'); return; }
                     zoneCache = {};
-                    const $sel = $('#zoneId').empty().append('<option value="">— select zone —</option>');
+                    const $sel = $('#zoneId').empty().append('<option value="">- select zone -</option>');
                     res.body.forEach(z => {
                         zoneCache[z.zoneId] = z.name;
-                        $sel.append(`<option value="${z.zoneId}">${z.name} (#${z.zoneId})</option>`);
+                        $sel.append(`<option value="${escapeHtml(z.zoneId)}">${escapeHtml(z.name)} (#${escapeHtml(z.zoneId)})</option>`);
                     });
                 })
                 .fail(xhr => {
@@ -292,21 +295,21 @@
             branches.forEach(b => {
                 const addr = b.address
                     ? [b.address.street, b.address.city, b.address.postalCode].filter(Boolean).join(', ')
-                    : '—';
+                    : '-';
                 const zoneLabel = b.address && b.address.zoneId
                     ? (zoneCache[b.address.zoneId] || ('#' + b.address.zoneId))
-                    : '—';
+                    : '-';
 
                 const $tr = $('<tr>').attr('data-id', b.branchId);
                 $tr.append($('<td>').text('#' + b.branchId));
                 $tr.append($('<td>').append($('<strong>').text(b.branchName)));
-                $tr.append($('<td>').text(b.phone || '—'));
+                $tr.append($('<td>').text(b.phone || '-'));
                 $tr.append($('<td>').text(addr));
                 $tr.append($('<td>').text(zoneLabel));
 
                 const $actions = $('<td>').html(`
-                <button type="button" class="btn-action btn-ghost btn-edit" data-id="${b.branchId}">Edit</button>
-                <button type="button" class="btn-action btn-ghost btn-delete" data-id="${b.branchId}">Delete</button>
+                <button type="button" class="btn-action btn-ghost btn-edit" data-id="${escapeHtml(b.branchId)}">Edit</button>
+                <button type="button" class="btn-action btn-ghost btn-delete" data-id="${escapeHtml(b.branchId)}">Delete</button>
             `);
                 $tr.append($actions);
                 $body.append($tr);
@@ -320,7 +323,7 @@
             $.ajax({ url: BASE_URL + '/api/branches', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
 
-                    if (!isOk(res)) { $body.html(`<tr><td colspan="6" style="text-align:center;">${res.message}</td></tr>`); return; }
+                    if (!isOk(res)) { $body.html(`<tr><td colspan="6" style="text-align:center;">${escapeHtml(res.message)}</td></tr>`); return; }
                     renderRows(res.body);
                 })
                 .fail(xhr => {
@@ -340,12 +343,12 @@
             let payload;
 
             if (isEdit) {
-                // BranchServiceImpl.updateBranch only reads branchName/phone — address is
+                // BranchServiceImpl.updateBranch only reads branchName/phone - address is
                 // intentionally not sent as editable, matching what the backend actually does.
                 payload = { branchName, phone };
             } else {
                 const zoneId = $('#zoneId').val();
-                if (!zoneId) { alert('Service zone is required — the backend rejects a branch with no zone.'); return; }
+                if (!zoneId) { alert('Service zone is required - the backend rejects a branch with no zone.'); return; }
                 payload = {
                     branchName, phone,
                     address: {
@@ -411,7 +414,7 @@
 
         loadZonesIntoSelect().always(loadBranches);
 
-        $('#btn-logout').on('click', function () { localStorage.clear(); window.location.href = '../login.html'; });
+        $('#btn-logout').on('click', function () { localStorage.clear(); sessionStorage.clear(); window.location.href = '../login.html'; });
 
     });
 </script>

@@ -17,7 +17,7 @@ public class InvoiceController {
     private final InvoiceService invoiceService;
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> create(@RequestBody InvoiceDTO dto) {
+    public ResponseEntity<CommonResponse> create(@jakarta.validation.Valid @RequestBody InvoiceDTO dto) {
         CommonResponse response = new CommonResponse(0, invoiceService.create(dto), "Invoice created");
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }

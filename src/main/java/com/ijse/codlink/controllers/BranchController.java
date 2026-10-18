@@ -17,7 +17,7 @@ public class BranchController {
     private final BranchService branchService;
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> create(@RequestBody BranchDTO dto) {
+    public ResponseEntity<CommonResponse> create(@jakarta.validation.Valid @RequestBody BranchDTO dto) {
         CommonResponse response = new CommonResponse(0, branchService.createBranch(dto), "Branch created");
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -35,7 +35,7 @@ public class BranchController {
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> update(@PathVariable Long id, @RequestBody BranchDTO dto) {
+    public ResponseEntity<CommonResponse> update(@PathVariable Long id, @jakarta.validation.Valid @RequestBody BranchDTO dto) {
         CommonResponse response = new CommonResponse(0, branchService.updateBranch(id, dto), "Branch updated");
         return ResponseEntity.ok(response);
     }

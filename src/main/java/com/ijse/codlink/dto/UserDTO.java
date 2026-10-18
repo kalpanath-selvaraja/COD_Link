@@ -12,8 +12,10 @@ import lombok.Setter;
 @AllArgsConstructor
 public class UserDTO {
 
-        private Long userId;
-        private String username;
+        @jakarta.validation.constraints.Positive
+    private Long userId;
+        @jakarta.validation.constraints.Size(max = 250)
+    private String username;
         private UserRole userRole;
         private Boolean active;
         private Boolean isReceptionist;

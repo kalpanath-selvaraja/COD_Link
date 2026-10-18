@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @Slf4j
 @RequiredArgsConstructor
 public class ServiceZoneServiceImpl implements ServiceZoneService {

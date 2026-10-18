@@ -24,26 +24,30 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @Slf4j
 @RequiredArgsConstructor
 public class CodCollectionServiceImpl implements CodCollectionService {
+    private final com.ijse.codlink.security.RecordAccess recordAccess;
 
     private final CodCollectionRepository codCollectionRepository;
     private final ParcelRepository parcelRepository;
     private final CourierRepository courierRepository;
     private final UserRepository userRepository;
     private final ShipmentService shipmentService;
+    private final com.ijse.codlink.service.PaymentService paymentService;
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public CodCollectionDTO create(String username, CodCollectionDTO dto) {
         log.info("Execute method create()");
-        Optional<Parcel> optionalParcel = parcelRepository.findById(dto.getParcelId());
+        Optional<Parcel> optionalParcel = parcelRepository.findLockedById(dto.getParcelId());
         if (optionalParcel.isEmpty()) {
             log.error("Parcel not found with ID: {}", dto.getParcelId());
             throw new CustomException(404, "Parcel not found");
         }
         Parcel parcel = optionalParcel.get();
+        recordAccess.assigned(parcel);
 
         if (parcel.getStatus() != ParcelStatus.DELIVERED) {
             log.error("Parcel status is not DELIVERED for parcel ID: {}", dto.getParcelId());
@@ -55,13 +59,13 @@ public class CodCollectionServiceImpl implements CodCollectionService {
             throw new CustomException(400, "Amount must be greater than zero");
         }
 
-        if (parcel.getCodAmount() == null) {
+        if (!Boolean.TRUE.equals(parcel.getIsCod()) || parcel.getCodAmount() == null || parcel.getCodAmount().signum() <= 0) {
             log.error("Parcel has no COD amount on record for parcel ID: {}", dto.getParcelId());
-            throw new CustomException(409, "This parcel has no COD amount on record — it cannot be a cash-on-delivery collection.");
+            throw new CustomException(409, "This parcel has no COD amount on record - it cannot be a cash-on-delivery collection.");
         }
         if (parcel.getShippingFee() == null) {
             log.error("Parcel has no shipping fee on record for parcel ID: {}", dto.getParcelId());
-            throw new CustomException(409, "This parcel has no shipping fee on record — cannot verify the collected amount.");
+            throw new CustomException(409, "This parcel has no shipping fee on record - cannot verify the collected amount.");
         }
 
         BigDecimal expectedTotal = parcel.getCodAmount().add(parcel.getShippingFee());
@@ -83,6 +87,9 @@ public class CodCollectionServiceImpl implements CodCollectionService {
             throw new CustomException(404, "No courier profile linked to this account");
         }
         Courier courier = optionalCourier.get();
+        if (parcel.getDeliveredBy() == null || !parcel.getDeliveredBy().getCourierId().equals(courier.getCourierId())) {
+            throw new CustomException(409, "Collection must be recorded by the courier who delivered this parcel");
+        }
 
         if (codCollectionRepository.existsByParcel_ParcelId(dto.getParcelId())) {
             log.error("COD already collected for parcel ID: {}", dto.getParcelId());
@@ -92,9 +99,11 @@ public class CodCollectionServiceImpl implements CodCollectionService {
         CodCollection collection = new CodCollection();
         collection.setParcel(parcel);
         collection.setCourier(courier);
+        collection.setCollectionBranch(courier.getBranch());
         collection.setAmount(dto.getAmount());
         collection.setReconciliationBatch(null);
         CodCollection saved = codCollectionRepository.save(collection);
+        paymentService.createFromCollection(saved);
 
 
         if (parcel.getShipment() != null) {
@@ -106,6 +115,7 @@ public class CodCollectionServiceImpl implements CodCollectionService {
 
     @Override
     public List<CodCollectionDTO> getByCourierId(Long courierId) {
+        recordAccess.courier(courierId);
         log.info("Execute method getByCourierId()");
         Optional<Courier> optionalCourier = courierRepository.findById(courierId);
         if (optionalCourier.isEmpty()) {
@@ -122,7 +132,9 @@ public class CodCollectionServiceImpl implements CodCollectionService {
     public List<CodCollectionDTO> getAll() {
         log.info("Execute method getAll()");
         List<CodCollectionDTO> list = new ArrayList<>();
-        for (CodCollection c : codCollectionRepository.findAll()) list.add(toDto(c));
+        for (CodCollection c : codCollectionRepository.findAll()) {
+            if (recordAccess.hasRole("ADMIN") || recordAccess.owns(c.getCourier())) list.add(toDto(c));
+        }
         return list;
     }
 

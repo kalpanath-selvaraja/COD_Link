@@ -21,18 +21,22 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @Slf4j
 @RequiredArgsConstructor
 public class InvoiceServiceImpl implements InvoiceService {
 
     private final InvoiceRepository invoiceRepository;
+    private final com.ijse.codlink.repository.PaymentRepository paymentRepository;
     private final ShipmentRepository shipmentRepository;
     private final ParcelRepository parcelRepository;
 
     @Override
+    @org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public InvoiceDTO create(InvoiceDTO dto) {
+        if (dto.getShipmentId() == null) throw new CustomException(400, "Shipment ID is required");
         log.info("Execute method create()");
-        Optional<Shipment> optionalShipment = shipmentRepository.findById(dto.getShipmentId());
+        Optional<Shipment> optionalShipment = shipmentRepository.findLockedById(dto.getShipmentId());
         if (optionalShipment.isEmpty()) {
             throw new CustomException(404, "Shipment not found");
         }
@@ -65,7 +69,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         for (Parcel parcel : parcels) {
             if (parcel.getShippingFee() == null) {
                 throw new CustomException(409, "Parcel " + parcel.getParcelId()
-                        + " (tracking " + parcel.getTrackingNumber() + ") has no shippingFee — "
+                        + " (tracking " + parcel.getTrackingNumber() + ") has no shippingFee - "
                         + "it was booked before pricing was wired in. Backfill it before invoicing this shipment.");
             }
             amount = amount.add(parcel.getShippingFee());
@@ -96,6 +100,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 
     private InvoiceDTO toDto(Invoice i) {
-        return new InvoiceDTO(i.getInvoiceId(), i.getShipment().getShipmentId(), i.getAmount());
+        BigDecimal paid = paymentRepository.sumForInvoice(i.getInvoiceId());
+        return new InvoiceDTO(i.getInvoiceId(), i.getShipment().getShipmentId(), i.getAmount(), paid, i.getAmount().subtract(paid));
     }
 }

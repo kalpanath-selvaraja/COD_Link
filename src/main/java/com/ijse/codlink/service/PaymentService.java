@@ -9,7 +9,7 @@ public interface PaymentService {
     List<PaymentDTO> getByInvoiceId(Long invoiceId);
 
 
-    PaymentDTO createAuto(Long invoiceId, String method);
+    PaymentDTO createFromCollection(com.ijse.codlink.entity.CodCollection collection);
 
     List<PaymentDTO> getAll();
 }

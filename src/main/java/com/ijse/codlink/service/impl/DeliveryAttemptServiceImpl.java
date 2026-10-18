@@ -27,10 +27,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @Slf4j
 @RequiredArgsConstructor
 public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
+    private final com.ijse.codlink.security.RecordAccess recordAccess;
 
+    private final com.ijse.codlink.service.ParcelLifecycle parcelLifecycle;
     private final DeliveryAttemptRepository deliveryAttemptRepository;
     private final ParcelRepository parcelRepository;
     private final CourierRepository courierRepository;
@@ -39,10 +42,10 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
     private final ShipmentService shipmentService;
 
     @Override
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public DeliveryAttemptDTO create(String username, DeliveryAttemptDTO dto) {
         log.info("Execute method create()");
-        Optional<Parcel> optionalParcel = parcelRepository.findById(dto.getParcelId());
+        Optional<Parcel> optionalParcel = parcelRepository.findLockedById(dto.getParcelId());
         if (optionalParcel.isEmpty()) {
             log.error("Parcel not found with ID: {}", dto.getParcelId());
             throw new CustomException(404, "Parcel not found");
@@ -65,6 +68,7 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
         }
 
         Parcel parcel = optionalParcel.get();
+        recordAccess.assigned(parcel);
 
         if (parcel.getStatus() == ParcelStatus.DELIVERED
                 || parcel.getStatus() == ParcelStatus.FAILED
@@ -74,14 +78,7 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
         }
 
         if (parcel.getStatus() == ParcelStatus.BOOKED) {
-            TrackingEvent pickedUp = new TrackingEvent();
-            pickedUp.setStatus("PICKED_UP");
-            pickedUp.setEventTime(LocalDateTime.now());
-            pickedUp.setParcel(parcel);
-            trackingEventRepository.save(pickedUp);
-
-            parcel.setStatus(ParcelStatus.IN_TRANSIT);
-            parcelRepository.save(parcel);
+            parcelLifecycle.transition(parcel, ParcelStatus.IN_TRANSIT);
         }
 
         DeliveryAttempt attempt = new DeliveryAttempt();
@@ -93,29 +90,9 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
         DeliveryAttempt savedAttempt = deliveryAttemptRepository.save(attempt);
 
         if (dto.getOutcomeCode() == AttemptOutcome.FAILED) {
-            TrackingEvent failedEvent = new TrackingEvent();
-            failedEvent.setStatus("FAILED");
-            failedEvent.setEventTime(LocalDateTime.now());
-            failedEvent.setParcel(parcel);
-            trackingEventRepository.save(failedEvent);
-
-            parcel.setStatus(ParcelStatus.FAILED);
-            parcelRepository.save(parcel);
-        }
-
-        if (dto.getOutcomeCode() == AttemptOutcome.DELIVERED) {
-            TrackingEvent deliveredEvent = new TrackingEvent();
-            deliveredEvent.setStatus("DELIVERED");
-            deliveredEvent.setEventTime(LocalDateTime.now());
-            deliveredEvent.setParcel(parcel);
-            trackingEventRepository.save(deliveredEvent);
-
-            parcel.setStatus(ParcelStatus.DELIVERED);
-            parcelRepository.save(parcel);
-
-            if (parcel.getShipment() != null) {
-                shipmentService.resolveShipmentIfComplete(parcel.getShipment().getShipmentId());
-            }
+            parcelLifecycle.transition(parcel, ParcelStatus.FAILED);
+        } else if (dto.getOutcomeCode() == AttemptOutcome.DELIVERED) {
+            parcelLifecycle.transition(parcel, ParcelStatus.DELIVERED);
         }
 
         return toDto(savedAttempt);
@@ -123,6 +100,7 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
 
     @Override
     public List<DeliveryAttemptDTO> getByParcelId(Long parcelId) {
+        recordAccess.parcel(parcelId);
         Optional<Parcel> optionalParcel = parcelRepository.findById(parcelId);
         if (optionalParcel.isEmpty()) {
             throw new CustomException(404, "Parcel not found");
@@ -137,7 +115,9 @@ public class DeliveryAttemptServiceImpl implements DeliveryAttemptService {
     @Override
     public List<DeliveryAttemptDTO> getAll() {
         List<DeliveryAttemptDTO> list = new ArrayList<>();
-        for (DeliveryAttempt a : deliveryAttemptRepository.findAllByOrderByAttemptedAtDesc()) list.add(toDto(a));
+        for (DeliveryAttempt a : deliveryAttemptRepository.findAllByOrderByAttemptedAtDesc()) {
+            if (recordAccess.hasRole("ADMIN") || recordAccess.owns(a.getCourier())) list.add(toDto(a));
+        }
         return list;
     }
 

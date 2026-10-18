@@ -6,6 +6,7 @@
     <title>Parcel History | CODLink Logistics Platform</title>
     <link rel="stylesheet" href="../css/normalize.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="/js/text.js"></script>
 </head>
 <body>
 
@@ -108,7 +109,7 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     $(document).ready(function() {
-        const BASE_URL = 'http://localhost:8080';
+        const BASE_URL = '';
 
         const token = localStorage.getItem('codlink_jwt_token') || localStorage.getItem('JWT');
         if (!token) {
@@ -124,9 +125,9 @@
         function isOk(res) { return res && res.status === 0; }
 
         function handleAuthFailure(xhr) {
-            if (xhr && (xhr.status === 401 || xhr.status === 403)) {
-                alert('Session expired or not authorized.');
-                localStorage.clear();
+            if (xhr && (xhr.status === 401)) {
+                alert('Session expired. Please log in again.');
+                localStorage.clear(); sessionStorage.clear();
                 window.location.href = '../login.html';
                 return true;
             }
@@ -150,7 +151,6 @@
                     });
             }
 
-
         }
 
         localStorage.getItem('username')
@@ -173,7 +173,7 @@
             $badge.css({ 'background-color': 'var(--color-cloud, #d4d4d4)', 'color': '#101828' });
         }
 
-        // 2. Fetch and Render Parcel History Table — now uses the customer's
+        // 2. Fetch and Render Parcel History Table - now uses the customer's
         // own parcels via /api/parcels/customer/{id}, not the admin-only
         // /api/parcels endpoint this page was calling before.
         function loadParcelHistory() {
@@ -184,7 +184,7 @@
                 return $.ajax({ url: BASE_URL + '/api/parcels/customer/' + customerId, method: 'GET', headers: ajaxHeaders });
             }).then(response => {
                 if (!isOk(response)) {
-                    $tbody.html(`<tr><td colspan="7" style="text-align: center;">${response.message}</td></tr>`);
+                    $tbody.html(`<tr><td colspan="7" style="text-align: center;">${escapeHtml(response.message)}</td></tr>`);
                     return;
                 }
 
@@ -225,7 +225,7 @@
 
                 if (err && err.status && handleAuthFailure(err)) return;
 
-                $tbody.html(`<tr><td colspan="7" style="text-align: center; color:red;">${err.message || err.statusText || 'Failed to load parcel history.'}</td></tr>`);
+                $tbody.html(`<tr><td colspan="7" style="text-align: center; color:red;">${escapeHtml(err.message || err.statusText || 'Failed to load parcel history.')}</td></tr>`);
             });
         }
 
@@ -246,5 +246,6 @@
         });
     });
 </script>
+<script src="/js/notifications.js"></script>
 </body>
 </html>

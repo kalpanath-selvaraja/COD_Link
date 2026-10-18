@@ -14,16 +14,20 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DeliveryAttemptDTO {
+    @jakarta.validation.constraints.Positive
     private Long attemptId;
 
     @NotNull(message = "parcelId is required")
+    @jakarta.validation.constraints.Positive
     private Long parcelId;
 
+    @jakarta.validation.constraints.Positive
     private Long courierId;
 
     @NotNull(message = "outcomeCode is required (DELIVERED, FAILED, or RESCHEDULED)")
     private AttemptOutcome outcomeCode;
 
+    @jakarta.validation.constraints.Size(max = 250)
     private String outcome;
     private LocalDateTime attemptedAt;
 }

@@ -20,7 +20,7 @@ public class ChatbotController {
 
     // ChatbotController.java
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse chat(@RequestBody ChatbotRequestDTO dto) {
+    public CommonResponse chat(@jakarta.validation.Valid @RequestBody ChatbotRequestDTO dto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String role = authentication.getAuthorities().iterator().next().getAuthority();
         return new CommonResponse(0, chatbotService.handleQuery(role, dto.getMessage()), "Chatbot response");

@@ -6,6 +6,8 @@
     <title>Branch Transfers | CODLink Logistics Platform</title>
     <link rel="stylesheet" href="../css/normalize.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="/js/text.js"></script>
+    <script src="/js/roles.js"></script>
 </head>
 <body>
 
@@ -118,7 +120,7 @@
         <main class="content-body">
             <div class="role-note" style="background: var(--color-info-bg); border: 1px solid var(--color-info-border); color: var(--color-info-text); padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 18px;">
                 "Source Branch" must match the parcel's actual current branch on record (not necessarily its origin
-                branch) — the backend rejects the transfer otherwise. There is no status field; a transfer is a
+                branch) - the backend rejects the transfer otherwise. There is no status field; a transfer is a
                 one-time dispatch log, timestamped automatically.
             </div>
 
@@ -186,10 +188,10 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     $(document).ready(function () {
-        const BASE_URL = 'http://localhost:8080';
+        if (localStorage.getItem('Role') === 'RECEPTIONIST') { location.replace('/admin/shipments.html'); return; }
+        const BASE_URL = '';
 
         function getToken() { return localStorage.getItem('codlink_jwt_token') || localStorage.getItem('JWT'); }
-
 
         const token = getToken();
         if (!token) { window.location.href = '../login.html'; return; }
@@ -199,7 +201,6 @@
         const userId = localStorage.getItem('UserId')
 
         if(role == 'RECEPTIONIST'){
-
 
             $('.couriers').hide();
             $('.branches').hide();
@@ -216,9 +217,9 @@
 
         function isOk(res) { return res && res.status === 0; }
         function handleAuthFailure(xhr) {
-            if (xhr && (xhr.status === 401 || xhr.status === 403)) {
-                alert('Session expired or not authorized.');
-                localStorage.clear();
+            if (xhr && (xhr.status === 401)) {
+                alert('Session expired. Please log in again.');
+                localStorage.clear(); sessionStorage.clear();
                 window.location.href = '../login.html';
                 return true;
             }
@@ -232,14 +233,13 @@
         if (role === 'ADMIN') $('#user-badge').css({ 'background-color': '#e42b0c', color: '#fff' });
         else if (role === 'COURIER') $('#user-badge').css({ 'background-color': '#f59e0b', color: '#fff' });
 
-
         if (role !== 'ADMIN' && role !== 'COURIER' &&  role !== 'RECEPTIONIST') {
             alert('This page is for admin or courier accounts only.');
-            window.location.href = '../dashboard.html';
+            window.location.href = '/login.html';
             return;
         }
 
-        $('#btn-logout').on('click', function () { localStorage.clear(); window.location.href = '../login.html'; });
+        $('#btn-logout').on('click', function () { localStorage.clear(); sessionStorage.clear(); window.location.href = '../login.html'; });
 
         let branchCache = {}; // branchId -> branchName
 
@@ -248,8 +248,8 @@
                 .done(res => {
                     if (!isOk(res)) return;
                     branchCache = {};
-                    const $from = $('#fromBranchId').empty().append('<option value="">— select branch —</option>');
-                    const $to = $('#toBranchId').empty().append('<option value="">— select branch —</option>');
+                    const $from = $('#fromBranchId').empty().append('<option value="">- select branch -</option>');
+                    const $to = $('#toBranchId').empty().append('<option value="">- select branch -</option>');
 
                     res.body.forEach(b => {
                         branchCache[b.branchId] = b.branchName;
@@ -274,7 +274,7 @@
             $.ajax({ url: BASE_URL + '/api/branch-transfers', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
 
-                    if (!isOk(res)) { $body.html(`<tr><td colspan="5" style="text-align:center;">${res.message}</td></tr>`); return; }
+                    if (!isOk(res)) { $body.html(`<tr><td colspan="5" style="text-align:center;">${escapeHtml(res.message)}</td></tr>`); return; }
                     $body.empty();
                     if (!res.body.length) { $body.append('<tr><td colspan="5" style="text-align:center;">No transfers yet.</td></tr>'); return; }
                     res.body.forEach(t => {
@@ -283,7 +283,7 @@
                         $tr.append($('<td>').text('#' + t.parcelId));
                         $tr.append($('<td>').text(branchLabel(t.fromBranchId)));
                         $tr.append($('<td>').text(branchLabel(t.toBranchId)));
-                        $tr.append($('<td>').text(t.dispatchedAt ? new Date(t.dispatchedAt).toLocaleString() : '—'));
+                        $tr.append($('<td>').text(t.dispatchedAt ? new Date(t.dispatchedAt).toLocaleString() : '-'));
                         $body.append($tr);
                     });
                 })

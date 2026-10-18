@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @Slf4j
 @RequiredArgsConstructor
 public class VehicleServiceImpl implements VehicleService {
@@ -25,6 +26,7 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public VehicleDTO create(VehicleDTO dto) {
+        if (dto.getCourierId() == null) throw new CustomException(400, "Courier ID is required");
         Optional<Courier> optionalCourier = courierRepository.findById(dto.getCourierId());
         if (optionalCourier.isEmpty()) {
             throw new CustomException(404, "Courier not found");

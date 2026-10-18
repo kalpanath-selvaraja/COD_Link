@@ -52,6 +52,8 @@
         .inline-add-customer .form-group { flex: 1; margin: 0; }
         .helper-text { font-size: 12px; color: var(--color-text-subtle); margin-top: 4px; }
     </style>
+    <script src="/js/text.js"></script>
+    <script src="/js/roles.js"></script>
 </head>
 <body>
 
@@ -180,7 +182,7 @@
 
             <div id="courier-note" class="role-note" style="display:none;">
                 You're signed in as a courier. You can still book parcels on a customer's behalf, but there's no
-                customer-search endpoint exposed to the COURIER role yet — enter the numeric customer ID directly.
+                customer-search endpoint exposed to the COURIER role yet - enter the numeric customer ID directly.
                 The full parcel directory below is admin-only, so it's hidden for your account.
             </div>
 
@@ -189,7 +191,7 @@
                 <div class="section-header">
                     <h3>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        Step 1 — Select Customer
+                        Step 1 - Select Customer
                     </h3>
                 </div>
 
@@ -236,7 +238,7 @@
                 <div class="section-header">
                     <h3>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                        Step 2 — Add Parcels to Cart
+                        Step 2 - Add Parcels to Cart
                     </h3>
                 </div>
                 <form id="parcel-line-form">
@@ -264,20 +266,20 @@
                     <div class="form-grid grid-4">
                         <div class="form-group">
                             <label for="pickupStreet">Pickup Street</label>
-                            <input type="text" id="pickupStreet" class="form-control" placeholder="Street">
+                            <input type="text" id="pickupStreet" required class="form-control" placeholder="Street">
                         </div>
                         <div class="form-group">
                             <label for="pickupCity">Pickup City</label>
-                            <input type="text" id="pickupCity" class="form-control" placeholder="City">
+                            <input type="text" id="pickupCity" required class="form-control" placeholder="City">
                         </div>
                         <div class="form-group">
                             <label for="pickupPostal">Pickup Postal Code</label>
-                            <input type="text" id="pickupPostal" class="form-control" placeholder="Postal code">
+                            <input type="text" id="pickupPostal" required class="form-control" placeholder="Postal code">
                         </div>
                         <div class="form-group">
-                            <label for="pickupZone">Pickup Service Zone <span style="color:var(--color-text-subtle); font-weight:400;">(optional)</span></label>
-                            <select id="pickupZone" class="form-control">
-                                <option value="">— none —</option>
+                            <label for="pickupZone">Pickup Service Zone <span style="color:var(--color-text-subtle); font-weight:400;">(required)</span></label>
+                            <select id="pickupZone" required class="form-control">
+                                <option value="">- none -</option>
                             </select>
                         </div>
                     </div>
@@ -285,19 +287,19 @@
                     <div class="form-grid grid-4">
                         <div class="form-group">
                             <label for="deliveryStreet">Delivery Street</label>
-                            <input type="text" id="deliveryStreet" class="form-control" placeholder="Street">
+                            <input type="text" id="deliveryStreet" required class="form-control" placeholder="Street">
                         </div>
                         <div class="form-group">
                             <label for="deliveryCity">Delivery City</label>
-                            <input type="text" id="deliveryCity" class="form-control" placeholder="City">
+                            <input type="text" id="deliveryCity" required class="form-control" placeholder="City">
                         </div>
                         <div class="form-group">
                             <label for="deliveryPostal">Delivery Postal Code</label>
-                            <input type="text" id="deliveryPostal" class="form-control" placeholder="Postal code">
+                            <input type="text" id="deliveryPostal" required class="form-control" placeholder="Postal code">
                         </div>
                         <div class="form-group">
                             <label for="deliveryZone">Delivery Service Zone <span style="color:var(--color-error-text); font-weight:700;">*required</span></label>
-                            <select id="deliveryZone" class="form-control">
+                            <select id="deliveryZone" required class="form-control">
                                 <option value="">Loading zones…</option>
                             </select>
                         </div>
@@ -317,7 +319,7 @@
                 <div class="section-header">
                     <h3>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18"/><path d="M19 3v18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5"></path></svg>
-                        Step 3 — Review Cart (<span id="cart-count">0</span>/20) &amp; Book
+                        Step 3 - Review Cart (<span id="cart-count">0</span>/20) &amp; Book
                     </h3>
                     <div class="section-actions">
                         <button type="button" id="btn-clear-cart" class="btn-action btn-ghost">Clear Cart</button>
@@ -338,7 +340,7 @@
                         </tr>
                         </thead>
                         <tbody id="cart-table-body">
-                        <tr><td colspan="7" style="text-align:center;">Cart is empty — add a parcel above.</td></tr>
+                        <tr><td colspan="7" style="text-align:center;">Cart is empty - add a parcel above.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -389,12 +391,12 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     $(document).ready(function () {
-        const BASE_URL = 'http://localhost:8080';
+        if (localStorage.getItem('Role') === 'RECEPTIONIST') { location.replace('/admin/shipments.html'); return; }
+        const BASE_URL = '';
 
         const usernameRegex = /^[a-zA-Z0-9]([._-](?![._-])|[a-zA-Z0-9]){3,18}[a-zA-Z0-9]$/;
         const phoneNumberRegex =   /^(?:0|\+94|94)?7[01245678]\d{7}$/;
         const  postalCodeRegex = /^\d{5}$/;
-
 
         function getToken() {
             return localStorage.getItem('codlink_jwt_token') || localStorage.getItem('JWT');
@@ -417,7 +419,7 @@
         }
         const claims = decodeJwt(token);
         if (!claims) {
-            localStorage.clear();
+            localStorage.clear(); sessionStorage.clear();
             window.location.href = '../login.html';
             return;
         }
@@ -427,7 +429,6 @@
         const userId = localStorage.getItem('UserId')
 
         if(role == 'RECEPTIONIST'){
-
 
             $('.couriers').hide();
             $('.branches').hide();
@@ -445,14 +446,13 @@
             'Content-Type': 'application/json'
         };
 
-
         function isOk(res) {
             return res && res.status === 0;
         }
         function handleAuthFailure(xhr) {
-            if (xhr && (xhr.status === 401 || xhr.status === 403)) {
-                alert('Session expired or not authorized.');
-                localStorage.clear();
+            if (xhr && (xhr.status === 401)) {
+                alert('Session expired. Please log in again.');
+                localStorage.clear(); sessionStorage.clear();
                 window.location.href = '../login.html';
                 return true;
             }
@@ -470,7 +470,7 @@
         }
 
         $('#btn-logout').on('click', function () {
-            localStorage.clear();
+            localStorage.clear(); sessionStorage.clear();
             window.location.href = '../login.html';
         });
 
@@ -508,26 +508,26 @@
                     if (!isOk(res)) { alert(res.message); return; }
                     const $sel = $('#customerSelect').empty();
                     if (!res.body.length) {
-                        $sel.append('<option value="">No customers yet — register a walk-in below</option>');
+                        $sel.append('<option value="">No customers yet - register a walk-in below</option>');
                         return;
                     }
-                    $sel.append('<option value="">— select a customer —</option>');
+                    $sel.append('<option value="">- select a customer -</option>');
                     res.body.forEach(c => {
                         const label = c.Name + (c.userId ? ' (registered)' : ' (walk-in)');
-                        $sel.append(`<option value="${c.customerId}">${label}</option>`);
+                        $sel.append(`<option value="${escapeHtml(c.customerId)}">${escapeHtml(label)}</option>`);
                     });
                     if (selectAfterId) $sel.val(String(selectAfterId));
                 })
-                .fail(() => $('#customerSelect').html('<option value="">Failed to load — check backend is running</option>'));
+                .fail(() => $('#customerSelect').html('<option value="">Failed to load - check backend is running</option>'));
         }
 
         function loadBranches() {
             $.ajax({ url: BASE_URL + '/api/branches', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
                     if (!isOk(res)) { alert(res.message); return; }
-                    const $sel = $('#originBranchId').empty().append('<option value="">— select branch —</option>');
+                    const $sel = $('#originBranchId').empty().append('<option value="">- select branch -</option>');
                     res.body.forEach(b => $sel.append(
-                        `<option value="${b.branchId}">${b.branchName}</option>`
+                        `<option value="${escapeHtml(b.branchId)}">${escapeHtml(b.branchName)}</option>`
                     ));
                 })
                 .fail(() => $('#originBranchId').html('<option value="">Failed to load branches</option>'));
@@ -539,16 +539,15 @@
                 .done(res => {
                     if (!isOk(res)) { alert(res.message); return; }
                     zoneCache = res.body;
-                    const options = res.body.map(z => `<option value="${z.zoneId}">${z.name} (#${z.zoneId})</option>`).join('');
-                    $('#deliveryZone').html('<option value="">— select delivery zone —</option>' + options);
-                    $('#pickupZone').html('<option value="">— none —</option>' + options);
+                    const options = res.body.map(z => `<option value="${escapeHtml(z.zoneId)}">${escapeHtml(z.name)} (#${escapeHtml(z.zoneId)})</option>`).join('');
+                    $('#deliveryZone').html('<option value="">- select delivery zone -</option>' + options);
+                    $('#pickupZone').html('<option value="">- none -</option>' + options);
                 })
                 .fail(() => {
                     $('#deliveryZone').html('<option value="">Failed to load zones</option>');
                     $('#pickupZone').html('<option value="">Failed to load zones</option>');
                 });
         }
-
 
         const pricingRuleCache = {}; // zoneId -> rules[]
 
@@ -596,7 +595,7 @@
                 const match = candidates.find(r => weightInBracket(weight, r.weightBracket));
                 if (!match) {
                     $preview.attr('class', 'fee-preview warn')
-                        .text(`No pricing rule covers zone #${deliveryZoneId}, ${weight}kg, ${isCod ? 'COD' : 'prepaid'} — booking will be rejected until one exists.`);
+                        .text(`No pricing rule covers zone #${deliveryZoneId}, ${weight}kg, ${isCod ? 'COD' : 'prepaid'} - booking will be rejected until one exists.`);
                     return;
                 }
                 let fee = parseFloat(match.rate);
@@ -605,7 +604,7 @@
                     fee = Math.round(fee * 1.15 * 100) / 100;
                     note = ' (includes 1.15× cross-zone pickup surcharge)';
                 }
-                $preview.attr('class', 'fee-preview ok').text(`Estimated fee: $${fee.toFixed(2)}${note} — confirmed at booking.`);
+                $preview.attr('class', 'fee-preview ok').text(`Estimated fee: $${fee.toFixed(2)}${note} - confirmed at booking.`);
             });
         }
 
@@ -621,20 +620,20 @@
             $('#btn-submit-cart').prop('disabled', cart.length === 0);
 
             if (!cart.length) {
-                $body.append('<tr><td colspan="7" style="text-align:center;">Cart is empty — add a parcel above.</td></tr>');
+                $body.append('<tr><td colspan="7" style="text-align:center;">Cart is empty - add a parcel above.</td></tr>');
                 return;
             }
             cart.forEach((line, i) => {
                 const zoneName = (zoneCache.find(z => String(z.zoneId) === String(line.deliveryAddress.zoneId)) || {}).name || ('#' + line.deliveryAddress.zoneId);
                 $body.append(`
                 <tr>
-                    <td>${i + 1}</td>
-                    <td>#${line.originBranchId}</td>
-                    <td>${line.weight} kg</td>
-                    <td>${line._isCod ? 'COD' : 'PREPAID'}</td>
-                    <td>${zoneName}</td>
-                    <td>${line._estFee != null ? '$' + line._estFee.toFixed(2) : '—'}</td>
-                    <td><button type="button" class="btn-remove-line" data-idx="${i}">Remove</button></td>
+                    <td>${escapeHtml(i + 1)}</td>
+                    <td>#${escapeHtml(line.originBranchId)}</td>
+                    <td>${escapeHtml(line.weight)} kg</td>
+                    <td>${escapeHtml(line._isCod ? 'COD' : 'PREPAID')}</td>
+                    <td>${escapeHtml(zoneName)}</td>
+                    <td>${escapeHtml(line._estFee != null ? '$' + line._estFee.toFixed(2) : '-')}</td>
+                    <td><button type="button" class="btn-remove-line" data-idx="${escapeHtml(i)}">Remove</button></td>
                 </tr>
             `);
             });
@@ -653,7 +652,7 @@
 
             if (!originBranchId) { alert('Select an origin branch.'); return; }
             if (!weight || weight <= 0 || weight > 70) { alert('Weight must be greater than 0 and no more than 70kg.'); return; }
-            if (!deliveryZoneId) { alert('Delivery service zone is required — the backend cannot price a parcel without it.'); return; }
+            if (!deliveryZoneId) { alert('Delivery service zone is required - the backend cannot price a parcel without it.'); return; }
             if (!$('#deliveryStreet').val() || !$('#deliveryCity').val()) { alert('Delivery street and city are required.'); return; }
             if (!$('#pickupStreet').val() || !$('#pickupCity').val()) { alert('Pickup street and city are required.'); return; }
             if (cart.length >= MAX_CART) { alert('Cart limit is 20 parcels per booking request.'); return; }
@@ -680,7 +679,6 @@
                 _isCod: isCod,
                 _estFee: null
             };
-
 
             const previewText = $('#fee-preview').text();
             const feeMatch = previewText.match(/\$([\d.]+)/);
@@ -740,9 +738,9 @@
             });
             let html = '<div class="booking-result"><h4>Booked ' + bookedParcels.length + ' parcel(s) across ' + Object.keys(groups).length + ' shipment(s):</h4>';
             Object.entries(groups).forEach(([shipmentId, parcels]) => {
-                html += `<div class="shipment-group"><div class="shipment-group-title">Shipment #${shipmentId}</div>`;
+                html += `<div class="shipment-group"><div class="shipment-group-title">Shipment #${escapeHtml(shipmentId)}</div>`;
                 parcels.forEach(p => {
-                    html += `<div>• ${p.trackingNumber} — ${p.weight}kg — fee $${p.shippingFee} — status ${p.status}</div>`;
+                    html += `<div>• ${escapeHtml(p.trackingNumber)} - ${escapeHtml(p.weight)}kg - fee $${escapeHtml(p.shippingFee)} - status ${escapeHtml(p.status)}</div>`;
                 });
                 html += '</div>';
             });
@@ -763,7 +761,7 @@
             }
 
             if (!phoneNumber || !phoneNumberRegex.test(phoneNumber)) {
-                alert('Phone number is invalid — must be a valid Sri Lankan mobile number.');
+                alert('Phone number is invalid - must be a valid Sri Lankan mobile number.');
                 return;
             }
 
@@ -802,9 +800,9 @@
             $.ajax({ url: BASE_URL + '/api/parcels', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
 
-                    if (!isOk(res)) { $body.html(`<tr><td colspan="10" style="text-align:center;">${res.message}</td></tr>`); return; }
+                    if (!isOk(res)) { $body.html(`<tr><td colspan="10" style="text-align:center;">${escapeHtml(res.message)}</td></tr>`); return; }
 
-                    // response.body is a flat List<ParcelDTO> — ParcelController.getAll()
+                    // response.body is a flat List<ParcelDTO> - ParcelController.getAll()
                     // has no Pageable parameter, so there is no {content:[...]} wrapper
                     // to defend against here.
                     const parcels = res.body;
@@ -821,10 +819,10 @@
                         }[p.status] || 'status-neutral';
 
                         const nextOptions = (ALLOWED_TRANSITIONS[p.status] || [])
-                            .map(s => `<option value="${s}">${s}</option>`).join('');
+                            .map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
                         const statusControl = nextOptions
-                            ? `<select class="form-control status-select" data-id="${p.parcelId}">
-                           <option value="">Change to…</option>${nextOptions}
+                            ? `<select class="form-control status-select" data-id="${escapeHtml(p.parcelId)}">
+                           <option value="">Change to…</option>${escapeHtml(nextOptions)}
                        </select>`
                             : `<span class="helper-text">No further transitions</span>`;
 
@@ -840,20 +838,20 @@
 
                         $tr.append($('<td>').text(p.weight + ' kg'));
 
-                        const feeText = p.shippingFee != null ? '$' + Number(p.shippingFee).toFixed(2) : '—';
+                        const feeText = p.shippingFee != null ? '$' + Number(p.shippingFee).toFixed(2) : '-';
                         $tr.append($('<td>').text(feeText));
 
-                        const codText = p.isCod ? '$' + Number(p.codAmount || 0).toFixed(2) : '—';
+                        const codText = p.isCod ? '$' + Number(p.codAmount || 0).toFixed(2) : '-';
                         $tr.append($('<td>').text(codText));
 
                         const $statusSpan = $('<span>').addClass('status-pill ' + statusClass).text(p.status);
                         $tr.append($('<td>').append($statusSpan));
 
-                        $tr.append($('<td>').text(p.shipmentId ? '#' + p.shipmentId : '—'));
+                        $tr.append($('<td>').text(p.shipmentId ? '#' + p.shipmentId : '-'));
 
                         const $actionsDiv = $('<div class="row-actions">').html(`
-                        ${statusControl}
-                        <button type="button" class="btn-action btn-ghost btn-delete-parcel" data-id="${p.parcelId}" ${canDelete ? '' : 'disabled title="Only BOOKED parcels can be deleted"'}>Delete</button>
+                        ${escapeHtml(statusControl)}
+                        <button type="button" class="btn-action btn-ghost btn-delete-parcel" data-id="${escapeHtml(p.parcelId)}" ${escapeHtml(canDelete ? '' : 'disabled title="Only BOOKED parcels can be deleted"')}>Delete</button>
                     `);
                         $tr.append($('<td>').append($actionsDiv));
 
@@ -911,5 +909,6 @@
         }
     });
 </script>
+<script src="/js/assignments.js"></script>
 </body>
 </html>

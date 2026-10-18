@@ -1,121 +1,170 @@
----
-config:
-  layout: elk
----
 erDiagram
-  users { bigint user_id PK
-    string username
-    string password
-    string role }
-  customers { bigint customer_id PK
-    string name
-    string phone
-    bigint user_id FK }
-  branches { bigint branch_id PK
-    string name
-    string phone
-    bigint address_id FK }
-  addresses { bigint address_id PK
-    string street
-    string city
-    string postal_code
-    bigint zone_id FK }
-  couriers { bigint courier_id PK
-    bigint user_id FK
-    bigint branch_id FK
-    string license_number }
-  vehicles { bigint vehicle_id PK
-    bigint courier_id FK
-    string type
-    string plate_number }
-  service_zones { bigint zone_id PK
-    string name }
-  pricing_rules { bigint rule_id PK
-    bigint zone_id FK
-    decimal rate
-    string weight_bracket
-    boolean is_cod }
-  shipments { bigint shipment_id PK
-    bigint customer_id FK
-    datetime created_at }
-  parcels { bigint parcel_id PK
-    string tracking_number
-    decimal weight
-    decimal cod_amount
-    string status
-    bigint customer_id FK
-    bigint shipment_id FK
-    bigint pickup_address_id FK
-    bigint delivery_address_id FK
-    bigint origin_branch_id FK }
-  tracking_events { bigint event_id PK
-    bigint parcel_id FK
-    string status
-    datetime event_time }
-  delivery_attempts { bigint attempt_id PK
-    bigint parcel_id FK
-    bigint courier_id FK
-    string outcome
-    datetime attempted_at }
-  branch_transfers { bigint transfer_id PK
-    bigint parcel_id FK
-    bigint from_branch_id FK
-    bigint to_branch_id FK
-    datetime dispatched_at }
-  cod_collections { bigint collection_id PK
-    bigint parcel_id FK
-    bigint courier_id FK
-    decimal amount
-    bigint batch_id FK }
-  reconciliation_batches { bigint batch_id PK
-    bigint branch_id FK
-    decimal total
-    datetime reconciled_at }
-  invoices { bigint invoice_id PK
-    bigint shipment_id FK
-    decimal amount }
-  payments { bigint payment_id PK
-    bigint invoice_id FK
-    string method
-    datetime paid_at }
-  notifications { bigint notification_id PK
-    bigint user_id FK
-    string message }
-  audit_logs { bigint log_id PK
-    bigint user_id FK
-    string action
-    datetime log_time }
-  ai_query_logs { bigint query_id PK
-    bigint user_id FK
-    string question
-    string response }
+    address {
+        bigint address_id PK
+        string street
+        string city
+        string postal_code
+        bigint zone_id FK
+    }
+    audit_logs {
+        bigint log_id PK
+        string action
+        datetime log_time
+        bigint user_id FK
+    }
+    branches {
+        bigint branch_id PK
+        string branch_name
+        string phone
+        bigint address_id FK
+    }
+    branch_transfers {
+        bigint transfer_id PK
+        datetime dispatched_at
+        bigint parcel_id FK
+        bigint from_branch_id FK
+        bigint to_branch_id FK
+    }
+    cod_collections {
+        bigint collection_id PK
+        decimal amount
+        bigint collection_branch_id FK
+        bigint parcel_id FK
+        bigint courier_id FK
+        bigint batch_id FK
+    }
+    courier {
+        bigint courier_id PK
+        string license_number
+        bigint user_id FK
+        bigint branch_id FK
+    }
+    customers {
+        bigint customer_id PK
+        string name
+        string phone_number
+        string status
+        bigint user_id FK
+    }
+    delivery_attempts {
+        bigint attempt_id PK
+        string outcome
+        datetime attempted_at
+        string outcome_code
+        bigint parcel_id FK
+        bigint courier_id FK
+    }
+    invoices {
+        bigint invoice_id PK
+        decimal amount
+        datetime created_at
+        bigint shipment_id FK
+    }
+    notification {
+        bigint notification_id PK
+        string message
+        bigint user_id FK
+    }
+    parcels {
+        bigint parcel_id PK
+        string tracking_number
+        double weight
+        bigint version
+        bigint assigned_courier_id FK
+        bigint delivered_by_id FK
+        decimal cod_amount
+        decimal shipping_fee
+        decimal return_fee
+        boolean is_cod
+        string status
+        bigint customer_id FK
+        bigint pickup_address_id FK
+        bigint delivery_address_id FK
+        bigint origin_branch_id FK
+        bigint current_branch_id FK
+        bigint shipment_id FK
+    }
+    payments {
+        bigint payment_id PK
+        string request_reference
+        bigint collection_id FK
+        string method
+        datetime paid_at
+        decimal amount
+        bigint invoice_id FK
+    }
+    pricing_rules {
+        bigint rule_id PK
+        decimal rate
+        string weight_bracket
+        boolean is_cod
+    }
+    reconciliation_batches {
+        bigint batch_id PK
+        decimal total
+        datetime reconciled_at
+        bigint branch_id FK
+    }
+    service_zone {
+        bigint zone_id PK
+        string name
+    }
+    shipments {
+        bigint shipment_id PK
+        datetime created_at
+        string status
+        bigint customer_id FK
+    }
+    tracking_events {
+        bigint event_id PK
+        string status
+        datetime event_time
+        bigint parcel_id FK
+    }
+    users {
+        bigint user_id PK
+        string username
+        string password
+        string role
+        boolean active
+        boolean is_receptionist
+    }
+    vehicle {
+        bigint vehicle_id PK
+        string type
+        string plate_number
+        bigint courier_id FK
+        string status
+    }
 
-  users |o--o| customers : "may register as"
-  users ||--o| couriers : "logs in as"
-  branches ||--|| addresses : "located at"
-  branches ||--o{ couriers : employs
-  couriers ||--o{ vehicles : drives
-  service_zones ||--o{ addresses : contains
-  service_zones ||--o{ pricing_rules : prices
-  customers ||--o{ shipments : places
-  shipments ||--o{ parcels : bundles
-  customers ||--o{ parcels : sends
-  addresses ||--o{ parcels : pickup
-  addresses ||--o{ parcels : delivery
-  branches ||--o{ parcels : originates
-  parcels ||--o{ tracking_events : logs
-  parcels ||--o{ delivery_attempts : attempts
-  couriers ||--o{ delivery_attempts : performs
-  parcels ||--o{ branch_transfers : "moves from"
-  parcels ||--o{ branch_transfers : "moves to"
-  branches ||--o{ branch_transfers : origin
-  branches ||--o{ branch_transfers : destination
-  parcels ||--o| cod_collections : generates
-  couriers ||--o{ cod_collections : collects
-  cod_collections }o--o| reconciliation_batches : batched
-  branches ||--o{ reconciliation_batches : reconciles
-  shipments ||--|| invoices : bills
-  invoices ||--o{ payments : settled
-  users ||--o{ notifications : receives
-  users ||--o{ audit_logs : acts
-  users ||--o{ ai_query_logs : queries
+    service_zone |o--o{ address : serviceZone
+    users ||--o{ audit_logs : user
+    address |o--o| branches : address
+    parcels ||--o{ branch_transfers : parcel
+    branches ||--o{ branch_transfers : fromBranch
+    branches ||--o{ branch_transfers : toBranch
+    branches |o--o{ cod_collections : collectionBranch
+    parcels ||--o| cod_collections : parcel
+    courier ||--o{ cod_collections : courier
+    reconciliation_batches |o--o{ cod_collections : reconciliationBatch
+    users ||--o| courier : user
+    branches ||--o{ courier : branch
+    users |o--o| customers : user
+    parcels ||--o{ delivery_attempts : parcel
+    courier ||--o{ delivery_attempts : courier
+    shipments ||--o| invoices : shipment
+    users ||--o{ notification : user
+    courier |o--o{ parcels : assignedCourier
+    courier |o--o{ parcels : deliveredBy
+    customers |o--o{ parcels : customer
+    address |o--o{ parcels : pickupAddress
+    address |o--o{ parcels : deliveryAddress
+    branches |o--o{ parcels : originBranch
+    branches |o--o{ parcels : currentBranch
+    shipments |o--o{ parcels : shipment
+    cod_collections |o--o| payments : collection
+    invoices ||--o{ payments : invoice
+    branches ||--o{ reconciliation_batches : branch
+    customers |o--o{ shipments : customer
+    parcels ||--o{ tracking_events : parcel
+    courier ||--o{ vehicle : courier

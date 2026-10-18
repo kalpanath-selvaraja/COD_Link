@@ -6,6 +6,8 @@
     <title>COD Collections | CODLink Logistics Platform</title>
     <link rel="stylesheet" href="../css/normalize.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="/js/text.js"></script>
+    <script src="/js/roles.js"></script>
 </head>
 <body>
 
@@ -141,16 +143,8 @@
                             <input type="number" id="parcelId" class="form-control" placeholder="e.g. 101">
                         </div>
                         <div class="form-group">
-                            <label for="courierId">Courier ID</label>
-                            <input type="number" id="courierId" class="form-control" placeholder="e.g. 1">
-                        </div>
-                        <div class="form-group">
                             <label for="amount">Amount Collected ($)</label>
                             <input type="number" step="0.01" id="amount" class="form-control" placeholder="e.g. 45.00">
-                        </div>
-                        <div class="form-group">
-                            <label for="batchId">Reconciliation Batch ID</label>
-                            <input type="number" id="batchId" class="form-control" placeholder="Optional Batch ID">
                         </div>
                     </div>
                     <button type="submit" class="btn-action">
@@ -211,7 +205,8 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     $(document).ready(function () {
-        const BASE_URL = 'http://localhost:8080';
+        if (localStorage.getItem('Role') === 'RECEPTIONIST') { location.replace('/admin/shipments.html'); return; }
+        const BASE_URL = '';
         function getToken() { return localStorage.getItem('codlink_jwt_token') || localStorage.getItem('JWT'); }
         const token = getToken();
 
@@ -222,9 +217,9 @@
         function isOk(res) { return res && res.status === 0; }
 
         function handleAuthFailure(xhr) {
-            if (xhr && (xhr.status === 401 || xhr.status === 403)) {
-                alert('Session expired or not authorized.');
-                localStorage.clear();
+            if (xhr && (xhr.status === 401)) {
+                alert('Session expired. Please log in again.');
+                localStorage.clear(); sessionStorage.clear();
                 window.location.href = '../login.html';
                 return true;
             }
@@ -232,9 +227,7 @@
         }
         let role = localStorage.getItem('Role');
 
-
         if(role == 'RECEPTIONIST'){
-
 
             $('.couriers').hide();
             $('.branches').hide();
@@ -246,7 +239,6 @@
             $('.tracking-events').hide();
             $('.create-admin').hide();
         }
-
 
         if(role == 'COURIER'){
             $('.dashboard a').attr('href', '../courier-dashboard.html');
@@ -272,7 +264,7 @@
             $body.html('<tr><td colspan="5" style="text-align:center;">Loading…</td></tr>');
             $.ajax({ url: BASE_URL + '/api/cod-collections', method: 'GET', headers: ajaxHeaders })
                 .done(res => {
-                    if (!isOk(res)) { $body.html(`<tr><td colspan="5" style="text-align:center;">${res.message}</td></tr>`); return; }
+                    if (!isOk(res)) { $body.html(`<tr><td colspan="5" style="text-align:center;">${escapeHtml(res.message)}</td></tr>`); return; }
                     $body.empty();
                     if (!res.body.length) { $body.append('<tr><td colspan="5" style="text-align:center;">No collections yet.</td></tr>'); return; }
                     res.body.forEach(c => {
@@ -284,7 +276,7 @@
                         const amountText = '$' + Number(c.amount).toFixed(2);
                         $tr.append($('<td>').append($('<strong>').text(amountText)));
 
-                        $tr.append($('<td>').text(c.batchId ? 'Batch #' + c.batchId : '—'));
+                        $tr.append($('<td>').text(c.batchId ? 'Batch #' + c.batchId : '-'));
                         $body.append($tr);
                     });
                 }).fail(xhr => {
@@ -313,7 +305,7 @@
             });
         });
 
-        $('#btn-logout').on('click', function () { localStorage.clear(); window.location.href = '../login.html'; });
+        $('#btn-logout').on('click', function () { localStorage.clear(); sessionStorage.clear(); window.location.href = '../login.html'; });
 
         loadCollections();
 

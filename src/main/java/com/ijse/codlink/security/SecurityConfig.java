@@ -56,7 +56,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/parcels/track/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/pricing-rules/**").permitAll()
 
-                        // ---- Reference data — read-only (Public GET, Admin for modifications) ----
+                        // ---- Reference data - read-only (Public GET, Admin for modifications) ----
                         .requestMatchers(HttpMethod.GET, "/api/branches", "/api/branches/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/service-zones", "/api/service-zones/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/branches", "/api/branches/**").hasRole("ADMIN")
@@ -72,7 +72,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/customers/me").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/parcels/me").authenticated()
 
-                        // ---- Courier self-service — must precede the /api/couriers/** ADMIN
+                        // ---- Courier self-service - must precede the /api/couriers/** ADMIN
                         // rules below, since Spring Security uses first-match-wins ordering.
                         .requestMatchers(HttpMethod.GET, "/api/couriers/me").hasRole("COURIER")
 
@@ -80,6 +80,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/customers/walk-in").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/customers", "/api/customers/*").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/customers/*").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/api/parcels/available", "/api/parcels/assigned").hasRole("COURIER")
+                        .requestMatchers(HttpMethod.PATCH, "/api/parcels/*/claim").hasRole("COURIER")
+                        .requestMatchers(HttpMethod.PATCH, "/api/parcels/*/courier/*").hasRole("ADMIN")
 
                         // ---- Parcels  ----
                         .requestMatchers(HttpMethod.GET, "/api/parcels").hasRole("ADMIN")
@@ -93,6 +97,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/shipments").hasAnyRole("ADMIN", "RECEPTIONIST")
                         .requestMatchers(HttpMethod.PATCH, "/api/shipments/**").hasAnyRole("ADMIN", "RECEPTIONIST")
                         .requestMatchers(HttpMethod.DELETE, "/api/shipments/**").hasAnyRole("ADMIN", "RECEPTIONIST")
+
+                        .requestMatchers(HttpMethod.GET, "/api/notification/me").authenticated()
 
                         // ---- ops entities  ----
                         .requestMatchers("/api/couriers", "/api/couriers/**").hasRole("ADMIN")
@@ -132,6 +138,9 @@ public class SecurityConfig {
 
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(errors -> errors
+                        .authenticationEntryPoint((request, response, error) -> response.sendError(401))
+                        .accessDeniedHandler((request, response, error) -> response.sendError(403)))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

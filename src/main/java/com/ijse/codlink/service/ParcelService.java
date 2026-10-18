@@ -5,6 +5,11 @@ import com.ijse.codlink.dto.ParcelDTO;
 import java.util.List;
 
 public interface ParcelService {
+    List<ParcelDTO> getAvailable();
+    List<ParcelDTO> getAssigned();
+    ParcelDTO claim(Long parcelId);
+    ParcelDTO reassign(Long parcelId, Long courierId);
+
     ParcelDTO createForCustomer(Long customerId, ParcelDTO parcelDTO);
     ParcelDTO createMine(String username, ParcelDTO parcelDTO);
     ParcelDTO getById(Long parcelId);

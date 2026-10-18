@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 @Slf4j
 @RequiredArgsConstructor
 public class PricingRuleServiceImpl implements PricingRuleService {
@@ -28,9 +29,12 @@ public class PricingRuleServiceImpl implements PricingRuleService {
     // PricingRuleServiceImpl.java
 
     @Override
+    @org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public PricingRuleDTO create(PricingRuleDTO dto) {
         log.info("Execute method create()");
-        Optional<ServiceZone> optionalZone = serviceZoneRepository.findById(dto.getZoneId());
+        if (dto.getZoneId() == null) throw new CustomException(400, "Zone is required");
+        Optional<ServiceZone> optionalZone = serviceZoneRepository.findLockedById(dto.getZoneId());
+        validate(dto, null);
         if (optionalZone.isEmpty()) {
             log.error("Service zone not found with ID: {}", dto.getZoneId());
             throw new CustomException(404, "Service zone not found");
@@ -46,6 +50,8 @@ public class PricingRuleServiceImpl implements PricingRuleService {
         rule.setIsCod(dto.getIsCod());
 
         rule.setServiceZone(optionalZone.get());
+        validate(new PricingRuleDTO(rule.getRuleId(), rule.getServiceZone().getZoneId(),
+                rule.getRate(), rule.getWeightBracket(), rule.getIsCod()), rule.getRuleId());
         PricingRule saved = pricingRuleRepository.save(rule);
 
         return new PricingRuleDTO(saved.getRuleId(), saved.getServiceZone().getZoneId(),
@@ -77,6 +83,7 @@ public class PricingRuleServiceImpl implements PricingRuleService {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public PricingRuleDTO update(Long ruleId, PricingRuleDTO dto) {
         log.info("Execute method update()");
         Optional<PricingRule> optionalRule = pricingRuleRepository.findById(ruleId);
@@ -86,11 +93,14 @@ public class PricingRuleServiceImpl implements PricingRuleService {
             throw new CustomException(404, "Pricing rule not found");
         }
         PricingRule rule = optionalRule.get();
+        serviceZoneRepository.findLockedById(rule.getServiceZone().getZoneId());
 
         if (dto.getRate() != null) rule.setRate(dto.getRate());
         if (dto.getWeightBracket() != null) rule.setWeightBracket(dto.getWeightBracket());
         if (dto.getIsCod() != null) rule.setIsCod(dto.getIsCod());
 
+        validate(new PricingRuleDTO(rule.getRuleId(), rule.getServiceZone().getZoneId(),
+                rule.getRate(), rule.getWeightBracket(), rule.getIsCod()), rule.getRuleId());
         PricingRule saved = pricingRuleRepository.save(rule);
 
         return new PricingRuleDTO(saved.getRuleId(), saved.getServiceZone().getZoneId(),
@@ -126,20 +136,48 @@ public class PricingRuleServiceImpl implements PricingRuleService {
 
         List<PricingRule> candidates = pricingRuleRepository.findByServiceZone_ZoneIdAndIsCod(zoneId, isCod);
 
-        for (PricingRule rule : candidates) {
-            if (weightInBracket(weight, rule.getWeightBracket())) {
-                log.info("Pricing match: zone={}, weight={}kg, isCod={} -> rate={}", zoneId, weight, isCod, rule.getRate());
-                return rule.getRate();
-            }
+        List<PricingRule> matches = candidates.stream().filter(rule -> weightInBracket(weight, rule.getWeightBracket())).toList();
+        if (matches.size() > 1) throw new CustomException(409, "Overlapping stored pricing rules need review");
+        if (matches.size() == 1) {
+            BigDecimal rate = matches.get(0).getRate();
+            if (rate == null || rate.signum() < 0) throw new CustomException(409, "Invalid stored pricing rate");
+            return rate;
         }
 
         log.warn("No pricing rule matched: zone={}, weight={}kg, isCod={}", zoneId, weight, isCod);
             log.error("No pricing rule matches zone {} weight {}kg isCod {}", zoneId, weight, isCod);
         throw new CustomException(404, "No pricing rule matches zone " + zoneId
                 + ", weight " + weight + "kg, isCod=" + isCod
-                + " — add a PricingRule row covering this combination");
+                + " - add a PricingRule row covering this combination");
     }
 
+
+    private void validate(PricingRuleDTO dto, Long excludedId) {
+        if (dto.getRate() == null || dto.getRate().signum() < 0 || dto.getRate().scale() > 2 || dto.getIsCod() == null) {
+            throw new CustomException(400, "A nonnegative rate and payment type are required");
+        }
+        double[] incoming = bracketBounds(dto.getWeightBracket());
+        for (PricingRule rule : pricingRuleRepository.findByServiceZone_ZoneIdAndIsCod(dto.getZoneId(), dto.getIsCod())) {
+            if (java.util.Objects.equals(rule.getRuleId(), excludedId)) continue;
+            double[] existing = bracketBounds(rule.getWeightBracket());
+            if (incoming[0] < existing[1] && existing[0] < incoming[1]) {
+                throw new CustomException(409, "Weight bracket overlaps an existing rule");
+            }
+        }
+    }
+
+    public static double[] bracketBounds(String bracket) {
+        if (bracket == null || !bracket.matches("[0-9]+(?:\\.[0-9]+)?(?:-[0-9]+(?:\\.[0-9]+)?|\\+)")) {
+            throw new CustomException(400, "Weight bracket must use min-max or min+");
+        }
+        String[] parts = bracket.replace("+", "").split("-");
+        double min = Double.parseDouble(parts[0]);
+        double max = parts.length == 2 ? Double.parseDouble(parts[1]) : Double.POSITIVE_INFINITY;
+        if (!Double.isFinite(min) || (parts.length == 2 && !Double.isFinite(max)) || min >= max) {
+            throw new CustomException(400, "Invalid weight bracket bounds");
+        }
+        return new double[]{min, max};
+    }
 
     private boolean weightInBracket(double weight, String bracket) {
         if (bracket == null || bracket.isBlank()) {
