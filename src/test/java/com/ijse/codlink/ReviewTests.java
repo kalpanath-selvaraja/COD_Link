@@ -85,10 +85,15 @@ class ReviewTests {
 
     @Test
     void doesNotConvertApplicationFailureToAuthenticationFailure() {
-        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(mock(JwtUtil.class), mock(UserDetailsService.class), new ObjectMapper());
+        JwtUtil jwt = mock(JwtUtil.class);
+        when(jwt.extractUsername("token")).thenReturn("subject");
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(
+                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken("subject", ""));
+        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwt, mock(UserDetailsService.class), new ObjectMapper());
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer token");
         assertThrows(IllegalStateException.class, () -> filter.doFilter(request, new MockHttpServletResponse(),
                 (req, res) -> { throw new IllegalStateException("application failure"); }));
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
     }
 }
