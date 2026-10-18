@@ -186,11 +186,11 @@
         function isOk(res) { return res && res.status === 0; }
 
         function handleAuthFailure(xhr) {
-            if (xhr && (xhr.status === 401 || xhr.status === 403)) {
+            if (xhr && (xhr.status === 401)) {
                 // Safely extract the backend message from the JSON payload
                 const backendMessage = xhr.responseJSON && xhr.responseJSON.message
                     ? xhr.responseJSON.message
-                    : 'Session expired or not authorized.';
+                    : 'Session expired. Please log in again.';
 
                 alert(backendMessage);
                 localStorage.clear(); sessionStorage.clear();

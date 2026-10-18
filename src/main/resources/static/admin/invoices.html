@@ -211,8 +211,8 @@
 
         function isOk(res) { return res && res.status === 0; }
         function handleAuthFailure(xhr) {
-            if (xhr && (xhr.status === 401 || xhr.status === 403)) {
-                alert('Session expired or not authorized.');
+            if (xhr && (xhr.status === 401)) {
+                alert('Session expired. Please log in again.');
                 localStorage.clear(); sessionStorage.clear();
                 window.location.href = '../login.html';
                 return true;

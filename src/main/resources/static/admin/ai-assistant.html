@@ -192,7 +192,7 @@
                 }
                 appendMessage(res.body, 'bot');
             }).fail(function (xhr) {
-                if (xhr.status === 401 || xhr.status === 403) {
+                if (xhr.status === 401) {
                     alert('Session expired. Please log in again.');
                     localStorage.clear(); sessionStorage.clear();
                     window.location.href = '../login.html';

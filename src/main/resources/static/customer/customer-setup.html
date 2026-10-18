@@ -101,8 +101,8 @@
         }
 
         function handleAuthFailure(xhr) {
-            if (xhr && (xhr.status === 401 || xhr.status === 403)) {
-                alert('Session expired or not authorized.');
+            if (xhr && (xhr.status === 401)) {
+                alert('Session expired. Please log in again.');
                 localStorage.clear(); sessionStorage.clear();
                 window.location.href = '../login.html';
                 return true;
@@ -110,7 +110,7 @@
             return false;
         }
         function isAuthError(response) {
-            return response && (response.status === 401 || response.status === 403);
+            return response && (response.status === 401);
         }
 
         function goToBooking() {
