@@ -278,7 +278,7 @@
                 })
                 .fail(xhr => {
                     if (handleAuthFailure(xhr)) return;
-                    $body.html('<tr><td colspan="6" style="text-align:center; color:red;">Failed to reach backend.</td></tr>');
+                    alert('Failed to load couriers.');
                 });
         }
 

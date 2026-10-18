@@ -90,7 +90,7 @@ public class UserServiceImpl implements UserService {
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        if(request.getIsReceptionist() == true){
+        if(Boolean.TRUE.equals(request.getIsReceptionist())){
             user.setRole(UserRole.RECEPTIONIST);
             user.setIsReceptionist(Boolean.TRUE);
         }else {

@@ -253,7 +253,7 @@
                 $body.append(`
                 <tr data-id="${c.customerId}">
                     <td>#${c.customerId}</td>
-                    <td><strong>${c.Name || '—'}</strong></td>
+                    <td><strong>${c.name || '—'}</strong></td>
                     <td>${c.phoneNumber || '—'}</td>
                     <td>${c.userId != null ? 'User Customer - user Id ' + c.userId : '<span class="helper-text">Walk-in (no login)</span>'}</td>
                     <td>
@@ -301,7 +301,6 @@
 
             $.ajax({ url: BASE_URL + '/api/customers/' + id, method: 'DELETE', headers: ajaxHeaders })
                 .done(res => {
-                    i
                     if (!isOk(res)) { alert('Delete rejected: ' + res.message); return; }
                     loadCustomers();
                 }).fail(xhr => alert('Request failed: ' + (xhr.responseText || xhr.status) + ' — if this is a foreign key error, the customer likely still has parcels or shipments attached.'));

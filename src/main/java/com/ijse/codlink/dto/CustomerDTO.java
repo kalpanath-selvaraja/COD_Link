@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CustomerDTO {
     private Long customerId;
-    private String Name;
+    private String name;
     private String phoneNumber;
     private Long userId;
 
